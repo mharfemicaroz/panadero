@@ -1,0 +1,54 @@
+{
+  "data": [
+    {
+      "id": 1,
+      "username": "john.doe@example.com",
+      "role": "Admin"
+    },
+    {
+      "id": 2,
+      "username": "jane.smith@example.com",
+      "role": "Editor"
+    },
+    {
+      "id": 3,
+      "username": "michael.brown@example.com",
+      "role": "Viewer"
+    },
+    {
+      "id": 4,
+      "username": "emily.davis@example.com",
+      "role": "Admin"
+    },
+    {
+      "id": 5,
+      "username": "daniel.johnson@example.com",
+      "role": "Viewer"
+    },
+    {
+      "id": 6,
+      "username": "linda.wilson@example.com",
+      "role": "Editor"
+    },
+    {
+      "id": 7,
+      "username": "robert.moore@example.com",
+      "role": "Admin"
+    },
+    {
+      "id": 8,
+      "username": "patricia.taylor@example.com",
+      "role": "Viewer"
+    },
+    {
+      "id": 9,
+      "username": "charles.anderson@example.com",
+      "role": "Editor"
+    },
+    {
+      "id": 10,
+      "username": "susan.thomas@example.com",
+      "role": "Admin"
+    }
+  ]
+}
