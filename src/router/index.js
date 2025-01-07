@@ -105,6 +105,46 @@ const routes = [
   },
   {
     meta: {
+      title: 'Devices'
+    },
+    path: '/devices',
+    name: 'devices',
+    component: () => import('@/views/DevicesView.vue')
+  },
+  {
+    meta: {
+      title: 'Franchises'
+    },
+    path: '/franchises',
+    name: 'franchises',
+    component: () => import('@/views/FranchisesView.vue')
+  },
+  {
+    meta: {
+      title: 'Franchises PO'
+    },
+    path: '/franchises_po',
+    name: 'franchises_po',
+    component: () => import('@/views/FranchisesPOView.vue')
+  },
+  {
+    meta: {
+      title: 'Franchises Request'
+    },
+    path: '/franchises_request',
+    name: 'franchises_request',
+    component: () => import('@/views/FranchisesRequestView.vue')
+  },
+  {
+    meta: {
+      title: 'Receipts'
+    },
+    path: '/receipts',
+    name: 'receipts',
+    component: () => import('@/views/ReceiptsView.vue')
+  },
+  {
+    meta: {
       title: 'User Management'
     },
     path: '/user-management',
