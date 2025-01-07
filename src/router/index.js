@@ -20,7 +20,7 @@ const routes = [
     },
     path: '/',
     name: 'dashboard',
-    component: Home
+    component: HomeX
   },
   {
     meta: {
@@ -28,7 +28,7 @@ const routes = [
     },
     path: '/dashboard',
     name: 'dashboard-alias',
-    component: Home
+    component: HomeX
   },
   {
     meta: {
@@ -61,7 +61,8 @@ const routes = [
     path: '/items',
     name: 'items',
     component: () => import('@/views/ItemsView.vue')
-  }, {
+  },
+  {
     meta: {
       title: 'Items Modifier'
     },
@@ -110,7 +111,7 @@ const routes = [
     name: 'user management',
     component: () => import('@/views/UserManagementView.vue')
   },
-  
+
   {
     meta: {
       title: 'Forms'
