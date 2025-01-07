@@ -1,0 +1,60 @@
+{
+  "data":[
+    {
+      "name": "Baro/Laton",
+      "category_group": "-"
+    },
+    {
+      "name": "Bread",
+      "category_group": "-"
+    },
+    {
+      "name": "Breads",
+      "category_group": "-"
+    },
+    {
+      "name": "Cake Toasted",
+      "category_group": "-"
+    },
+    {
+      "name": "Cake Topper",
+      "category_group": "-"
+    },
+    {
+      "name": "Cakes",
+      "category_group": "-"
+    },
+    {
+      "name": "Drinks",
+      "category_group": "-"
+    },
+    {
+      "name": "Free Taste Cake Slice",
+      "category_group": "Anniversary/Opening"
+    },
+    {
+      "name": "Grand Roleta",
+      "category_group": "Anniversary/Opening"
+    },
+    {
+      "name": "Ice Cream",
+      "category_group": "-"
+    },
+    {
+      "name": "PROMO",
+      "category_group": "-"
+    },
+    {
+      "name": "Pastries",
+      "category_group": "-"
+    },
+    {
+      "name": "Peanut Butter",
+      "category_group": "-"
+    },
+    {
+      "name": "Toasted bread",
+      "category_group": "-"
+    }
+  ]  
+}

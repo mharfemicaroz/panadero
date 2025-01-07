@@ -1,0 +1,29 @@
+{
+  "data": [
+    {
+      "name": "PWD Breads & Drinks",
+      "unit": "By %",
+      "value": 5
+    },
+    {
+      "name": "Free Snacks",
+      "unit": "By %",
+      "value": 100
+    },
+    {
+      "name": "New Cake near expiration 30%",
+      "unit": "By %",
+      "value": 30
+    },
+    {
+      "name": "Coffee Discount",
+      "unit": "By %",
+      "value": 28.571
+    },
+    {
+      "name": "Senior Citizen 5%",
+      "unit": "By %",
+      "value": 5
+    }
+  ]  
+}

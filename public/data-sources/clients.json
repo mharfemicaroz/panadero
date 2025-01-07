@@ -2,53 +2,8 @@
   "data": [
     {
       "id": 1,
-      "email": "john.doe@example.com",
-      "access": "Admin"
-    },
-    {
-      "id": 2,
-      "email": "jane.smith@example.com",
-      "access": "Editor"
-    },
-    {
-      "id": 3,
-      "email": "michael.brown@example.com",
-      "access": "Viewer"
-    },
-    {
-      "id": 4,
-      "email": "emily.davis@example.com",
-      "access": "Admin"
-    },
-    {
-      "id": 5,
-      "email": "daniel.johnson@example.com",
-      "access": "Viewer"
-    },
-    {
-      "id": 6,
-      "email": "linda.wilson@example.com",
-      "access": "Editor"
-    },
-    {
-      "id": 7,
-      "email": "robert.moore@example.com",
-      "access": "Admin"
-    },
-    {
-      "id": 8,
-      "email": "patricia.taylor@example.com",
-      "access": "Viewer"
-    },
-    {
-      "id": 9,
-      "email": "charles.anderson@example.com",
-      "access": "Editor"
-    },
-    {
-      "id": 10,
-      "email": "susan.thomas@example.com",
-      "access": "Admin"
+      "email": "cymerchandising@gmail.com",
+      "access": "Access Reports"
     }
   ]
 }

@@ -56,12 +56,61 @@ const routes = [
   },
   {
     meta: {
+      title: 'Items'
+    },
+    path: '/items',
+    name: 'items',
+    component: () => import('@/views/ItemsView.vue')
+  }, {
+    meta: {
+      title: 'Items Modifier'
+    },
+    path: '/items_modifier',
+    name: 'items_modifier',
+    component: () => import('@/views/ItemsModifierView.vue')
+  },
+  {
+    meta: {
+      title: 'Category'
+    },
+    path: '/category',
+    name: 'category',
+    component: () => import('@/views/CategoryView.vue')
+  },
+  {
+    meta: {
+      title: 'Category Group'
+    },
+    path: '/category_group',
+    name: 'category_group',
+    component: () => import('@/views/CategoryGroupView.vue')
+  },
+  {
+    meta: {
+      title: 'Discounts'
+    },
+    path: '/discounts',
+    name: 'discounts',
+    component: () => import('@/views/DiscountsView.vue')
+  },
+
+  {
+    meta: {
+      title: 'Customers'
+    },
+    path: '/customers',
+    name: 'customers',
+    component: () => import('@/views/CustomersView.vue')
+  },
+  {
+    meta: {
       title: 'User Management'
     },
     path: '/user-management',
     name: 'user management',
     component: () => import('@/views/UserManagementView.vue')
   },
+  
   {
     meta: {
       title: 'Forms'
