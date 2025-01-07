@@ -1,0 +1,103 @@
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "Bibingka",
+      "category": "Bread",
+      "price": 10,
+      "cost": 0,
+      "options": [],
+      "modifiers": []
+    },
+    {
+      "id": 2,
+      "name": "Choco/Plain Muffins",
+      "category": "Pastries",
+      "price": 5,
+      "cost": 3.5,
+      "options": [],
+      "modifiers": []
+    },
+    {
+      "id": 3,
+      "name": "Cake Durian Bavarian",
+      "category": "Cakes",
+      "price": 500,
+      "cost": 350,
+      "options": [],
+      "modifiers": []
+    },
+    {
+      "id": 4,
+      "name": "Bread Pan de Monggo",
+      "category": "Breads",
+      "price": 5,
+      "cost": 2.5,
+      "options": [],
+      "modifiers": []
+    },
+    {
+      "id": 5,
+      "name": "Mini Cornetto",
+      "category": "PROMO",
+      "price": 0,
+      "cost": 0,
+      "options": [],
+      "modifiers": []
+    },
+    {
+      "id": 6,
+      "name": "Glazed Donut",
+      "category": "PROMO",
+      "price": 0,
+      "cost": 0,
+      "options": [],
+      "modifiers": []
+    },
+    {
+      "id": 7,
+      "name": "Coke 1.5",
+      "category": "PROMO",
+      "price": 0,
+      "cost": 0,
+      "options": [],
+      "modifiers": []
+    },
+    {
+      "id": 8,
+      "name": "Selecta Bites Time Toffee Caramel",
+      "category": "Ice Cream",
+      "price": 30,
+      "cost": 22,
+      "options": [],
+      "modifiers": []
+    },
+    {
+      "id": 9,
+      "name": "selecta tornado paddle",
+      "category": "Ice Cream",
+      "price": 15,
+      "cost": null,
+      "options": [],
+      "modifiers": []
+    },
+    {
+      "id": 10,
+      "name": "Bread *Burger Buns",
+      "category": "Breads",
+      "price": 5,
+      "cost": 2.5,
+      "options": [],
+      "modifiers": []
+    },
+    {
+      "id": 11,
+      "name": "Selecta Magnum",
+      "category": "Ice Cream",
+      "price": 70,
+      "cost": 0,
+      "options": [],
+      "modifiers": []
+    }
+  ]
+}

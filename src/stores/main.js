@@ -19,6 +19,12 @@ export const useMainStore = defineStore('main', () => {
   const clients = ref([])
   const history = ref([])
   const users = ref([])
+  const itemslist = ref([])
+  const category = ref([])
+  const categoryGroup = ref([])
+  const discounts = ref([])
+  const customers = ref([])
+
 
   function setUser(payload) {
     if (payload.name) {
@@ -62,6 +68,57 @@ export const useMainStore = defineStore('main', () => {
       })
   }
 
+  function fetchItemsList() {
+    axios
+      .get(`data-sources/itemslist.json`)
+      .then((result) => {
+        itemslist.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  }
+
+  function fetchCategory() {
+    axios
+      .get(`data-sources/category.json`)
+      .then((result) => {
+        category.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  }
+
+  function fetchCategoryGroup() {
+    axios
+      .get(`data-sources/category_group.json`)
+      .then((result) => {
+        categoryGroup.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  }
+  function fetchDiscounts() {
+    axios
+      .get(`data-sources/discounts.json`)
+      .then((result) => {
+        discounts.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  }function fetchCustomers() {
+    axios
+      .get(`data-sources/customers.json`)
+      .then((result) => {
+        customers.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  }
   return {
     userName,
     userEmail,
@@ -70,9 +127,19 @@ export const useMainStore = defineStore('main', () => {
     clients,
     history,
     users,
+    itemslist,
+    category,
+    categoryGroup,
+    discounts,
+    customers,
     setUser,
     fetchUser,
     fetchSampleClients,
-    fetchSampleHistory
+    fetchSampleHistory,
+    fetchItemsList,
+    fetchCategory,
+    fetchCategoryGroup,
+    fetchDiscounts,
+    fetchCustomers
   }
 })

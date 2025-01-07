@@ -86,12 +86,16 @@ export default [
     icon: mdiListBox,
     menu: [
       {
-        label: 'Item Tags',
-        to: '/item-tags'
+        label: 'Item',
+        to: '/items'
       },
+      // {
+      //   label: 'Item Tags',
+      //   to: '/item-tags'
+      // },
       {
-        label: 'Categories',
-        to: '/categories'
+        label: 'Category',
+        to: '/category'
       },
       {
         label: 'Discounts',
@@ -99,11 +103,11 @@ export default [
       },
       {
         label: 'Taxes',
-        to: '/taxes'
+        to: ''
       },
       {
         label: 'Payment Types',
-        to: '/payment-types'
+        to: ''
       }
     ]
   },

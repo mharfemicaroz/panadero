@@ -104,10 +104,10 @@ const getColor = (access) => {
         <td data-label="Email">
           {{ client.email }}
         </td>
-        <td data-label="Progress" class="lg:w-32">
+        <td data-label="Access" class="lg:w-32">
           <PillTag :label="client.access" :color="getColor(client.access)" small />
         </td>
-        <td class="before:hidden lg:w-1 whitespace-nowrap">
+        <td class="">
           <BaseButtons type="justify-start lg:justify-end" no-wrap>
             <BaseButton color="info" :icon="mdiEye" small @click="isModalActive = true" />
             <BaseButton

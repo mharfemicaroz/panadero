@@ -1,0 +1,113 @@
+{
+  "data": [
+    {
+      "name": "marecar",
+      "email": "-",
+      "phone_number": "-",
+      "address": "-",
+      "total_spent": 150,
+      "total_points": 0,
+      "total_balance": 0,
+      "customer_created_date": "12/2/2024, 9:04:16 PM",
+      "customer_last_order_date": "1/5/2025, 9:21:17 PM",
+      "total_transaction": 11
+    },
+    {
+      "name": "arjay",
+      "email": "-",
+      "phone_number": "-",
+      "address": "-",
+      "total_spent": 0,
+      "total_points": 0,
+      "total_balance": 0,
+      "customer_created_date": "11/30/2024, 12:12:58 PM",
+      "customer_last_order_date": "12/2/2024, 9:04:42 PM",
+      "total_transaction": 3
+    },
+    {
+      "name": "maricar",
+      "email": "-",
+      "phone_number": "-",
+      "address": "-",
+      "total_spent": 10,
+      "total_points": 0,
+      "total_balance": 0,
+      "customer_created_date": "11/28/2024, 10:25:54 AM",
+      "customer_last_order_date": "1/2/2025, 8:56:38 PM",
+      "total_transaction": 19
+    },
+    {
+      "name": "rj",
+      "email": "-",
+      "phone_number": "-",
+      "address": "-",
+      "total_spent": 0,
+      "total_points": 0,
+      "total_balance": 0,
+      "customer_created_date": "11/19/2024, 11:02:10 AM",
+      "customer_last_order_date": "11/19/2024, 11:02:16 AM",
+      "total_transaction": 1
+    },
+    {
+      "name": "ian",
+      "email": "-",
+      "phone_number": "-",
+      "address": "-",
+      "total_spent": 0,
+      "total_points": 0,
+      "total_balance": 0,
+      "customer_created_date": "10/27/2024, 8:07:45 PM",
+      "customer_last_order_date": "10/27/2024, 8:07:52 PM",
+      "total_transaction": 1
+    },
+    {
+      "name": "john",
+      "email": "-",
+      "phone_number": "-",
+      "address": "-",
+      "total_spent": 0,
+      "total_points": 0,
+      "total_balance": 0,
+      "customer_created_date": "10/20/2024, 12:10:28 PM",
+      "customer_last_order_date": "10/21/2024, 6:25:36 PM",
+      "total_transaction": 2
+    },
+    {
+      "name": "aive",
+      "email": "-",
+      "phone_number": "-",
+      "address": "-",
+      "total_spent": 0,
+      "total_points": 0,
+      "total_balance": 0,
+      "customer_created_date": "10/15/2024, 9:22:32 AM",
+      "customer_last_order_date": "11/5/2024, 5:46:04 PM",
+      "total_transaction": 16
+    },
+    {
+      "name": "raphsody",
+      "email": "-",
+      "phone_number": "-",
+      "address": "-",
+      "total_spent": 0,
+      "total_points": 0,
+      "total_balance": 0,
+      "customer_created_date": "8/24/2024, 12:44:58 PM",
+      "customer_last_order_date": "10/8/2024, 11:58:37 AM",
+      "total_transaction": 34
+    },
+    {
+      "name": "rhap",
+      "email": "-",
+      "phone_number": "-",
+      "address": "-",
+      "total_spent": 0,
+      "total_points": 0,
+      "total_balance": 0,
+      "customer_created_date": "8/17/2024, 5:49:10 PM",
+      "customer_last_order_date": "10/7/2024, 12:37:15 PM",
+      "total_transaction": 13
+    }
+  ]
+  
+}
