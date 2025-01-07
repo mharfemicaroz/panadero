@@ -1,0 +1,32 @@
+{
+  "data": [
+    {
+      "item": "path/to/image.png",
+      "item_name": "Planetary Mixer",
+      "description": "The mixer suddenly ceased to turn on, without any prior warning or indication.",
+      "date": "2024-12-03",
+      "type": "Repair",
+      "request_by": "Carmina Regine"
+
+    },
+    {
+      "item": "path/to/image.png",
+      "item_name": "Bread Slicer",
+      "description": "The bread slicer starts to overheat after running continuously for about an hour.",
+      "date": "2024-11-24",
+      "type": "Repair",
+      "request_by": "John Micheal"
+
+    },
+    {
+      "item": "path/to/image.png",
+      "item_name": "Baking Oven",
+      "description": "The baking oven is malfunctioning and not heating up properly.",
+      "date": "2024-11-13",
+      "type": "Repair",
+      "request_by": "Arnel Toribio"
+      
+      
+    }
+  ]
+}

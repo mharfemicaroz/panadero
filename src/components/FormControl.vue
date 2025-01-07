@@ -61,9 +61,9 @@ const computedValue = computed({
 
 const inputElClass = computed(() => {
   const base = [
-    'px-3 py-2 max-w-full focus:ring focus:outline-none border-gray-700 rounded w-full',
+    'px-3 py-0 max-w-full focus:ring focus:outline-none border-gray-300 rounded w-full',
     'dark:placeholder-gray-400',
-    computedType.value === 'textarea' ? 'h-24' : 'h-12',
+    computedType.value === 'textarea' ? 'h-24' : 'h-9',
     props.borderless ? 'border-0' : 'border',
     props.transparent ? 'bg-transparent' : 'bg-white dark:bg-slate-800'
   ]

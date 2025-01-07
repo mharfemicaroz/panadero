@@ -24,6 +24,12 @@ export const useMainStore = defineStore('main', () => {
   const categoryGroup = ref([])
   const discounts = ref([])
   const customers = ref([])
+  const devices = ref([])
+  const franchises = ref([])
+  const franchises_po = ref([])
+  const franchises_request = ref([])
+
+  const receipts = ref([])
 
 
   function setUser(payload) {
@@ -109,11 +115,67 @@ export const useMainStore = defineStore('main', () => {
       .catch((error) => {
         alert(error.message)
       })
-  }function fetchCustomers() {
+  }
+   function fetchCustomers() {
     axios
       .get(`data-sources/customers.json`)
       .then((result) => {
         customers.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  }
+
+  function fetchDevices() {
+    axios
+      .get(`data-sources/devices.json`)
+      .then((result) => {
+        devices.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  }
+
+  
+  function fetchFranchises() {
+    axios
+      .get(`data-sources/franchises.json`)
+      .then((result) => {
+        franchises.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  }
+
+  
+  function fetchFranchisesPO() {
+    axios
+      .get(`data-sources/franchises_po.json`)
+      .then((result) => {
+        franchises_po.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  } 
+  function fetchFranchisesRequest() {
+    axios
+      .get(`data-sources/franchises_request.json`)
+      .then((result) => {
+        franchises_request.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  }
+  function fetchReceipts() {
+    axios
+      .get(`data-sources/receipts.json`)
+      .then((result) => {
+        receipts.value = result?.data?.data
       })
       .catch((error) => {
         alert(error.message)
@@ -132,6 +194,11 @@ export const useMainStore = defineStore('main', () => {
     categoryGroup,
     discounts,
     customers,
+    devices,
+    franchises,
+    franchises_po,
+    franchises_request,
+    receipts,
     setUser,
     fetchUser,
     fetchSampleClients,
@@ -140,6 +207,11 @@ export const useMainStore = defineStore('main', () => {
     fetchCategory,
     fetchCategoryGroup,
     fetchDiscounts,
-    fetchCustomers
+    fetchCustomers,
+    fetchDevices,
+    fetchFranchises,
+    fetchFranchisesPO,
+    fetchFranchisesRequest,
+    fetchReceipts
   }
 })
