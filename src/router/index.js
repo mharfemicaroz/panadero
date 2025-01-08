@@ -48,6 +48,14 @@ const routes = [
   },
   {
     meta: {
+      title: 'Shifts'
+    },
+    path: '/shifts',
+    name: 'shifts',
+    component: () => import('@/views/ShiftsView.vue')
+  },
+  {
+    meta: {
       title: 'User'
     },
     path: '/user',
@@ -199,6 +207,15 @@ const routes = [
     path: '/error',
     name: 'error',
     component: () => import('@/views/ErrorView.vue')
+  },
+  // Food Safety
+  {
+    meta: {
+      title: 'Food Safety Summary'
+    },
+    path: '/food_safety_summary',
+    name: 'food_safety_summary',
+    component: () => import('@/views/FoodSafetySummaryView.vue')
   }
 ]
 

@@ -1,0 +1,22 @@
+{
+  "data": [
+    {
+      "cashier": "John Doe",
+      "branch": "Main Branch",
+      "start_shift": "2023-10-01 08:00",
+      "end_shift": "2023-10-01 16:00",
+      "expected_cash_amount": 1000.00,
+      "actual_cash_amount": 990.00,
+      "difference_amount": -10.00
+    },
+    {
+      "cashier": "Jane Smith",
+      "branch": "Downtown Branch",
+      "start_shift": "2023-10-01 09:00",
+      "end_shift": "2023-10-01 17:00",
+      "expected_cash_amount": 1200.00,
+      "actual_cash_amount": 1200.00,
+      "difference_amount": 0.00
+    }
+  ]
+}

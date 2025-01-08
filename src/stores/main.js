@@ -30,6 +30,11 @@ export const useMainStore = defineStore('main', () => {
   const franchises_request = ref([])
 
   const receipts = ref([])
+  const shifts_report = ref([])
+  const category_sales_summary = ref([])
+  const cash_balancing_summary = ref([])
+  const progress = ref([])
+  const bookmarked = ref([])
 
 
   function setUser(payload) {
@@ -181,6 +186,58 @@ export const useMainStore = defineStore('main', () => {
         alert(error.message)
       })
   }
+  function fetchShiftsReport() {
+    axios
+      .get(`data-sources/shifts_report.json`)
+      .then((result) => {
+        shifts_report.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  }
+
+  function fetchCategorySalesSummary() {
+    axios
+      .get(`data-sources/category_sales_summary.json`)
+      .then((result) => {
+        category_sales_summary.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  }
+
+  function fetchCashBalancingSummary() {
+    axios
+      .get(`data-sources/cash_balancing_summary.json`)
+      .then((result) => {
+        cash_balancing_summary.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  }
+  function fetchProgress() {
+    axios
+      .get(`data-sources/progress.json`)
+      .then((result) => {
+        progress.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  }
+  function fetchBookmarked() {
+    axios
+      .get(`data-sources/bookmarked.json`)
+      .then((result) => {
+        bookmarked.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  }
   return {
     userName,
     userEmail,
@@ -199,6 +256,11 @@ export const useMainStore = defineStore('main', () => {
     franchises_po,
     franchises_request,
     receipts,
+    shifts_report,
+    category_sales_summary,
+    cash_balancing_summary,
+    progress,
+    bookmarked,
     setUser,
     fetchUser,
     fetchSampleClients,
@@ -212,6 +274,11 @@ export const useMainStore = defineStore('main', () => {
     fetchFranchises,
     fetchFranchisesPO,
     fetchFranchisesRequest,
-    fetchReceipts
+    fetchReceipts,
+    fetchShiftsReport,
+    fetchCategorySalesSummary,
+    fetchCashBalancingSummary,
+    fetchProgress,
+    fetchBookmarked
   }
 })

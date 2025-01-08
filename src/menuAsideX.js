@@ -26,6 +26,10 @@ export default [
     icon: mdiTable,
     menu: [
       {
+        label: 'Sales',
+        to: '/sales'
+      },
+      {
         label: 'Shifts',
         to: '/shifts'
       },
@@ -267,7 +271,7 @@ export default [
     menu: [
       {
         label: 'Summary',
-        to: '/summary'
+        to: '/food_safety_summary'
       },
       {
         label: 'Templates',

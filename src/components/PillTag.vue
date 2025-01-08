@@ -17,21 +17,23 @@ const props = defineProps({
     default: null
   },
   small: Boolean,
-  outline: Boolean
+  outline: Boolean,
+  huge: Boolean  // Add huge prop
 })
 
 const componentClass = computed(() => [
-  props.small ? 'py-1 px-3' : 'py-1.5 px-4',
+  props.small ? 'py-1 ' : props.huge ? 'py-3 ' : 'py-1.5 ',  // Adjust padding for huge
   props.outline ? colorsOutline[props.color] : colorsBgLight[props.color]
 ])
 </script>
 
 <template>
   <PillTagPlain
-    class="border rounded-full"
+    class="border rounded-full opacity-15"
     :class="componentClass"
     :icon="icon"
     :label="label"
     :small="small"
+    :huge="huge" 
   />
 </template>

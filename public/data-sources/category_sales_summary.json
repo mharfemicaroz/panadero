@@ -1,0 +1,82 @@
+{
+  "data": [
+    {
+      "created_at": "Jan 8, 2025",
+      "category": "breads",
+      "sales_quantity": 1138,
+      "refunded_quantity": 0,
+      "total_quantity": 1138,
+      "sold": 2534,
+      "gross_sales": 0,
+      "dining_option_fee": 0,
+      "item_discounts": 0,
+      "receipt_discounts": 0,
+      "net_sales": 2534
+    },
+    {
+      "created_at": "Jan 8, 2025",
+      "category": "peanut_butter",
+      "sales_quantity": 1,
+      "refunded_quantity": 0,
+      "total_quantity": 1,
+      "sold": 100,
+      "gross_sales": 0,
+      "dining_option_fee": 0,
+      "item_discounts": 0,
+      "receipt_discounts": 0,
+      "net_sales": 100
+    },
+    {
+      "created_at": "Jan 8, 2025",
+      "category": "pastries",
+      "sales_quantity": 29,
+      "refunded_quantity": 0,
+      "total_quantity": 29,
+      "sold": 447,
+      "gross_sales": 0,
+      "dining_option_fee": 0,
+      "item_discounts": 0,
+      "receipt_discounts": 0,
+      "net_sales": 447
+    },
+    {
+      "created_at": "Jan 8, 2025",
+      "category": "cakes",
+      "sales_quantity": 1,
+      "refunded_quantity": 0,
+      "total_quantity": 1,
+      "sold": 150,
+      "gross_sales": 0,
+      "dining_option_fee": 0,
+      "item_discounts": 0,
+      "receipt_discounts": 0,
+      "net_sales": 150
+    },
+    {
+      "created_at": "Jan 8, 2025",
+      "category": "drinks",
+      "sales_quantity": 1,
+      "refunded_quantity": 0,
+      "total_quantity": 1,
+      "sold": 14,
+      "gross_sales": 0,
+      "dining_option_fee": 0,
+      "item_discounts": 0,
+      "receipt_discounts": 0,
+      "net_sales": 14
+    },
+    {
+      "created_at": "Jan 8, 2025",
+      "category": "total",
+      "sales_quantity": 1170,
+      "refunded_quantity": 0,
+      "total_quantity": 1170,
+      "sold": 3245.00,
+      "gross_sales": 0.00,
+      "dining_option_fee": 0.00,
+      "item_discounts": 0.00,
+      "receipt_discounts": 0.00,
+      "net_sales": 3245.00
+    }
+  ]
+}
