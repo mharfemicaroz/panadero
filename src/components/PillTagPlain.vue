@@ -10,22 +10,30 @@ defineProps({
     type: String,
     default: null
   },
-  small: Boolean
+  small: Boolean,
+  huge: Boolean,
+  opacity: {  // New opacity prop
+    type: String,
+    default: 'opacity-100'  // Default opacity is 100%
+  }
 })
 </script>
 
 <template>
   <div
     class="inline-flex items-center capitalize leading-none"
-    :class="[small ? 'text-xs' : 'text-sm']"
+    :class="[small ? 'text-xs' : huge ? 'text-5xl' : 'text-sm', opacity]"
   >
     <BaseIcon
       v-if="icon"
       :path="icon"
-      h="h-4"
-      w="w-4"
-      :class="small ? 'mr-1' : 'mr-2'"
-      :size="small ? 14 : null"
+      :h="huge ? 'h-12' : small ? 'h-4' : 'h-4'"
+      :w="huge ? 'w-12' : small ? 'w-4' : 'w-4'"
+      :class="[
+        small ? 'mr-1' : huge ? 'mr-3' : 'mr-2',
+        opacity  // Apply opacity class to the icon
+      ]"
+      :size="huge ? 50 : small ? 14 : null"
     />
     <span>{{ label }}</span>
   </div>

@@ -271,7 +271,7 @@ export default [
     menu: [
       {
         label: 'Summary',
-        to: '/summary'
+        to: '/food_safety_summary'
       },
       {
         label: 'Templates',

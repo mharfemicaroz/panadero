@@ -33,6 +33,8 @@ export const useMainStore = defineStore('main', () => {
   const shifts_report = ref([])
   const category_sales_summary = ref([])
   const cash_balancing_summary = ref([])
+  const progress = ref([])
+  const bookmarked = ref([])
 
 
   function setUser(payload) {
@@ -216,6 +218,26 @@ export const useMainStore = defineStore('main', () => {
         alert(error.message)
       })
   }
+  function fetchProgress() {
+    axios
+      .get(`data-sources/progress.json`)
+      .then((result) => {
+        progress.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  }
+  function fetchBookmarked() {
+    axios
+      .get(`data-sources/bookmarked.json`)
+      .then((result) => {
+        bookmarked.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  }
   return {
     userName,
     userEmail,
@@ -237,6 +259,8 @@ export const useMainStore = defineStore('main', () => {
     shifts_report,
     category_sales_summary,
     cash_balancing_summary,
+    progress,
+    bookmarked,
     setUser,
     fetchUser,
     fetchSampleClients,
@@ -253,6 +277,8 @@ export const useMainStore = defineStore('main', () => {
     fetchReceipts,
     fetchShiftsReport,
     fetchCategorySalesSummary,
-    fetchCashBalancingSummary
+    fetchCashBalancingSummary,
+    fetchProgress,
+    fetchBookmarked
   }
 })
