@@ -207,6 +207,15 @@ const routes = [
     path: '/error',
     name: 'error',
     component: () => import('@/views/ErrorView.vue')
+  },
+  // Food Safety
+  {
+    meta: {
+      title: 'Food Safety Summary'
+    },
+    path: '/food_safety_summary',
+    name: 'food_safety_summary',
+    component: () => import('@/views/FoodSafetySummaryView.vue')
   }
 ]
 

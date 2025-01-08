@@ -33,6 +33,8 @@ mainStore.fetchReceipts()
 mainStore.fetchShiftsReport()
 mainStore.fetchCategorySalesSummary()
 mainStore.fetchCashBalancingSummary()
+mainStore.fetchProgress()
+mainStore.fetchBookmarked()
 
 
 // Dark mode
