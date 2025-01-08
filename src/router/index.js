@@ -48,6 +48,14 @@ const routes = [
   },
   {
     meta: {
+      title: 'Shifts'
+    },
+    path: '/shifts',
+    name: 'shifts',
+    component: () => import('@/views/ShiftsView.vue')
+  },
+  {
+    meta: {
       title: 'User'
     },
     path: '/user',
