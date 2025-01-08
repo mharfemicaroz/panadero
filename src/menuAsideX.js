@@ -26,6 +26,10 @@ export default [
     icon: mdiTable,
     menu: [
       {
+        label: 'Sales',
+        to: '/sales'
+      },
+      {
         label: 'Shifts',
         to: '/shifts'
       },

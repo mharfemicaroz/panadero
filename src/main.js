@@ -30,6 +30,9 @@ mainStore.fetchFranchises()
 mainStore.fetchFranchisesPO()
 mainStore.fetchFranchisesRequest()
 mainStore.fetchReceipts()
+mainStore.fetchShiftsReport()
+mainStore.fetchCategorySalesSummary()
+mainStore.fetchCashBalancingSummary()
 
 
 // Dark mode
