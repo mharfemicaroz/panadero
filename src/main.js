@@ -36,7 +36,6 @@ mainStore.fetchCashBalancingSummary()
 mainStore.fetchProgress()
 mainStore.fetchBookmarked()
 
-
 // Dark mode
 // Uncomment, if you'd like to restore persisted darkMode setting, or use `prefers-color-scheme: dark`. Make sure to uncomment localStorage block in src/stores/darkMode.js
 // import { useDarkModeStore } from './stores/darkMode'
@@ -51,7 +50,7 @@ mainStore.fetchBookmarked()
 // }
 
 // Default title tag
-const defaultDocumentTitle = 'Admin One Vue 3 Tailwind'
+const defaultDocumentTitle = 'Panadero - Portal'
 
 // Set document title from route meta
 router.afterEach((to) => {
