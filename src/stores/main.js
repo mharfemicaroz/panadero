@@ -1,14 +1,17 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
+import { useAuthStore } from './auth'
 import axios from 'axios'
 
 export const useMainStore = defineStore('main', () => {
-  const userName = ref('John Doe')
-  const userEmail = ref('doe.doe.doe@example.com')
+  const userName = ref('')
+  const userEmail = ref('')
+
+  const authStore = useAuthStore()
 
   const userAvatar = computed(
     () =>
-      `https://api.dicebear.com/7.x/avataaars/svg?seed=${userEmail.value.replace(
+      `https://api.dicebear.com/7.x/avataaars/svg?seed=${userName.value.replace(
         /[^a-z0-9]+/gi,
         '-'
       )}`
@@ -35,7 +38,6 @@ export const useMainStore = defineStore('main', () => {
   const cash_balancing_summary = ref([])
   const progress = ref([])
   const bookmarked = ref([])
-
 
   function setUser(payload) {
     if (payload.name) {
@@ -121,7 +123,7 @@ export const useMainStore = defineStore('main', () => {
         alert(error.message)
       })
   }
-   function fetchCustomers() {
+  function fetchCustomers() {
     axios
       .get(`data-sources/customers.json`)
       .then((result) => {
@@ -143,7 +145,6 @@ export const useMainStore = defineStore('main', () => {
       })
   }
 
-  
   function fetchFranchises() {
     axios
       .get(`data-sources/franchises.json`)
@@ -155,7 +156,6 @@ export const useMainStore = defineStore('main', () => {
       })
   }
 
-  
   function fetchFranchisesPO() {
     axios
       .get(`data-sources/franchises_po.json`)
@@ -165,7 +165,7 @@ export const useMainStore = defineStore('main', () => {
       .catch((error) => {
         alert(error.message)
       })
-  } 
+  }
   function fetchFranchisesRequest() {
     axios
       .get(`data-sources/franchises_request.json`)
@@ -238,6 +238,17 @@ export const useMainStore = defineStore('main', () => {
         alert(error.message)
       })
   }
+
+  watch(authStore, (authStore) => {
+    if (authStore.user) {
+      userName.value = authStore.user.name
+      userEmail.value = authStore.user.email
+    } else {
+      userName.value = ''
+      userEmail.value = ''
+    }
+  })
+
   return {
     userName,
     userEmail,

@@ -1,7 +1,4 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
-import Style from '@/views/StyleView.vue'
-import Home from '@/views/HomeView.vue'
-import HomeX from '@/views/HomeViewX.vue'
+import { createWebHistory, createRouter } from 'vue-router'
 
 const routes = [
   // {
@@ -13,30 +10,29 @@ const routes = [
   //   component: Style
   // },
   {
-    // Document title tag
-    // We combine it with defaultDocumentTitle set in `src/main.js` on router.afterEach hook
-    meta: {
-      title: 'Dashboard'
-    },
     path: '/',
-    name: 'dashboard',
-    component: HomeX
+    name: 'home',
+    redirect: () => {
+      // Check if the user is authenticated
+      const isAuthenticated = localStorage.getItem('authToken')
+      return isAuthenticated ? { name: 'dashboard' } : { name: 'login' }
+    }
+  },
+  {
+    meta: {
+      title: 'Login'
+    },
+    path: '/login',
+    name: 'login',
+    component: () => import('@/views/LoginView.vue')
   },
   {
     meta: {
       title: 'Dashboard'
     },
     path: '/dashboard',
-    name: 'dashboard-alias',
-    component: HomeX
-  },
-  {
-    meta: {
-      title: 'DashboardX'
-    },
-    path: '/dashboard-x',
-    name: 'dashboardX',
-    component: HomeX
+    name: 'dashboard',
+    component: () => import('@/views/HomeViewX.vue')
   },
   {
     meta: {
@@ -194,14 +190,6 @@ const routes = [
   },
   {
     meta: {
-      title: 'Login'
-    },
-    path: '/login',
-    name: 'login',
-    component: () => import('@/views/LoginView.vue')
-  },
-  {
-    meta: {
       title: 'Error'
     },
     path: '/error',
@@ -220,10 +208,23 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: createWebHistory(),
   routes,
   scrollBehavior(to, from, savedPosition) {
     return savedPosition || { top: 0 }
+  }
+})
+
+// Navigation guard to check authentication
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = localStorage.getItem('authToken') // Check token in localStorage
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    next({ name: 'login' })
+  } else if (to.name === 'login' && isAuthenticated) {
+    // Prevent accessing login page if already authenticated
+    next({ name: 'dashboard' })
+  } else {
+    next()
   }
 })
 

@@ -44,7 +44,7 @@ const transactionBarItems = computed(() => mainStore.history)
 <template>
   <LayoutAuthenticated>
     <SectionMain>
-      <SectionTitleLineWithButton :icon="mdiChartTimelineVariant" title="Overview" main>
+      <!-- <SectionTitleLineWithButton :icon="mdiChartTimelineVariant" title="Overview" main>
         <BaseButton
           href="https://github.com/justboil/admin-one-vue-tailwind"
           target="_blank"
@@ -54,7 +54,7 @@ const transactionBarItems = computed(() => mainStore.history)
           rounded-full
           small
         />
-      </SectionTitleLineWithButton>
+      </SectionTitleLineWithButton> -->
 
       <div class="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
         <CardBoxWidget
@@ -71,7 +71,7 @@ const transactionBarItems = computed(() => mainStore.history)
           color="text-blue-500"
           :icon="mdiCartOutline"
           :number="7770"
-          prefix="$"
+          prefix="₱"
           label="Sales"
         />
         <CardBoxWidget
@@ -110,7 +110,7 @@ const transactionBarItems = computed(() => mainStore.history)
         </div>
       </div>
 
-      <SectionBannerStarOnGitHub class="mt-6 mb-6" />
+      <!-- <SectionBannerStarOnGitHub class="mt-6 mb-6" /> -->
 
       <SectionTitleLineWithButton :icon="mdiChartPie" title="Trends overview">
         <BaseButton :icon="mdiReload" color="whiteDark" @click="fillChartData" />

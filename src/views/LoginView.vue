@@ -2,6 +2,7 @@
 import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { mdiAccount, mdiAsterisk } from '@mdi/js'
+import { useAuthStore } from '@/stores/auth' // Import authStore
 import SectionFullScreen from '@/components/SectionFullScreen.vue'
 import CardBox from '@/components/CardBox.vue'
 import FormCheckRadio from '@/components/FormCheckRadio.vue'
@@ -12,22 +13,34 @@ import BaseButtons from '@/components/BaseButtons.vue'
 import LayoutGuest from '@/layouts/LayoutGuest.vue'
 
 const form = reactive({
-  login: 'john.doe',
-  pass: 'highly-secure-password-fYjUw-',
+  login: '',
+  pass: '',
   remember: true
 })
 
 const router = useRouter()
+const authStore = useAuthStore() // Initialize authStore
 
-const submit = () => {
-  router.push('/dashboard')
+const submit = async () => {
+  try {
+    await authStore.login(form.login, form.pass) // Call login action
+    router.push('/dashboard') // Redirect to dashboard on success
+  } catch (error) {
+    alert(error.message || 'Login failed') // Display error message
+  }
 }
 </script>
 
 <template>
   <LayoutGuest>
-    <SectionFullScreen v-slot="{ cardClass }" bg="purplePink">
+    <SectionFullScreen v-slot="{ cardClass }" bg="pinkRed">
       <CardBox :class="cardClass" is-form @submit.prevent="submit">
+        <!-- Logo and Title -->
+        <div class="flex items-center justify-center mb-4">
+          <img src="../../public/logo.png" alt="Logo" class="mx-2" width="25" />
+          <b class="font-black text-lg">Panadero</b>
+        </div>
+
         <FormField label="Login" help="Please enter your login">
           <FormControl
             v-model="form.login"

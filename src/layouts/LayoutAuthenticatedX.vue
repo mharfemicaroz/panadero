@@ -1,4 +1,5 @@
 <script setup>
+import { useAuthStore } from '@/stores/auth'
 import { mdiForwardburger, mdiBackburger, mdiMenu } from '@mdi/js'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -17,6 +18,7 @@ const layoutAsidePadding = 'xl:pl-60'
 const darkModeStore = useDarkModeStore()
 
 const router = useRouter()
+const authStore = useAuthStore()
 
 const isAsideMobileExpanded = ref(false)
 const isAsideLgActive = ref(false)
@@ -32,8 +34,13 @@ const menuClick = (event, item) => {
   }
 
   if (item.isLogout) {
-    //
+    logout()
   }
+}
+
+const logout = () => {
+  authStore.logout() // Clear user data from authStore
+  router.push('/login') // Redirect to login page after logout
 }
 </script>
 
