@@ -102,10 +102,10 @@ const getColor = (access) => {
       <tr v-for="client in itemsPaginated" :key="client.id">
         <TableCheckboxCell v-if="checkable" @checked="checked($event, client)" />
         <td data-label="Email">
-          {{ client.email }}
+          {{ client.login }}
         </td>
         <td data-label="Access" class="lg:w-32">
-          <PillTag :label="client.access" :color="getColor(client.access)" small />
+          <PillTag :label="client.role" :color="getColor(client.role)" small />
         </td>
         <td class="">
           <BaseButtons type="justify-start lg:justify-end" no-wrap>

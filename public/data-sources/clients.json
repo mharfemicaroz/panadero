@@ -5,35 +5,40 @@
       "name": "Sarah Richardson",
       "login": "sarah@example.com",
       "created": "2025-01-09",
-      "progress": "Access Reports"
+      "progress": "Access Reports",
+      "role": "Admin"
     },
     {
       "id": 2,
       "name": "John Doe",
       "login": "john.doe@example.com",
       "created": "2024-12-15",
-      "progress": "Pending"
+      "progress": "Pending",
+      "role": "Editor"
     },
     {
       "id": 3,
       "name": "Jane Smith",
       "login": "jane.smith@example.com",
       "created": "2024-11-23",
-      "progress": "Completed"
+      "progress": "Completed",
+      "role": "Viewer"
     },
     {
       "id": 4,
       "name": "Alice Johnson",
       "login": "alice.johnson@example.com",
       "created": "2024-10-05",
-      "progress": "In Progress"
+      "progress": "In Progress",
+      "role": "Editor"
     },
     {
       "id": 5,
       "name": "Bob Williams",
       "login": "bob.williams@example.com",
       "created": "2024-09-18",
-      "progress": "Access Reports"
+      "progress": "Access Reports",
+      "role": "Viewer"
     }
   ]
 }
