@@ -60,6 +60,22 @@ const routes = [
   },
   {
     meta: {
+      title: 'Breakdown Payment Reports'
+    },
+    path: '/breakdown-payment-reports',
+    name: 'breakdown-payment-reports',
+    component: () => import('@/views/BreakdownPaymentReportsView.vue')
+  },
+  {
+    meta: {
+      title: 'Order Option Fee Reports'
+    },
+    path: '/order-option-fee-reports',
+    name: 'order-option-fee-reports',
+    component: () => import('@/views/OrderOptionFeeReportsView.vue')
+  },
+  {
+    meta: {
       title: 'User'
     },
     path: '/user',
