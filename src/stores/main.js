@@ -31,9 +31,9 @@ export const useMainStore = defineStore('main', () => {
   const franchises = ref([])
   const franchises_po = ref([])
   const franchises_request = ref([])
-
   const receipts = ref([])
   const shifts_report = ref([])
+  const sales_inventory_report = ref([])
   const category_sales_summary = ref([])
   const cash_balancing_summary = ref([])
   const progress = ref([])
@@ -186,6 +186,7 @@ export const useMainStore = defineStore('main', () => {
         alert(error.message)
       })
   }
+
   function fetchShiftsReport() {
     axios
       .get(`data-sources/shifts_report.json`)
@@ -196,7 +197,16 @@ export const useMainStore = defineStore('main', () => {
         alert(error.message)
       })
   }
-
+  function fetchSalesInventoryReport() {
+    axios
+      .get(`data-sources/sales_inventory_report.json`)
+      .then((result) => {
+        sales_inventory_report.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  }
   function fetchCategorySalesSummary() {
     axios
       .get(`data-sources/category_sales_summary.json`)
@@ -268,6 +278,7 @@ export const useMainStore = defineStore('main', () => {
     franchises_request,
     receipts,
     shifts_report,
+    sales_inventory_report,
     category_sales_summary,
     cash_balancing_summary,
     progress,
@@ -287,6 +298,7 @@ export const useMainStore = defineStore('main', () => {
     fetchFranchisesRequest,
     fetchReceipts,
     fetchShiftsReport,
+    fetchSalesInventoryReport,
     fetchCategorySalesSummary,
     fetchCashBalancingSummary,
     fetchProgress,
