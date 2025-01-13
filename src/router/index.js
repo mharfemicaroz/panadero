@@ -52,6 +52,14 @@ const routes = [
   },
   {
     meta: {
+      title: 'Sales Inventory'
+    },
+    path: '/sales-inventory',
+    name: 'sales-inventory',
+    component: () => import('@/views/SalesInventoryView.vue')
+  },
+  {
+    meta: {
       title: 'User'
     },
     path: '/user',
