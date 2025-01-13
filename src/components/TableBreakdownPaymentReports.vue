@@ -23,32 +23,25 @@ const selectCategory = [
 
 ]
 const selectBranch = [
-  { id: 1, label: 'All' },
-  { id: 2, label: 'Panadero Matina Aplaya2 Branch' }
+
+  { id: 1, label: 'Panadero Matina Aplaya2 Branch' }
 
 
 ]
-const selectWarehouse = [
-  { id: 1, label: 'Pull Out' },
-  { id: 2, label: 'Matina Aplaya2' },
-  { id: 3, label: 'Other Branch' },
-  { id: 4, label: 'To Commissary' }
-];
-const selectCat = [
-  { id: 1, label: 'No Category' },
-  { id: 2, label: 'Baro/Laton' },
-  { id: 3, label: 'Bread' },
-  { id: 4, label: 'Breads' },
-  { id: 5, label: 'Cake Toasted' },
-  { id: 6, label: 'Cake Topper' },
-  { id: 7, label: 'Cakes' },
-  { id: 8, label: 'Drinks' },
+
+const selectCashier = [
+  { id: 1, label: 'Administrator' },
+  { id: 2, label: 'Lealyn Guineta' },
+  { id: 3, label: 'Janice Pareja' },
+  { id: 4, label: 'Regine Carmina' },
+  { id: 5, label: 'Reyna Patiga' }
+
 ];
 
 const dateRange = ref([null, null]);
 
 const mainStore = useMainStore()
-const items = computed(() => mainStore.sales_inventory_report);
+const items = computed(() => mainStore.breakdwon_payment_report);
 const items2 = computed(() => mainStore.category_sales_summary);
 const items3 = computed(() => mainStore.cash_balancing_summary);
 
@@ -148,19 +141,14 @@ const getColor = (role) => {
           <FormControl v-model="selectBranch[0]" :options="selectBranch" />
         </FormField>
       </div>
-      <div class="w-full md:w-1/4 lg:w-1/5">
-        <FormField label="" class="w-full">
-          <FormControl v-model="selectWarehouse[0]" :options="selectWarehouse" />
-        </FormField>
-      </div>
+     
       <div class="w-full md:w-1/4 lg:w-1/4">
         <FormField label="" class="w-full">
-          <FormControl v-model="selectCat[0]" :options="selectCat" />
+          <FormControl v-model="selectCashier[0]" :options="selectCashier" />
         </FormField>
       </div>
       <div class="w-full md:w-1/4 lg:w-1/4">
         <BaseButtons no-wrap>
-          <BaseButton color="info" class="h-9" label="Filter" />
           <BaseButton color="" :icon="mdiExport" class="h-9 bg-white" small label="Export" />
         </BaseButtons>
       </div>
@@ -176,18 +164,12 @@ const getColor = (role) => {
         <thead class="bg-slate-100 border border-t-0 border-l-0 border-r-0 border-gray-300">
           <tr>
             <th data-label="Date">Date</th>
-            <th data-label="Name">Name</th>
-            <th data-label="Warehouse">Warehouse</th>
-            <th data-label="Category">Category</th>
-            <th data-label="Barcode">Barcode</th>
-            <th data-label="Pull Out Quantity">Pull Out Quantity</th>
-            <th data-label="Total Quantity Sold">Total Quantity Sold</th>
-            <th data-label="Total Amount Sold">Total Amount Sold</th>
-            <th data-label="Total Amount Cost">Total Amount Cost</th>
-            <th data-label="Total Add On">Total Add On</th>
-            <th data-label="Total Quantity Current">Total Quantity Current</th>
-            <th data-label="Total Amount Current">Total Amount Current</th>
-            <th data-label="Total Discount">Total Discount</th>
+<th data-label="Payment Type">Payment Type</th>
+<th data-label="Payment Type Name">Payment Type Name</th>
+<th data-label="POS Name">POS Name</th>
+<th data-label="Quantity">Quantity</th>
+<th data-label="Total Sales">Total Sales</th>
+
             <th></th>
           </tr>
         </thead>
@@ -196,47 +178,27 @@ const getColor = (role) => {
           <tr v-for="itemslist in itemsPaginated" :key="itemslist.transaction_number">
             <TableCheckboxCell v-if="checkable" @checked="checked($event, itemslist)" />
             <td data-label="Date">
-              {{ itemslist.date }}
-            </td>
-            <td data-label="Name">
-              {{ itemslist.name }}
-            </td>
-            <td data-label="Warehouse">
-              {{ itemslist.warehouse }}
-            </td>
-            <td data-label="Category">
-              {{ itemslist.category }}
-            </td>
-            <td data-label="Barcode">
-              {{ itemslist.barcode }}
-            </td>
-            <td data-label="Pull Out Quantity">
-              {{ itemslist.pull_out_quantity }}
-            </td>
-            <td data-label="Total Quantity Sold">
-              {{ itemslist.total_qty_sold }}
-            </td>
-            <td data-label="Total Amount Sold">
-              ₱{{ itemslist.total_amount_sold }}
-            </td>
-            <td data-label="Total Amount Cost">
-              ₱{{ itemslist.total_amount_cost }}
-            </td>
-            <td data-label="Total Add On">
-              ₱{{ itemslist.total_add_on }}
-            </td>
-            <td data-label="Total Quantity Current">
-              {{ itemslist.total_qty_current }}
-            </td>
-            <td data-label="Total Amount Current">
-              ₱{{ itemslist.total_amount_current }}
-            </td>
-            <td data-label="Total Discount"> 
-              ₱{{ itemslist.total_discount }}
-            </td>
+  {{ itemslist.date }}
+</td>
+<td data-label="Payment Type">
+  {{ itemslist.payment_type }}
+</td>
+<td data-label="Payment Type Name">
+  {{ itemslist.payment_type_name }}
+</td>
+<td data-label="POS Name">
+  {{ itemslist.pos_name }}
+</td>
+<td data-label="Quantity">
+  {{ itemslist.quantity }}
+</td>
+<td data-label="Total Sales">
+  ₱{{ itemslist.total_sales }}
+</td>
+
             <td class="before:hidden lg:w-1 whitespace-nowrap">
           <BaseButtons type="justify-start lg:justify-end" no-wrap>
-            <BaseButton color="info" small label="View"/>
+            <!-- <BaseButton color="info" small label="View"/> -->
            
           </BaseButtons>
         </td>
