@@ -1,0 +1,85 @@
+{
+    "data": [
+        {
+          "date": "Wed Jan 15 2025",
+          "payment_types": "Mobile Wallet",
+          "payment_type_name": "GRAB",
+          "receipt_number": "#42847",
+          "reference_number": "721",
+          "amount": "₱ 105"
+        },
+        {
+          "date": "Wed Jan 15 2025",
+          "payment_types": "Mobile Wallet",
+          "payment_type_name": "GRAB",
+          "receipt_number": "#42848",
+          "reference_number": "067",
+          "amount": "₱ 155"
+        },
+        {
+          "date": "Wed Jan 15 2025",
+          "payment_types": "Mobile Wallet",
+          "payment_type_name": "GRAB",
+          "receipt_number": "#42849",
+          "reference_number": "380",
+          "amount": "₱ 140"
+        },
+        {
+          "date": "Wed Jan 15 2025",
+          "payment_types": "Mobile Wallet",
+          "payment_type_name": "GRAB",
+          "receipt_number": "#42850",
+          "reference_number": "900",
+          "amount": "₱ 565"
+        },
+        {
+          "date": "Wed Jan 15 2025",
+          "payment_types": "Mobile Wallet",
+          "payment_type_name": "FoodPanda",
+          "receipt_number": "#42851",
+          "reference_number": "2017",
+          "amount": "₱ 100"
+        },
+        {
+          "date": "Wed Jan 15 2025",
+          "payment_types": "Mobile Wallet",
+          "payment_type_name": "FoodPanda",
+          "receipt_number": "#42852",
+          "reference_number": "2018",
+          "amount": "₱ 130"
+        },
+        {
+          "date": "Wed Jan 15 2025",
+          "payment_types": "Mobile Wallet",
+          "payment_type_name": "GCASH",
+          "receipt_number": "#42853",
+          "reference_number": "105118",
+          "amount": "₱ 250"
+        },
+        {
+          "date": "Wed Jan 15 2025",
+          "payment_types": "Mobile Wallet",
+          "payment_type_name": "GCASH",
+          "receipt_number": "#42855",
+          "reference_number": "614136",
+          "amount": "₱ 120"
+        },
+        {
+          "date": "Wed Jan 15 2025",
+          "payment_types": "Mobile Wallet",
+          "payment_type_name": "GRAB",
+          "receipt_number": "#42856",
+          "reference_number": "410",
+          "amount": "₱ 125"
+        },
+        {
+          "date": "Wed Jan 15 2025",
+          "payment_types": "Mobile Wallet",
+          "payment_type_name": "GRAB",
+          "receipt_number": "#42873",
+          "reference_number": "322",
+          "amount": "₱ 160"
+        }
+      ]
+      
+}
