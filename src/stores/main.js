@@ -34,6 +34,7 @@ export const useMainStore = defineStore('main', () => {
   const expiration_date_reports = ref([])
   const discount_report = ref([])
   const pull_out_report = ref([])
+  const refund = ref([])
   const category_sales_summary = ref([])
   const cash_balancing_summary = ref([])
   const progress = ref([])
@@ -268,7 +269,16 @@ export const useMainStore = defineStore('main', () => {
         alert(error.message)
       })
   }
-
+  function fetchRefundReport() {
+    axios
+      .get(`data-sources/refund.json`)
+      .then((result) => {
+        refund.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  }
 
 
 
@@ -350,6 +360,7 @@ export const useMainStore = defineStore('main', () => {
     expiration_date_reports,
     discount_report,
     pull_out_report,
+    refund,
     category_sales_summary,
     cash_balancing_summary,
     progress,
@@ -376,10 +387,10 @@ export const useMainStore = defineStore('main', () => {
     fetchExpirationDateReports,
     fetchDiscountReport,
     fetchPullOutReport,
+    fetchRefundReport,
     fetchCategorySalesSummary,
     fetchCashBalancingSummary,
     fetchProgress,
     fetchBookmarked
-  
   }
 })

@@ -108,6 +108,14 @@ const routes = [
   },
   {
     meta: {
+      title: 'Refund'
+    },
+    path: '/refund',
+    name: 'refund',
+    component: () => import('@/views/RefundView.vue')
+  },
+  {
+    meta: {
       title: 'User'
     },
     path: '/user',
