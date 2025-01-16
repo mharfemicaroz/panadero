@@ -39,6 +39,7 @@ export const useMainStore = defineStore('main', () => {
   const cash_balancing_summary = ref([])
   const progress = ref([])
   const bookmarked = ref([])
+  const account_list = ref([])
 
   function setUser(payload) {
     if (payload.name) {
@@ -324,6 +325,19 @@ export const useMainStore = defineStore('main', () => {
       })
   }
 
+
+
+  function fetchAccountList() {
+    axios
+      .get(`data-sources/account_list.json`)
+      .then((result) => {
+        account_list.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  }
+
   watch(authStore, (authStore) => {
     if (authStore.user) {
       userName.value = authStore.user.name
@@ -365,6 +379,7 @@ export const useMainStore = defineStore('main', () => {
     cash_balancing_summary,
     progress,
     bookmarked,
+    account_list,
     setUser,
     fetchUser,
     fetchSampleClients,
@@ -391,6 +406,7 @@ export const useMainStore = defineStore('main', () => {
     fetchCategorySalesSummary,
     fetchCashBalancingSummary,
     fetchProgress,
-    fetchBookmarked
+    fetchBookmarked,
+    fetchAccountList
   }
 })

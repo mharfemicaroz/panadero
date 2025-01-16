@@ -43,6 +43,8 @@ mainStore.fetchCategorySalesSummary()
 mainStore.fetchCashBalancingSummary()
 mainStore.fetchProgress()
 mainStore.fetchBookmarked()
+mainStore.fetchAccountList()
+
 
 // Dark mode
 // Uncomment, if you'd like to restore persisted darkMode setting, or use `prefers-color-scheme: dark`. Make sure to uncomment localStorage block in src/stores/darkMode.js
