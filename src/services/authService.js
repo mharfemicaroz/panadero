@@ -1,16 +1,16 @@
-import axios from 'axios'
+import axios from 'axios';
 
 // Determine the current origin
-const API_URL = 'http://localhost:3000/api/auth'
-const FRONTEND_ORIGIN =
+const API_URL = 'http://localhost:3000/api/auth';
+const FRONTEND_ORIGIN = 
   window.location.origin === 'http://localhost:8081' ||
   window.location.origin === 'https://panadero.area51.ph'
     ? window.location.origin
-    : 'http://localhost:8081'
+    : 'http://localhost:5173';
 
 export default {
   async register(name, email, password) {
-    if (!password) throw new Error('Password is required')
+    if (!password) throw new Error('Password is required');
     const response = await axios.post(
       `${API_URL}/register`,
       {
@@ -23,9 +23,10 @@ export default {
           Origin: FRONTEND_ORIGIN
         }
       }
-    )
-    return response.data
+    );
+    return response.data;
   },
+
   async login(email, password) {
     const response = await axios.post(
       `${API_URL}/login`,
@@ -35,9 +36,10 @@ export default {
           Origin: FRONTEND_ORIGIN
         }
       }
-    )
-    return response.data
+    );
+    return response.data;
   },
+
   async verifyToken(token) {
     const response = await axios.post(
       `${API_URL}/verify-token`,
@@ -47,7 +49,7 @@ export default {
           Origin: FRONTEND_ORIGIN
         }
       }
-    )
-    return response.data
+    );
+    return response.data;
   }
-}
+};
