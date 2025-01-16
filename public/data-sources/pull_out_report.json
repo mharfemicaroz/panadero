@@ -1,0 +1,30 @@
+{
+    "data": [
+      {
+        "date": "Wed Jan 15 2025",
+        "item": "Pandesal",
+        "total_quantity": 120,
+        "total_amount": 240.00
+      },
+      {
+        "date": "Wed Jan 15 2025",
+        "item": "Spanish Bread",
+        "total_quantity": 80,
+        "total_amount": 320.00
+      },
+      {
+        "date": "Wed Jan 15 2025",
+        "item": "Ensaymada",
+        "total_quantity": 50,
+        "total_amount": 250.00
+      },
+      {
+        "date": "Thu Jan 16 2025",
+        "item": "Cheese Roll",
+        "total_quantity": 60,
+        "total_amount": 300.00
+      }
+    ]
+    
+    
+}

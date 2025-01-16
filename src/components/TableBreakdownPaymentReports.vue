@@ -155,7 +155,7 @@ const getColor = (role) => {
      
     </div>
     <div class=" overflow-x-auto border border-gray-300 bg-white rounded-md m-4 px-4 py-2">
-      <h5 class="text-md font-bold py-2">Shifts Report</h5>
+      <!-- <h5 class="text-md font-bold py-2">Shifts Report</h5> -->
 
       <hr>
       <!-- Tables Display -->

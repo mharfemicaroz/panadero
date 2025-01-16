@@ -92,6 +92,22 @@ const routes = [
   },
   {
     meta: {
+      title: 'Discount Report'
+    },
+    path: '/discount-report',
+    name: 'discount-report',
+    component: () => import('@/views/DiscountReportView.vue')
+  },
+  {
+    meta: {
+      title: 'Pull Out Report'
+    },
+    path: '/pull-out-report',
+    name: 'pull-out-report',
+    component: () => import('@/views/PullOutReportView.vue')
+  },
+  {
+    meta: {
       title: 'User'
     },
     path: '/user',
