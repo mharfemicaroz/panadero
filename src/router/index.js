@@ -76,6 +76,22 @@ const routes = [
   },
   {
     meta: {
+      title: 'Reference Number Report'
+    },
+    path: '/reference-number-report',
+    name: 'reference-number-report',
+    component: () => import('@/views/ReferenceNumberReportView.vue')
+  },
+  {
+    meta: {
+      title: 'Expiration Date Reports'
+    },
+    path: '/expiration-date-reports',
+    name: 'expiration-date-reports',
+    component: () => import('@/views/ExpirationDateReportsView.vue')
+  },
+  {
+    meta: {
       title: 'User'
     },
     path: '/user',

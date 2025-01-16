@@ -30,6 +30,8 @@ export const useMainStore = defineStore('main', () => {
   const sales_inventory_report = ref([])
   const breakdwon_payment_report = ref([])
   const order_option_fee_report = ref([])
+  const reference_number_report = ref([])
+  const expiration_date_reports = ref([])
   const category_sales_summary = ref([])
   const cash_balancing_summary = ref([])
   const progress = ref([])
@@ -222,6 +224,26 @@ export const useMainStore = defineStore('main', () => {
       .catch((error) => {
         alert(error.message)
       })
+  } 
+  function fetchReferenceNumberReport() {
+    axios
+      .get(`data-sources/reference_number_report.json`)
+      .then((result) => {
+        reference_number_report.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  }
+  function fetchExpirationDateReports() {
+    axios
+      .get(`data-sources/expiration_date_reports.json`)
+      .then((result) => {
+        expiration_date_reports.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
   }
   function fetchCategorySalesSummary() {
     axios
@@ -297,6 +319,8 @@ export const useMainStore = defineStore('main', () => {
     sales_inventory_report,
     breakdwon_payment_report,
     order_option_fee_report,
+    reference_number_report,
+    expiration_date_reports,
     category_sales_summary,
     cash_balancing_summary,
     progress,
@@ -317,11 +341,14 @@ export const useMainStore = defineStore('main', () => {
     fetchReceipts,
     fetchShiftsReport,
     fetchSalesInventoryReport,
+    fetchBreakdownPaymentReports,
+    fetchOrderOptionFeeReports,
+    fetchReferenceNumberReport,
+    fetchExpirationDateReports,
     fetchCategorySalesSummary,
     fetchCashBalancingSummary,
     fetchProgress,
-    fetchBookmarked,
-    fetchBreakdownPaymentReports,
-    fetchOrderOptionFeeReports
+    fetchBookmarked
+  
   }
 })
