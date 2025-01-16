@@ -1,7 +1,7 @@
 <script setup>
 import { reactive, computed, ref } from 'vue'
 import { useMainStore } from '@/stores/main'
-import { mdiExport,mdiEye, mdiTrashCan, mdiChartBar, mdiPencil, mdiPlus, mdiDotsHorizontal } from '@mdi/js'
+import { mdiExport, mdiEye, mdiTrashCan, mdiChartBar, mdiPencil, mdiPlus, mdiDotsHorizontal } from '@mdi/js'
 import CardBoxModal from '@/components/CardBoxModal.vue'
 import TableCheckboxCell from '@/components/TableCheckboxCell.vue'
 import BaseLevel from '@/components/BaseLevel.vue'
@@ -41,7 +41,7 @@ const selectCashier = [
 const dateRange = ref([null, null]);
 
 const mainStore = useMainStore()
-const items = computed(() => mainStore.order_option_fee_report);
+const items = computed(() => mainStore.discount_report);
 const items2 = computed(() => mainStore.category_sales_summary);
 const items3 = computed(() => mainStore.cash_balancing_summary);
 
@@ -136,23 +136,25 @@ const getColor = (role) => {
           <DateRangePicker v-model="dateRange" />
         </FormField>
       </div>
-      <div class="w-full md:w-1/4 lg:w-1/5">
+      <!-- <div class="w-full md:w-1/4 lg:w-1/5">
         <FormField label="" class="w-full">
           <FormControl v-model="selectBranch[0]" :options="selectBranch" />
         </FormField>
       </div>
-     
+
       <div class="w-full md:w-1/4 lg:w-1/4">
         <FormField label="" class="w-full">
           <FormControl v-model="selectCashier[0]" :options="selectCashier" />
         </FormField>
-      </div>
+      </div> -->
       <div class="w-full md:w-1/4 lg:w-1/4">
         <BaseButtons no-wrap>
+          <BaseButton color="info" small  class="h-9 " label="Filter"/>
+
           <BaseButton color="" :icon="mdiExport" class="h-9 bg-white" small label="Export" />
         </BaseButtons>
       </div>
-     
+
     </div>
     <div class=" overflow-x-auto border border-gray-300 bg-white rounded-md m-4 px-4 py-2">
       <!-- <h5 class="text-md font-bold py-2">Shifts Report</h5> -->
@@ -164,11 +166,11 @@ const getColor = (role) => {
         <thead class="bg-slate-100 border border-t-0 border-l-0 border-r-0 border-gray-300">
           <tr>
             <th data-label="Date">Date</th>
-<th data-label="Dining Options">Dining Options</th>
+<th data-label="Discount Name">Discount Name</th>
 <th data-label="POS Name">POS Name</th>
-<th data-label="Quantity">Quantity</th>
-<th data-label="Dining Options Fees">Dining Options Fees</th>
-<th data-label="Total Sales">Total Sales</th>
+<th data-label="Discount Usage">Discount Usage</th>
+<th data-label="Total Discounted Amount">Total Discounted Amount</th>
+<th data-label="Less Vat">Less Vat</th>
 
 
             <th></th>
@@ -181,29 +183,29 @@ const getColor = (role) => {
             <td data-label="Date">
   {{ itemslist.date }}
 </td>
-<td data-label="Dining Options">
-  {{ itemslist.dining_options }}
+<td data-label="Discount Name">
+  {{ itemslist.discount_name }}
 </td>
 <td data-label="POS Name">
   {{ itemslist.pos_name }}
 </td>
-<td data-label="Quantity">
-  {{ itemslist.quantity }}
+<td data-label="Discount Usage">
+  {{ itemslist.discount_usage }}
 </td>
-<td data-label="Dining Options Fees">
-  ₱{{ itemslist.dining_options_fees }}
+<td data-label="Total Discounted Amount">
+  ₱{{ itemslist.total_discounted_amount.toFixed(2) }}
 </td>
-<td data-label="Total Sales">
-  ₱{{ itemslist.total_sales }}
+<td data-label="Less Vat">
+  ₱{{ itemslist.less_vat.toFixed(2) }}
 </td>
+
 
 
             <td class="before:hidden lg:w-1 whitespace-nowrap">
-          <BaseButtons type="justify-start lg:justify-end" no-wrap>
-            <!-- <BaseButton color="info" small label="View"/> -->
-           
-          </BaseButtons>
-        </td>
+              <BaseButtons type="justify-start lg:justify-end" no-wrap>
+
+              </BaseButtons>
+            </td>
           </tr>
         </tbody>
       </table>

@@ -1,0 +1,38 @@
+{
+    "data": [
+      {
+        "date": "Wed Jan 15 2025",
+        "discount_name": "Senior Citizen Discount",
+        "pos_name": "Panadero Matina Aplaya2 Branch",
+        "discount_usage": 12,
+        "total_discounted_amount": 480,
+        "less_vat": 57.60
+      },
+      {
+        "date": "Wed Jan 15 2025",
+        "discount_name": "PWD Discount",
+        "pos_name": "Panadero Matina Aplaya2 Branch",
+        "discount_usage": 8,
+        "total_discounted_amount": 320,
+        "less_vat": 38.40
+      },
+      {
+        "date": "Wed Jan 15 2025",
+        "discount_name": "Promo Discount",
+        "pos_name": "Panadero Matina Aplaya2 Branch",
+        "discount_usage": 15,
+        "total_discounted_amount": 600,
+        "less_vat": 72.00
+      },
+      {
+        "date": "Thu Jan 16 2025",
+        "discount_name": "Senior Citizen Discount",
+        "pos_name": "Panadero Buhangin Branch",
+        "discount_usage": 10,
+        "total_discounted_amount": 400,
+        "less_vat": 48.00
+      }
+    ]
+    
+    
+}

@@ -38,6 +38,8 @@ export const useMainStore = defineStore('main', () => {
   const order_option_fee_report = ref([])
   const reference_number_report = ref([])
   const expiration_date_reports = ref([])
+  const discount_report = ref([])
+  const pull_out_report = ref([])
   const category_sales_summary = ref([])
   const cash_balancing_summary = ref([])
   const progress = ref([])
@@ -251,6 +253,31 @@ export const useMainStore = defineStore('main', () => {
         alert(error.message)
       })
   }
+
+  function fetchDiscountReport() {
+    axios
+      .get(`data-sources/discount_report.json`)
+      .then((result) => {
+        discount_report.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  }
+  function fetchPullOutReport() {
+    axios
+      .get(`data-sources/pull_out_report.json`)
+      .then((result) => {
+        pull_out_report.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  }
+
+
+
+
   function fetchCategorySalesSummary() {
     axios
       .get(`data-sources/category_sales_summary.json`)
@@ -327,6 +354,8 @@ export const useMainStore = defineStore('main', () => {
     order_option_fee_report,
     reference_number_report,
     expiration_date_reports,
+    discount_report,
+    pull_out_report,
     category_sales_summary,
     cash_balancing_summary,
     progress,
@@ -351,6 +380,8 @@ export const useMainStore = defineStore('main', () => {
     fetchOrderOptionFeeReports,
     fetchReferenceNumberReport,
     fetchExpirationDateReports,
+    fetchDiscountReport,
+    fetchPullOutReport,
     fetchCategorySalesSummary,
     fetchCashBalancingSummary,
     fetchProgress,

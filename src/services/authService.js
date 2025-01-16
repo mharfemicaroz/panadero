@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 // Determine the current origin
-const API_URL = 'https://panadero-server.area51.ph/api/auth'
+const API_URL = 'http://localhost:3000/api/auth'
 const FRONTEND_ORIGIN =
   window.location.origin === 'http://localhost:8081' ||
   window.location.origin === 'https://panadero.area51.ph'
