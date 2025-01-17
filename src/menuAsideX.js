@@ -65,14 +65,14 @@ export default [
         label: 'Refund',
         to: '/refund'
       },
-      {
-        label: 'Taxes for Philippines',
-        to: '/taxes-for-philippines'
-      },
-      {
-        label: 'Royalty Statement',
-        to: '/royalty-statement'
-      }
+      // {
+      //   label: 'Taxes for Philippines',
+      //   to: '/taxes-for-philippines'
+      // },
+      // {
+      //   label: 'Royalty Statement',
+      //   to: '/royalty-statement'
+      // }
     ]
   },
   {

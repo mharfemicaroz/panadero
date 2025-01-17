@@ -108,6 +108,14 @@ const routes = [
   },
   {
     meta: {
+      title: 'Refund'
+    },
+    path: '/refund',
+    name: 'refund',
+    component: () => import('@/views/RefundView.vue')
+  },
+  {
+    meta: {
       title: 'User'
     },
     path: '/user',
@@ -260,6 +268,15 @@ const routes = [
     path: '/food_safety_summary',
     name: 'food_safety_summary',
     component: () => import('@/views/FoodSafetySummaryView.vue')
+  },
+  // Accounting
+  {
+    meta: {
+      title: 'Account List'
+    },
+    path: '/account-list',
+    name: 'account-list',
+    component: () => import('@/views/AccountListView.vue')
   }
 ]
 
