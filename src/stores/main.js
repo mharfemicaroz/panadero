@@ -40,6 +40,9 @@ export const useMainStore = defineStore('main', () => {
   const progress = ref([])
   const bookmarked = ref([])
   const account_list = ref([])
+  const money_transfer = ref([])
+  const balance_sheet = ref([])
+
 
   function setUser(payload) {
     if (payload.name) {
@@ -338,6 +341,27 @@ export const useMainStore = defineStore('main', () => {
       })
   }
 
+  function fetchMoneyTransfer() {
+    axios
+      .get(`data-sources/money_transfer.json`)
+      .then((result) => {
+        money_transfer.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  }
+  
+  function fetchBalanceSheet() {
+    axios
+      .get(`data-sources/balance_sheet.json`)
+      .then((result) => {
+        balance_sheet.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  }
   watch(authStore, (authStore) => {
     if (authStore.user) {
       userName.value = authStore.user.name
@@ -380,6 +404,8 @@ export const useMainStore = defineStore('main', () => {
     progress,
     bookmarked,
     account_list,
+    money_transfer,
+    balance_sheet,
     setUser,
     fetchUser,
     fetchSampleClients,
@@ -407,6 +433,8 @@ export const useMainStore = defineStore('main', () => {
     fetchCashBalancingSummary,
     fetchProgress,
     fetchBookmarked,
-    fetchAccountList
+    fetchAccountList,
+    fetchMoneyTransfer,
+    fetchBalanceSheet
   }
 })
