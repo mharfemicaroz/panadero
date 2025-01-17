@@ -277,6 +277,30 @@ const routes = [
     path: '/account-list',
     name: 'account-list',
     component: () => import('@/views/AccountListView.vue')
+  },
+  {
+    meta: {
+      title: 'Money Transfer'
+    },
+    path: '/money-transfer',
+    name: 'money-transfer',
+    component: () => import('@/views/MoneyTransferView.vue')
+  },
+  {
+    meta: {
+      title: 'Balance Sheet'
+    },
+    path: '/balance-sheet',
+    name: 'balance-sheet',
+    component: () => import('@/views/BalanceSheetView.vue')
+  },
+  {
+    meta: {
+      title: 'Account Statement'
+    },
+    path: '/account-statement',
+    name: 'account-statement',
+    component: () => import('@/views/AccountStatementView.vue')
   }
 ]
 

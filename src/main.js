@@ -44,6 +44,8 @@ mainStore.fetchCashBalancingSummary()
 mainStore.fetchProgress()
 mainStore.fetchBookmarked()
 mainStore.fetchAccountList()
+mainStore.fetchMoneyTransfer()
+mainStore.fetchBalanceSheet()
 
 
 // Dark mode
