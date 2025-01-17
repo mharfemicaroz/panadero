@@ -1,0 +1,24 @@
+{
+    "data": [
+        {
+            "employee": "John Doe",
+            "total_hours": 40
+        },
+        {
+            "employee": "Jane Smith",
+            "total_hours": 35
+        },
+        {
+            "employee": "Michael Johnson",
+            "total_hours": 45
+        },
+        {
+            "employee": "Emily Davis",
+            "total_hours": 38
+        },
+        {
+            "employee": "David Brown",
+            "total_hours": 42
+        }
+    ]
+}

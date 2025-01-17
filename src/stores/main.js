@@ -42,6 +42,8 @@ export const useMainStore = defineStore('main', () => {
   const account_list = ref([])
   const money_transfer = ref([])
   const balance_sheet = ref([])
+  const employee_list = ref([])
+  const total_hours_work = ref([])
 
 
   function setUser(payload) {
@@ -361,6 +363,26 @@ export const useMainStore = defineStore('main', () => {
       .catch((error) => {
         alert(error.message)
       })
+  }function fetchEmployeeList() {
+    axios
+      .get(`data-sources/employee_list.json`)
+      .then((result) => {
+        employee_list.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  }
+
+  function fetchTotalHoursWork() {
+    axios
+      .get(`data-sources/total_hours_work.json`)
+      .then((result) => {
+        total_hours_work.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
   }
   watch(authStore, (authStore) => {
     if (authStore.user) {
@@ -406,6 +428,8 @@ export const useMainStore = defineStore('main', () => {
     account_list,
     money_transfer,
     balance_sheet,
+    employee_list,
+    total_hours_work,
     setUser,
     fetchUser,
     fetchSampleClients,
@@ -435,6 +459,8 @@ export const useMainStore = defineStore('main', () => {
     fetchBookmarked,
     fetchAccountList,
     fetchMoneyTransfer,
-    fetchBalanceSheet
+    fetchBalanceSheet,
+    fetchEmployeeList,
+    fetchTotalHoursWork
   }
 })

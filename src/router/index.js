@@ -301,7 +301,24 @@ const routes = [
     path: '/account-statement',
     name: 'account-statement',
     component: () => import('@/views/AccountStatementView.vue')
-  }
+  },
+  // HRM
+  {
+    meta: {
+      title: 'Employee List'
+    },
+    path: '/employee-list',
+    name: 'employee-list',
+    component: () => import('@/views/EmployeeListView.vue')
+  },
+  {
+    meta: {
+      title: 'Total Hours Work List'
+    },
+    path: '/total-hours-work',
+    name: 'total-hours-work',
+    component: () => import('@/views/TotalHoursWorkView.vue')
+  },
 ]
 
 const router = createRouter({
