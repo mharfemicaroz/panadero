@@ -319,6 +319,22 @@ const routes = [
     name: 'total-hours-work',
     component: () => import('@/views/TotalHoursWorkView.vue')
   },
+  {
+    meta: {
+      title: 'Time Cards'
+    },
+    path: '/time-cards',
+    name: 'time-cards',
+    component: () => import('@/views/TimeCardsView.vue')
+  },
+  {
+    meta: {
+      title: 'Branch'
+    },
+    path: '/branch',
+    name: 'branch',
+    component: () => import('@/views/BranchView.vue')
+  },
 ]
 
 const router = createRouter({

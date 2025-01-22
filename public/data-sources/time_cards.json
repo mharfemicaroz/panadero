@@ -1,0 +1,70 @@
+{
+    "data":[
+        {
+          "employee": "arnel toribio",
+          "created_at": "November 14, 2024 at 7:00 PM",
+          "time_in": "-",
+          "time_out": "November 14, 2024 at 7:00 PM",
+          "total_hours": "-",
+          "logged_hours": "-"
+        },
+        {
+          "employee": "-",
+          "created_at": "May 3, 2023 at 11:59 AM",
+          "time_in": "May 3, 2023 at 11:59 AM",
+          "time_out": "May 3, 2023 at 9:02 PM",
+          "total_hours": "9.06",
+          "logged_hours": "-"
+        },
+        {
+          "employee": "-",
+          "created_at": "January 8, 2023 at 11:54 AM",
+          "time_in": "January 8, 2023 at 11:54 AM",
+          "time_out": "-",
+          "total_hours": "-",
+          "logged_hours": "-"
+        },
+        {
+          "employee": "Patiga Reyna",
+          "created_at": "November 6, 2024 at 11:12 AM",
+          "time_in": "November 6, 2024 at 11:12 AM",
+          "time_out": "-",
+          "total_hours": "-",
+          "logged_hours": "-"
+        },
+        {
+          "employee": "-",
+          "created_at": "December 23, 2023 at 4:01 AM",
+          "time_in": "December 23, 2023 at 4:01 AM",
+          "time_out": "December 23, 2023 at 1:16 PM",
+          "total_hours": "9.26",
+          "logged_hours": "-"
+        },
+        {
+          "employee": "Lealyn Guiñeta",
+          "created_at": "July 8, 2024 at 3:58 AM",
+          "time_in": "July 8, 2024 at 3:58 AM",
+          "time_out": "July 8, 2024 at 1:58 PM",
+          "total_hours": "10.00",
+          "logged_hours": "NaN"
+        },
+        {
+          "employee": "Patiga Reyna",
+          "created_at": "October 4, 2023 at 4:08 AM",
+          "time_in": "October 4, 2023 at 4:08 AM",
+          "time_out": "-",
+          "total_hours": "-",
+          "logged_hours": "-"
+        },
+        {
+          "employee": "brandy gabonada",
+          "created_at": "April 25, 2024 at 4:39 AM",
+          "time_in": "April 25, 2024 at 4:39 AM",
+          "time_out": "April 25, 2024 at 1:04 PM",
+          "total_hours": "8.42",
+          "logged_hours": "-"
+        }
+
+      ]
+      
+}
