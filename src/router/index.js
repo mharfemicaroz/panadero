@@ -335,6 +335,14 @@ const routes = [
     name: 'branch',
     component: () => import('@/views/BranchView.vue')
   },
+  {
+    meta: {
+      title: 'Attendance'
+    },
+    path: '/attendance',
+    name: 'attendance',
+    component: () => import('@/views/AttendanceView.vue')
+  },
 ]
 
 const router = createRouter({
