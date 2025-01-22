@@ -48,6 +48,7 @@ mainStore.fetchMoneyTransfer()
 mainStore.fetchBalanceSheet()
 mainStore.fetchEmployeeList()
 mainStore.fetchTotalHoursWork()
+mainStore.fetchTimeCards()
 
 
 // Dark mode
