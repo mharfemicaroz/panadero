@@ -194,8 +194,12 @@ export default [
     icon: mdiGroup,
     menu: [
       {
+        label: 'Employee List',
+        to: '/employee-list'
+      },
+      {
         label: 'Total hours worked',
-        to: '/total-hours-worked'
+        to: '/total-hours-work'
       },
       {
         label: 'Time Cards',
