@@ -49,6 +49,8 @@ mainStore.fetchBalanceSheet()
 mainStore.fetchEmployeeList()
 mainStore.fetchTotalHoursWork()
 mainStore.fetchTimeCards()
+mainStore.fetchBranch()
+mainStore.fetchAttendance()
 
 
 // Dark mode
