@@ -47,6 +47,7 @@ export const useMainStore = defineStore('main', () => {
   const time_cards = ref([])
   const branch = ref([])
   const attendance = ref([])
+  const holidays = ref([])
 
 
   function setUser(payload) {
@@ -416,6 +417,15 @@ export const useMainStore = defineStore('main', () => {
       .catch((error) => {
         alert(error.message)
       })
+  }function fetchHolidays() {
+    axios
+      .get(`data-sources/holidays.json`)
+      .then((result) => {
+        holidays.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
   }
   watch(authStore, (authStore) => {
     if (authStore.user) {
@@ -466,6 +476,7 @@ export const useMainStore = defineStore('main', () => {
     time_cards,
     branch,
     attendance,
+    holidays,
     setUser,
     fetchUser,
     fetchSampleClients,
@@ -500,6 +511,7 @@ export const useMainStore = defineStore('main', () => {
     fetchTotalHoursWork,
     fetchTimeCards,
     fetchBranch,
-    fetchAttendance
+    fetchAttendance,
+    fetchHolidays
   }
 })

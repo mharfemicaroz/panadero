@@ -51,6 +51,7 @@ mainStore.fetchTotalHoursWork()
 mainStore.fetchTimeCards()
 mainStore.fetchBranch()
 mainStore.fetchAttendance()
+mainStore.fetchHolidays()
 
 
 // Dark mode

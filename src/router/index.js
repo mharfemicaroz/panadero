@@ -343,6 +343,14 @@ const routes = [
     name: 'attendance',
     component: () => import('@/views/AttendanceView.vue')
   },
+  {
+    meta: {
+      title: 'Holidays'
+    },
+    path: '/holidays',
+    name: 'holidays',
+    component: () => import('@/views/HolidaysView.vue')
+  },
 ]
 
 const router = createRouter({
