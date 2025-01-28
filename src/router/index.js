@@ -268,6 +268,13 @@ const routes = [
     path: '/food_safety_summary',
     name: 'food_safety_summary',
     component: () => import('@/views/FoodSafetySummaryView.vue')
+  }, {
+    meta: {
+      title: 'Templates'
+    },
+    path: '/templates',
+    name: 'templates',
+    component: () => import('@/views/TemplatesView.vue')
   },
   // Accounting
   {
@@ -342,6 +349,14 @@ const routes = [
     path: '/attendance',
     name: 'attendance',
     component: () => import('@/views/AttendanceView.vue')
+  },
+  {
+    meta: {
+      title: 'Holidays'
+    },
+    path: '/holidays',
+    name: 'holidays',
+    component: () => import('@/views/HolidaysView.vue')
   },
 ]
 

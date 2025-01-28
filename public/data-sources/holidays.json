@@ -1,0 +1,71 @@
+{
+    "data": [
+        {
+          "created_by": "John Doe",
+          "from": "2024-01-01",
+          "to": "2024-01-01",
+          "note": "New Year's Day (Philippines Holiday)"
+        },
+        {
+          "created_by": "Jane Smith",
+          "from": "2024-02-25",
+          "to": "2024-02-25",
+          "note": "EDSA People Power Revolution Anniversary (Philippines Holiday)"
+        },
+        {
+          "created_by": "David Johnson",
+          "from": "2024-04-09",
+          "to": "2024-04-09",
+          "note": "Araw ng Kagitingan (Day of Valor - Philippines Holiday)"
+        },
+        {
+          "created_by": "Maria Clara",
+          "from": "2024-04-18",
+          "to": "2024-04-18",
+          "note": "Maundy Thursday (Philippines Holiday)"
+        },
+        {
+          "created_by": "Jose Rizal",
+          "from": "2024-04-19",
+          "to": "2024-04-19",
+          "note": "Good Friday (Philippines Holiday)"
+        },
+        {
+          "created_by": "Carlos Garcia",
+          "from": "2024-05-01",
+          "to": "2024-05-01",
+          "note": "Labor Day (Philippines Holiday)"
+        },
+        {
+          "created_by": "Filipina Santos",
+          "from": "2024-06-12",
+          "to": "2024-06-12",
+          "note": "Independence Day (Philippines Holiday)"
+        },
+        {
+          "created_by": "Juan Luna",
+          "from": "2024-08-26",
+          "to": "2024-08-26",
+          "note": "National Heroes Day (Philippines Holiday)"
+        },
+        {
+          "created_by": "Emilio Aguinaldo",
+          "from": "2024-11-30",
+          "to": "2024-11-30",
+          "note": "Bonifacio Day (Philippines Holiday)"
+        },
+        {
+          "created_by": "Rizal Committee",
+          "from": "2024-12-25",
+          "to": "2024-12-25",
+          "note": "Christmas Day (Philippines Holiday)"
+        },
+        {
+          "created_by": "National Holidays Office",
+          "from": "2024-12-30",
+          "to": "2024-12-30",
+          "note": "Rizal Day (Philippines Holiday)"
+        }
+      ]
+      
+}

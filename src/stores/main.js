@@ -47,6 +47,9 @@ export const useMainStore = defineStore('main', () => {
   const time_cards = ref([])
   const branch = ref([])
   const attendance = ref([])
+  const holidays = ref([])
+  const bookmarked_templates = ref([])
+  const templates = ref([])
 
 
   function setUser(payload) {
@@ -236,7 +239,7 @@ export const useMainStore = defineStore('main', () => {
       .catch((error) => {
         alert(error.message)
       })
-  } 
+  }
   function fetchReferenceNumberReport() {
     axios
       .get(`data-sources/reference_number_report.json`)
@@ -356,7 +359,7 @@ export const useMainStore = defineStore('main', () => {
         alert(error.message)
       })
   }
-  
+
   function fetchBalanceSheet() {
     axios
       .get(`data-sources/balance_sheet.json`)
@@ -366,7 +369,7 @@ export const useMainStore = defineStore('main', () => {
       .catch((error) => {
         alert(error.message)
       })
-  }function fetchEmployeeList() {
+  } function fetchEmployeeList() {
     axios
       .get(`data-sources/employee_list.json`)
       .then((result) => {
@@ -412,6 +415,38 @@ export const useMainStore = defineStore('main', () => {
       .get(`data-sources/attendance.json`)
       .then((result) => {
         attendance.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  } function fetchHolidays() {
+    axios
+      .get(`data-sources/holidays.json`)
+      .then((result) => {
+        holidays.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  }
+
+  function fetchBookmarkedTemplates() {
+    axios
+      .get(`data-sources/bookmarked_templates.json`)
+      .then((result) => {
+        bookmarked_templates.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  }
+
+
+  function fetchTemplates() {
+    axios
+      .get(`data-sources/templates.json`)
+      .then((result) => {
+        templates.value = result?.data?.data
       })
       .catch((error) => {
         alert(error.message)
@@ -466,6 +501,9 @@ export const useMainStore = defineStore('main', () => {
     time_cards,
     branch,
     attendance,
+    holidays,
+    bookmarked_templates,
+    templates,
     setUser,
     fetchUser,
     fetchSampleClients,
@@ -500,6 +538,9 @@ export const useMainStore = defineStore('main', () => {
     fetchTotalHoursWork,
     fetchTimeCards,
     fetchBranch,
-    fetchAttendance
+    fetchAttendance,
+    fetchHolidays,
+    fetchBookmarkedTemplates,
+    fetchTemplates
   }
 })
