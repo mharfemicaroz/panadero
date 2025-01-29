@@ -60,6 +60,14 @@ const routes = [
   },
   {
     meta: {
+      title: 'POS'
+    },
+    path: '/pos',
+    name: 'pos',
+    component: () => import('@/views/POSView.vue')
+  },
+  {
+    meta: {
       title: 'Breakdown Payment Reports'
     },
     path: '/breakdown-payment-reports',
@@ -268,7 +276,8 @@ const routes = [
     path: '/food_safety_summary',
     name: 'food_safety_summary',
     component: () => import('@/views/FoodSafetySummaryView.vue')
-  }, {
+  },
+  {
     meta: {
       title: 'Templates'
     },
@@ -357,7 +366,7 @@ const routes = [
     path: '/holidays',
     name: 'holidays',
     component: () => import('@/views/HolidaysView.vue')
-  },
+  }
 ]
 
 const router = createRouter({

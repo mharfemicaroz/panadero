@@ -4,6 +4,7 @@ import {
   mdiAccountHardHat,
   mdiAccountMultiple,
   mdiApplicationSettings,
+  mdiCalculator,
   mdiDevices,
   mdiFileCabinet,
   mdiFood,
@@ -20,6 +21,11 @@ export default [
     to: '/dashboard',
     icon: mdiMonitorDashboard,
     label: 'Dashboard'
+  },
+  {
+    to: '/pos',
+    icon: mdiCalculator,
+    label: 'POS'
   },
   {
     label: 'Reports',
@@ -64,7 +70,7 @@ export default [
       {
         label: 'Refund',
         to: '/refund'
-      },
+      }
       // {
       //   label: 'Taxes for Philippines',
       //   to: '/taxes-for-philippines'

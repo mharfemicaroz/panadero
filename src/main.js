@@ -5,13 +5,15 @@ import App from './App.vue'
 import router from './router'
 import { useMainStore } from '@/stores/main.js'
 
+import print from 'vue3-print-nb'
+
 import './css/main.css'
 
 // Init Pinia
 const pinia = createPinia()
 
 // Create Vue app
-createApp(App).use(router).use(pinia).mount('#app')
+createApp(App).use(router).use(pinia).use(print).mount('#app')
 
 // Init main store
 const mainStore = useMainStore(pinia)

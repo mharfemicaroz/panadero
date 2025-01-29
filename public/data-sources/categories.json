@@ -1,0 +1,294 @@
+{
+    "categories": [
+        {
+            "name": "Bread",
+            "subcategories": [],
+            "products": [
+                {
+                    "id": 1,
+                    "name": "Pandesal",
+                    "price": 2.5
+                },
+                {
+                    "id": 2,
+                    "name": "French Bread",
+                    "price": 15.0
+                },
+                {
+                    "id": 6,
+                    "name": "Baguette",
+                    "price": 20.0
+                },
+                {
+                    "id": 7,
+                    "name": "Ciabatta",
+                    "price": 25.0
+                },
+                {
+                    "id": 8,
+                    "name": "Sourdough",
+                    "price": 30.0
+                }
+            ]
+        },
+        {
+            "name": "Pastry",
+            "subcategories": [
+                {
+                    "name": "Sweet Pastry",
+                    "products": [
+                        {
+                            "id": 3,
+                            "name": "Ensaimada",
+                            "price": 12.5
+                        },
+                        {
+                            "id": 4,
+                            "name": "Cinnamon Roll",
+                            "price": 10.0
+                        },
+                        {
+                            "id": 9,
+                            "name": "Cream Puff",
+                            "price": 8.0
+                        },
+                        {
+                            "id": 10,
+                            "name": "Eclair",
+                            "price": 15.0
+                        }
+                    ]
+                },
+                {
+                    "name": "Savory Pastry",
+                    "products": [
+                        {
+                            "id": 11,
+                            "name": "Empanada",
+                            "price": 20.0
+                        },
+                        {
+                            "id": 12,
+                            "name": "Chicken Pie",
+                            "price": 18.0
+                        }
+                    ]
+                }
+            ],
+            "products": []
+        },
+        {
+            "name": "Cake",
+            "subcategories": [],
+            "products": [
+                {
+                    "id": 5,
+                    "name": "Chocolate Cake",
+                    "price": 50.0
+                },
+                {
+                    "id": 13,
+                    "name": "Red Velvet Cake",
+                    "price": 55.0
+                },
+                {
+                    "id": 14,
+                    "name": "Cheesecake",
+                    "price": 60.0
+                }
+            ]
+        },
+        {
+            "name": "Cookies",
+            "subcategories": [],
+            "products": [
+                {
+                    "id": 15,
+                    "name": "Chocolate Chip Cookie",
+                    "price": 5.0
+                },
+                {
+                    "id": 16,
+                    "name": "Oatmeal Raisin Cookie",
+                    "price": 6.0
+                },
+                {
+                    "id": 17,
+                    "name": "Macaron",
+                    "price": 10.0
+                }
+            ]
+        },
+        {
+            "name": "Beverages",
+            "subcategories": [
+                {
+                    "name": "Hot Beverages",
+                    "products": [
+                        {
+                            "id": 18,
+                            "name": "Coffee",
+                            "price": 3.0
+                        },
+                        {
+                            "id": 19,
+                            "name": "Hot Chocolate",
+                            "price": 4.5
+                        }
+                    ]
+                },
+                {
+                    "name": "Cold Beverages",
+                    "products": [
+                        {
+                            "id": 20,
+                            "name": "Iced Tea",
+                            "price": 3.5
+                        },
+                        {
+                            "id": 21,
+                            "name": "Milkshake",
+                            "price": 7.0
+                        }
+                    ]
+                }
+            ],
+            "products": []
+        },
+        {
+            "name": "Sandwiches",
+            "subcategories": [],
+            "products": [
+                {
+                    "id": 22,
+                    "name": "Ham and Cheese Sandwich",
+                    "price": 15.0
+                },
+                {
+                    "id": 23,
+                    "name": "Club Sandwich",
+                    "price": 20.0
+                },
+                {
+                    "id": 24,
+                    "name": "BLT Sandwich",
+                    "price": 18.0
+                }
+            ]
+        },
+        {
+            "name": "Pizza",
+            "subcategories": [
+                {
+                    "name": "Vegetarian",
+                    "products": [
+                        {
+                            "id": 25,
+                            "name": "Margherita Pizza",
+                            "price": 40.0
+                        },
+                        {
+                            "id": 26,
+                            "name": "Vegetable Supreme Pizza",
+                            "price": 45.0
+                        }
+                    ]
+                },
+                {
+                    "name": "Non-Vegetarian",
+                    "products": [
+                        {
+                            "id": 27,
+                            "name": "Pepperoni Pizza",
+                            "price": 50.0
+                        },
+                        {
+                            "id": 28,
+                            "name": "BBQ Chicken Pizza",
+                            "price": 55.0
+                        }
+                    ]
+                }
+            ],
+            "products": []
+        },
+        {
+            "name": "Pasta",
+            "subcategories": [],
+            "products": [
+                {
+                    "id": 29,
+                    "name": "Spaghetti Bolognese",
+                    "price": 35.0
+                },
+                {
+                    "id": 30,
+                    "name": "Carbonara",
+                    "price": 40.0
+                },
+                {
+                    "id": 31,
+                    "name": "Pesto Pasta",
+                    "price": 38.0
+                }
+            ]
+        },
+        {
+            "name": "Ice Cream",
+            "subcategories": [
+                {
+                    "name": "Classic Flavors",
+                    "products": [
+                        {
+                            "id": 32,
+                            "name": "Vanilla Ice Cream",
+                            "price": 25.0
+                        },
+                        {
+                            "id": 33,
+                            "name": "Chocolate Ice Cream",
+                            "price": 25.0
+                        }
+                    ]
+                },
+                {
+                    "name": "Premium Flavors",
+                    "products": [
+                        {
+                            "id": 34,
+                            "name": "Salted Caramel Ice Cream",
+                            "price": 30.0
+                        },
+                        {
+                            "id": 35,
+                            "name": "Matcha Ice Cream",
+                            "price": 35.0
+                        }
+                    ]
+                }
+            ],
+            "products": []
+        },
+        {
+            "name": "Snacks",
+            "subcategories": [],
+            "products": [
+                {
+                    "id": 36,
+                    "name": "Potato Chips",
+                    "price": 10.0
+                },
+                {
+                    "id": 37,
+                    "name": "Popcorn",
+                    "price": 8.0
+                },
+                {
+                    "id": 38,
+                    "name": "Nachos",
+                    "price": 12.0
+                }
+            ]
+        }
+    ]
+}
