@@ -121,6 +121,35 @@
 
     <!-- CART SIDEBAR -->
     <div class="w-1/3 bg-white shadow-lg p-6 border-l sticky top-0 h-screen overflow-y-auto">
+      <!-- Buttons: View Sales, Suspend Sale, Cancel Sale -->
+      <div class="mb-6 flex gap-2">
+        <!-- VIEW SALES (always visible) -->
+        <button
+          @click="openSalesModal"
+          class="p-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          View Sales
+        </button>
+
+        <!-- SUSPEND SALE (only if cart not empty) -->
+        <button
+          v-if="cart.length > 0"
+          @click="suspendSale"
+          class="p-2 bg-yellow-600 text-white rounded hover:bg-yellow-700"
+        >
+          Suspend Sale
+        </button>
+
+        <!-- CANCEL SALE (only if cart not empty) -->
+        <button
+          v-if="cart.length > 0"
+          @click="cancelSale"
+          class="p-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+        >
+          Cancel Sale
+        </button>
+      </div>
+
       <!-- Customer Section -->
       <div class="mb-6">
         <h2 class="text-xl font-bold mb-4">Customer</h2>
@@ -469,7 +498,94 @@
       </div>
     </div>
 
-    <!-- Receipt Modal -->
+    <!-- Sales Modal -->
+    <div
+      v-if="isSalesModalOpen"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+    >
+      <div class="bg-white p-6 rounded-lg w-2/3 max-h-[80vh] overflow-y-auto">
+        <h2 class="text-xl font-bold mb-4">All Sales</h2>
+
+        <!-- Search and Filter -->
+        <div class="flex flex-wrap gap-2 mb-4">
+          <input
+            v-model="salesSearchQuery"
+            type="text"
+            placeholder="Search by ID, Customer Name, etc."
+            class="p-2 border rounded flex-1"
+          />
+          <div class="flex items-center gap-1">
+            <label class="text-sm">From:</label>
+            <input v-model="salesFromDate" type="date" class="p-1 border rounded" />
+          </div>
+          <div class="flex items-center gap-1">
+            <label class="text-sm">To:</label>
+            <input v-model="salesToDate" type="date" class="p-1 border rounded" />
+          </div>
+        </div>
+
+        <table class="table-auto w-full text-sm border-collapse">
+          <thead>
+            <tr class="border-b">
+              <th class="p-2 text-left">ID</th>
+              <th class="p-2 text-left">Date</th>
+              <th class="p-2 text-left">Customer</th>
+              <th class="p-2 text-left">Status</th>
+              <th class="p-2 text-right">Total</th>
+              <th class="p-2 text-left">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="sale in filteredSales" :key="sale.id" class="border-b">
+              <td class="p-2">{{ sale.id }}</td>
+              <td class="p-2">{{ formatDate(sale.date) }}</td>
+              <td class="p-2">{{ sale.customerName || 'N/A' }}</td>
+              <td class="p-2">{{ sale.status }}</td>
+              <td class="p-2 text-right">₱{{ sale.total.toFixed(2) }}</td>
+              <td class="p-2">
+                <!-- Actions -->
+                <div class="flex gap-2">
+                  <!-- Unsuspend if status = Suspended -->
+                  <button
+                    v-if="sale.status === 'Suspended'"
+                    @click="unsuspendSale(sale)"
+                    class="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700"
+                  >
+                    Unsuspend
+                  </button>
+                  <!-- Void if status = Suspended or Complete -->
+                  <button
+                    v-if="sale.status === 'Suspended' || sale.status === 'Complete'"
+                    @click="voidSale(sale)"
+                    class="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                  >
+                    Void
+                  </button>
+                  <!-- Print (always) -->
+                  <button
+                    @click="printExistingSale(sale)"
+                    class="px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  >
+                    Print
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="flex justify-end gap-2 mt-4">
+          <button
+            type="button"
+            @click="closeSalesModal"
+            class="p-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Receipt Modal -->
     <div
       v-if="isReceiptModalOpen"
@@ -488,13 +604,16 @@
 
         <!-- Basic purchase summary, cart items, etc. -->
         <div class="text-sm mb-4">
-          <p><strong>Customer:</strong> {{ customerName || 'N/A' }}</p>
-          <p><strong>Payment Type:</strong> {{ selectedPaymentType }}</p>
-          <p><strong>Amount Due:</strong> ₱{{ amountDue.toFixed(2) }}</p>
-          <p><strong>Cart Total:</strong> ₱{{ totalCartAmount.toFixed(2) }}</p>
+          <p><strong>Customer:</strong> {{ receiptData.customerName || 'N/A' }}</p>
+          <p><strong>Payment Type:</strong> {{ receiptData.paymentType }}</p>
+          <p><strong>Amount Due:</strong> ₱{{ receiptData.total.toFixed(2) }}</p>
+          <p><strong>Status:</strong> {{ receiptData.status }}</p>
         </div>
 
-        <div v-if="cart.length" style="font-family: monospace; font-size: 0.8rem">
+        <div
+          v-if="receiptData.items && receiptData.items.length"
+          style="font-family: monospace; font-size: 0.8rem"
+        >
           <!-- Header row -->
           <div style="display: flex; border-bottom: 1px solid #000; padding-bottom: 2px">
             <div style="width: 10em">Item</div>
@@ -504,7 +623,7 @@
             <div style="width: 6em; text-align: right">Total</div>
           </div>
           <!-- Cart items -->
-          <div v-for="item in cart" :key="item.id" style="display: flex">
+          <div v-for="item in receiptData.items" :key="item.id" style="display: flex">
             <!-- Item name (truncated if too long) -->
             <div
               style="width: 10em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis"
@@ -531,7 +650,7 @@
         </div>
 
         <!-- Grand Total -->
-        <p class="text-lg font-bold mb-4">Grand Total: ₱{{ totalCartAmount.toFixed(2) }}</p>
+        <p class="text-lg font-bold mb-4">Grand Total: ₱{{ receiptData.total.toFixed(2) }}</p>
 
         <!-- Action buttons -->
         <div class="flex justify-end gap-2 no-print">
@@ -566,6 +685,8 @@ import BaseIcon from '@/components/BaseIcon.vue'
 // Example data
 import categoriesData from '../../public/data-sources/categories.json'
 import customersData from '../../public/data-sources/customers2.json'
+// New: Sales Data
+import salesData from '../../public/data-sources/sales.json'
 
 // ----- State -----
 const breadcrumbs = ref([])
@@ -616,6 +737,16 @@ const bankReference = ref('')
 // Receipt Modal
 const isReceiptModalOpen = ref(false)
 const transactionId = ref('')
+// We'll store the entire sale's info in an object for the receipt
+const receiptData = reactive({
+  id: '',
+  date: '',
+  customerName: '',
+  items: [],
+  total: 0,
+  paymentType: '',
+  status: ''
+})
 
 // Print plugin options
 const printOptions = {
@@ -626,7 +757,6 @@ const printOptions = {
       margin: 20mm;
     }
     @media print {
-      /* Hide the .no-print elements */
       .no-print {
         display: none !important;
       }
@@ -662,6 +792,15 @@ const printOptions = {
     }
   `
 }
+
+// New: Sales array (existing + newly added)
+const sales = ref(salesData.sales)
+
+// Sales Modal
+const isSalesModalOpen = ref(false)
+const salesSearchQuery = ref('')
+const salesFromDate = ref('')
+const salesToDate = ref('')
 
 // ----- Computed -----
 
@@ -730,6 +869,33 @@ const totalCartAmount = computed(() => {
     total -= discountEntireSale.value
   }
   return total < 0 ? 0 : total
+})
+
+// Filtered sales for the Sales Modal
+const filteredSales = computed(() => {
+  // Convert from/to dates
+  const from = salesFromDate.value ? new Date(salesFromDate.value) : null
+  const to = salesToDate.value ? new Date(salesToDate.value) : null
+  const q = salesSearchQuery.value.toLowerCase().trim()
+
+  return sales.value.filter((sale) => {
+    // Filter by date range
+    const saleDate = new Date(sale.date)
+    if (from && saleDate < from) return false
+    if (to) {
+      // set 'to' to end of day to include that day
+      let toEnd = new Date(to)
+      toEnd.setHours(23, 59, 59, 999)
+      if (saleDate > toEnd) return false
+    }
+
+    // Filter by search query in ID or customerName or status
+    if (q) {
+      const combined = `${sale.id} ${sale.customerName} ${sale.status}`.toLowerCase()
+      if (!combined.includes(q)) return false
+    }
+    return true
+  })
 })
 
 // ----- Functions -----
@@ -813,20 +979,28 @@ function checkout() {
     return
   }
 
-  let extra = {}
-  if (selectedPaymentType.value === 'Check') {
-    extra.checkNumber = checkNumber.value
-    extra.bankName = bankName.value
-  } else if (selectedPaymentType.value === 'E-Wallet') {
-    extra.walletReference = walletReference.value
-  } else if (
-    selectedPaymentType.value === 'Credit Card' ||
-    selectedPaymentType.value === 'Debit Card'
-  ) {
-    extra.cardAuthCode = cardAuthCode.value
-  } else if (selectedPaymentType.value === 'Bank') {
-    extra.bankReference = bankReference.value
+  // Build a sale object
+  const saleId = Date.now().toString() // Or use a better unique ID
+  const newSale = {
+    id: saleId,
+    date: new Date().toISOString(),
+    customerName: customerName.value,
+    items: cart.value.map((item) => ({ ...item })), // clone
+    subTotal: subTotalBeforeGlobalDiscount.value,
+    discountAllItemsPercent: discountAllItemsPercent.value,
+    discountEntireSale: discountEntireSale.value,
+    total: totalCartAmount.value,
+    paymentType: selectedPaymentType.value,
+    checkNumber: checkNumber.value,
+    bankName: bankName.value,
+    walletReference: walletReference.value,
+    cardAuthCode: cardAuthCode.value,
+    bankReference: bankReference.value,
+    status: 'Complete' // completed sale
   }
+
+  // Push to sales array
+  sales.value.push(newSale)
 
   Swal.fire({
     title: 'Checkout successful!',
@@ -841,22 +1015,31 @@ function checkout() {
     confirmButtonColor: '#b51919'
   }).then(() => {
     // After user clicks "OK," proceed
-    // Generate a transaction ID
-    transactionId.value = Date.now().toString()
+    // Generate a transaction ID (already in newSale)
+    transactionId.value = saleId
     // Open the receipt modal while cart is intact
-    openReceiptModal()
+    openReceiptModal(newSale)
   })
 }
 
 // Receipt Modal
-async function openReceiptModal() {
+async function openReceiptModal(sale) {
+  // Populate receiptData
+  receiptData.id = sale.id
+  receiptData.date = sale.date
+  receiptData.customerName = sale.customerName
+  receiptData.items = sale.items
+  receiptData.total = sale.total
+  receiptData.paymentType = sale.paymentType
+  receiptData.status = sale.status
+
   isReceiptModalOpen.value = true
 
   // Let the modal render, then generate the barcode
   await nextTick()
   const barcodeEl = document.getElementById('barcodeElement')
   if (barcodeEl) {
-    JsBarcode(barcodeEl, transactionId.value, {
+    JsBarcode(barcodeEl, sale.id, {
       format: 'CODE128',
       lineColor: '#000',
       width: 2,
@@ -869,6 +1052,11 @@ async function openReceiptModal() {
 function closeReceiptModal() {
   isReceiptModalOpen.value = false
   // Clear cart and reset everything AFTER the user closes the receipt
+  clearPos()
+}
+
+// Reusable function to clear POS
+function clearPos() {
   cart.value = []
   searchQuery.value = ''
   breadcrumbs.value = []
@@ -876,7 +1064,6 @@ function closeReceiptModal() {
   discountAllItemsPercent.value = 0
   discountEntireSale.value = 0
   customerName.value = ''
-
   selectedPaymentType.value = ''
   checkNumber.value = ''
   bankName.value = ''
@@ -960,6 +1147,136 @@ function filterCustomers() {
 function selectCustomer(cust) {
   customerName.value = cust.name
   filteredCustomers.value = []
+}
+
+// Sales Modal
+function openSalesModal() {
+  isSalesModalOpen.value = true
+}
+
+function closeSalesModal() {
+  isSalesModalOpen.value = false
+}
+
+// Format date for display
+function formatDate(dateStr) {
+  if (!dateStr) return ''
+  const d = new Date(dateStr)
+  return d.toLocaleString()
+}
+
+// Suspend Sale
+function suspendSale() {
+  if (!cart.value.length) return
+
+  const saleId = Date.now().toString()
+  const newSale = {
+    id: saleId,
+    date: new Date().toISOString(),
+    customerName: customerName.value,
+    items: cart.value.map((item) => ({ ...item })), // clone
+    subTotal: subTotalBeforeGlobalDiscount.value,
+    discountAllItemsPercent: discountAllItemsPercent.value,
+    discountEntireSale: discountEntireSale.value,
+    total: totalCartAmount.value,
+    paymentType: selectedPaymentType.value || 'N/A', // might not be chosen yet
+    checkNumber: checkNumber.value,
+    bankName: bankName.value,
+    walletReference: walletReference.value,
+    cardAuthCode: cardAuthCode.value,
+    bankReference: bankReference.value,
+    status: 'Suspended'
+  }
+
+  // Add to sales
+  sales.value.push(newSale)
+
+  Swal.fire({
+    title: 'Sale Suspended',
+    text: `Sale #${saleId} has been suspended.`,
+    icon: 'info',
+    confirmButtonColor: '#b51919'
+  })
+
+  clearPos()
+}
+
+// Cancel Sale
+function cancelSale() {
+  if (!cart.value.length) return
+
+  // If you *do* want to record a "Voided" sale, do this:
+  const saleId = Date.now().toString()
+  const voidedSale = {
+    id: saleId,
+    date: new Date().toISOString(),
+    customerName: customerName.value,
+    items: cart.value.map((item) => ({ ...item })),
+    subTotal: subTotalBeforeGlobalDiscount.value,
+    discountAllItemsPercent: discountAllItemsPercent.value,
+    discountEntireSale: discountEntireSale.value,
+    total: totalCartAmount.value,
+    paymentType: selectedPaymentType.value || 'N/A',
+    checkNumber: checkNumber.value,
+    bankName: bankName.value,
+    walletReference: walletReference.value,
+    cardAuthCode: cardAuthCode.value,
+    bankReference: bankReference.value,
+    status: 'Voided'
+  }
+  sales.value.push(voidedSale)
+
+  clearPos()
+}
+
+// Unsuspend (load that sale into cart again)
+function unsuspendSale(sale) {
+  // 1) Clear current cart
+  clearPos()
+  // 2) Load suspended sale into cart
+  cart.value = sale.items.map((item) => ({ ...item }))
+  customerName.value = sale.customerName
+  discountAllItemsPercent.value = sale.discountAllItemsPercent
+  discountEntireSale.value = sale.discountEntireSale
+  selectedPaymentType.value = sale.paymentType
+  checkNumber.value = sale.checkNumber
+  bankName.value = sale.bankName
+  walletReference.value = sale.walletReference
+  cardAuthCode.value = sale.cardAuthCode
+  bankReference.value = sale.bankReference
+
+  // 3) Remove or update the original sale from the array
+  // Typically, you'd remove it from "Suspended" list or change its status
+  sale.status = 'Re-Opened' // or remove from array entirely
+  // If you want to remove it altogether:
+  // const idx = sales.value.findIndex(s => s.id === sale.id)
+  // if (idx !== -1) sales.value.splice(idx, 1)
+
+  Swal.fire({
+    title: 'Sale Unsuspended',
+    text: `Loaded sale #${sale.id} back into the cart.`,
+    icon: 'success',
+    confirmButtonColor: '#b51919'
+  })
+
+  closeSalesModal()
+}
+
+// Void Sale
+function voidSale(sale) {
+  sale.status = 'Voided'
+  Swal.fire({
+    title: 'Sale Voided',
+    text: `Sale #${sale.id} is now voided.`,
+    icon: 'success',
+    confirmButtonColor: '#b51919'
+  })
+}
+
+// Print an existing sale from the sales list
+function printExistingSale(sale) {
+  // Reuse the receipt modal logic
+  openReceiptModal(sale)
 }
 </script>
 
