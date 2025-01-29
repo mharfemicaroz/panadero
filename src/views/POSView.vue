@@ -124,34 +124,40 @@
       <!-- Customer Section -->
       <div class="mb-6">
         <h2 class="text-xl font-bold mb-4">Customer</h2>
-        <div class="relative">
-          <input
-            v-model="customerName"
-            type="text"
-            placeholder="Customer Name"
-            class="w-full p-2 border rounded"
-            @input="filterCustomers"
-          />
-          <ul
-            v-if="filteredCustomers.length"
-            class="absolute z-10 bg-white border rounded mt-1 w-full"
-          >
-            <li
-              v-for="customer in filteredCustomers"
-              :key="customer.id"
-              class="p-2 hover:bg-gray-100 cursor-pointer"
-              @click="selectCustomer(customer)"
+
+        <div class="flex items-start space-x-2">
+          <!-- Input and dropdown -->
+          <div class="relative w-full">
+            <input
+              v-model="customerName"
+              type="text"
+              placeholder="Customer Name"
+              class="w-full p-2 border rounded"
+              @input="filterCustomers"
+            />
+            <ul
+              v-if="filteredCustomers.length"
+              class="absolute z-10 bg-white border rounded mt-1 w-full"
             >
-              {{ customer.name }}
-            </li>
-          </ul>
+              <li
+                v-for="customer in filteredCustomers"
+                :key="customer.id"
+                class="p-2 hover:bg-gray-100 cursor-pointer"
+                @click="selectCustomer(customer)"
+              >
+                {{ customer.name }}
+              </li>
+            </ul>
+          </div>
+
+          <!-- Button with icon -->
+          <button
+            @click="openCustomerModal"
+            class="p-2 bg-[#b51919] text-white rounded hover:bg-[#a31818]"
+          >
+            <BaseIcon :path="mdiAccountPlus" size="24" />
+          </button>
         </div>
-        <button
-          @click="openCustomerModal"
-          class="mt-2 p-2 bg-[#b51919] text-white rounded hover:bg-[#a31818]"
-        >
-          Add New Customer
-        </button>
       </div>
 
       <!-- CART -->
@@ -266,25 +272,17 @@
           </select>
         </div>
 
-        <!-- Amount Due (defaults to totalCartAmount) -->
+        <!-- Amount Due (automatically linked to totalCartAmount) -->
         <div class="mb-4">
           <label class="block text-sm font-medium mb-1">Amount Due</label>
-          <div class="flex">
-            <input
-              type="number"
-              class="p-2 border rounded flex-1"
-              v-model.number="amountDue"
-              min="0"
-              step="0.01"
-            />
-            <button
-              class="ml-2 p-2 bg-gray-200 hover:bg-gray-300 rounded"
-              @click="setAmountDueToTotal"
-              title="Set to computed total"
-            >
-              Use Total
-            </button>
-          </div>
+          <input
+            type="number"
+            class="p-2 border rounded w-full"
+            :value="amountDue"
+            min="0"
+            step="0.01"
+            readonly
+          />
         </div>
 
         <!-- Conditional Fields Depending on Payment Type -->
@@ -472,20 +470,23 @@
     </div>
 
     <!-- Receipt Modal -->
+    <!-- Receipt Modal -->
     <div
       v-if="isReceiptModalOpen"
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
     >
       <div class="bg-white p-6 rounded-lg w-1/3" id="receiptContainer">
         <h2 class="text-xl font-bold mb-4">Transaction Receipt</h2>
+
+        <!-- Transaction ID Display -->
         <p><strong>Transaction ID:</strong> {{ transactionId }}</p>
 
-        <!-- Barcode placeholder -->
-        <div class="my-4 flex justify-center">
-          <svg ref="barcode"></svg>
+        <!-- Add the barcode element here -->
+        <div style="text-align: center; margin: 1rem 0">
+          <svg id="barcodeElement"></svg>
         </div>
 
-        <!-- Basic purchase summary -->
+        <!-- Basic purchase summary, cart items, etc. -->
         <div class="text-sm mb-4">
           <p><strong>Customer:</strong> {{ customerName || 'N/A' }}</p>
           <p><strong>Payment Type:</strong> {{ selectedPaymentType }}</p>
@@ -493,35 +494,47 @@
           <p><strong>Cart Total:</strong> ₱{{ totalCartAmount.toFixed(2) }}</p>
         </div>
 
-        <!-- List of items in the cart -->
-        <table v-if="cart.length" class="w-full text-sm mb-4">
-          <thead>
-            <tr class="border-b">
-              <th class="text-left py-1">Item</th>
-              <th class="text-right py-1">Qty</th>
-              <th class="text-right py-1">Price</th>
-              <th class="text-right py-1">Discount</th>
-              <th class="text-right py-1">Line Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="item in cart" :key="item.id" class="border-b">
-              <td>{{ item.name }}</td>
-              <td class="text-right">{{ item.quantity }}</td>
-              <td class="text-right">₱{{ item.price.toFixed(2) }}</td>
-              <td class="text-right">₱{{ item.discount.toFixed(2) }}</td>
-              <td class="text-right">
-                ₱{{ ((item.price - item.discount) * item.quantity).toFixed(2) }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div v-if="cart.length" style="font-family: monospace; font-size: 0.8rem">
+          <!-- Header row -->
+          <div style="display: flex; border-bottom: 1px solid #000; padding-bottom: 2px">
+            <div style="width: 10em">Item</div>
+            <div style="width: 4em; text-align: right">Qty</div>
+            <div style="width: 6em; text-align: right">Price</div>
+            <div style="width: 6em; text-align: right">Disc</div>
+            <div style="width: 6em; text-align: right">Total</div>
+          </div>
+          <!-- Cart items -->
+          <div v-for="item in cart" :key="item.id" style="display: flex">
+            <!-- Item name (truncated if too long) -->
+            <div
+              style="width: 10em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis"
+            >
+              {{ item.name }}
+            </div>
+
+            <!-- Quantity -->
+            <div style="width: 4em; text-align: right">
+              {{ item.quantity }}
+            </div>
+
+            <!-- Price -->
+            <div style="width: 6em; text-align: right">₱{{ item.price.toFixed(2) }}</div>
+
+            <!-- Discount -->
+            <div style="width: 6em; text-align: right">₱{{ item.discount.toFixed(2) }}</div>
+
+            <!-- Line Total -->
+            <div style="width: 6em; text-align: right">
+              ₱{{ ((item.price - item.discount) * item.quantity).toFixed(2) }}
+            </div>
+          </div>
+        </div>
 
         <!-- Grand Total -->
         <p class="text-lg font-bold mb-4">Grand Total: ₱{{ totalCartAmount.toFixed(2) }}</p>
 
         <!-- Action buttons -->
-        <div class="flex justify-end gap-2">
+        <div class="flex justify-end gap-2 no-print">
           <!-- Print -->
           <button
             type="button"
@@ -543,363 +556,414 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, reactive, computed, nextTick } from 'vue'
 import JsBarcode from 'jsbarcode'
+import Swal from 'sweetalert2'
+import { mdiAccountPlus } from '@mdi/js'
+import BaseIcon from '@/components/BaseIcon.vue'
+
 // Example data
 import categoriesData from '../../public/data-sources/categories.json'
 import customersData from '../../public/data-sources/customers2.json'
 
-export default {
-  data() {
-    return {
-      // Navigation
-      breadcrumbs: [],
-      currentCategory: null,
+// ----- State -----
+const breadcrumbs = ref([])
+const currentCategory = ref(null)
+const searchQuery = ref('')
+const cart = ref([])
 
-      // Search & Cart
-      searchQuery: '',
-      cart: [],
+// Categories
+const categories = ref(categoriesData.categories)
 
-      // Categories
-      categories: categoriesData.categories,
+// Customer Data
+const customerName = ref('')
+const customers = ref(customersData.customers)
+const filteredCustomers = ref([])
+const isCustomerModalOpen = ref(false)
+const newCustomer = reactive({
+  name: '',
+  email: '',
+  phone: ''
+})
 
-      // Customer Data
-      customerName: '',
-      customers: customersData.customers,
-      filteredCustomers: [],
-      isCustomerModalOpen: false,
-      newCustomer: {
-        name: '',
-        email: '',
-        phone: ''
-      },
+// Global Discounts
+const discountAllItemsPercent = ref(0)
+const discountEntireSale = ref(0)
 
-      // Global Discounts
-      discountAllItemsPercent: 0,
-      discountEntireSale: 0,
+// Item Discount / Price Modals
+const isItemDiscountModalOpen = ref(false)
+const itemDiscountModalIndex = ref(null)
+const itemDiscountModalValue = ref(0)
 
-      // Item Discount / Price Modals
-      isItemDiscountModalOpen: false,
-      itemDiscountModalIndex: null,
-      itemDiscountModalValue: 0,
+const isItemPriceModalOpen = ref(false)
+const itemPriceModalIndex = ref(null)
+const itemPriceModalValue = ref(0)
 
-      isItemPriceModalOpen: false,
-      itemPriceModalIndex: null,
-      itemPriceModalValue: 0,
+// Payment
+const paymentTypes = ref(['Cash', 'Check', 'Debit Card', 'Credit Card', 'E-Wallet', 'Bank'])
+const selectedPaymentType = ref('')
 
-      // Payment
-      paymentTypes: ['Cash', 'Check', 'Debit Card', 'Credit Card', 'E-Wallet', 'Bank'],
-      selectedPaymentType: '',
-      amountDue: 0,
+// Instead of a manual ref for amountDue, we make it automatically reflect totalCartAmount
+const amountDue = computed(() => totalCartAmount.value)
 
-      checkNumber: '',
-      bankName: '',
-      walletReference: '',
-      cardAuthCode: '',
-      bankReference: '',
+const checkNumber = ref('')
+const bankName = ref('')
+const walletReference = ref('')
+const cardAuthCode = ref('')
+const bankReference = ref('')
 
-      // Receipt Modal
-      isReceiptModalOpen: false,
-      transactionId: '',
+// Receipt Modal
+const isReceiptModalOpen = ref(false)
+const transactionId = ref('')
 
-      // Print plugin options
-      printOptions: {
-        id: 'receiptContainer',
-        style: `
-          @page {
-            size: A4;
-            margin: 0;
-          }
-          @media print {
-            html, body {
-              margin: 0;
-              padding: 0;
-              width: 210mm;
-            }
-            #receiptContainer {
-              width: 100%;
-              margin: 0 auto;
-            }
-          }
-        `
+// Print plugin options
+const printOptions = {
+  id: 'receiptContainer',
+  style: `
+    @page {
+      size: A4;
+      margin: 20mm;
+    }
+    @media print {
+      /* Hide the .no-print elements */
+      .no-print {
+        display: none !important;
+      }
+
+      html, body {
+        margin: 0;
+        padding: 0;
+        width: 210mm;
+      }
+      #receiptContainer {
+        width: 100%;
+        margin: 0 auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      thead {
+        display: table-header-group;
+      }
+      tfoot {
+        display: table-footer-group;
+      }
+      tr {
+        page-break-inside: avoid;
+      }
+      th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+        vertical-align: middle;
       }
     }
-  },
+  `
+}
 
-  computed: {
-    /**
-     * If exactly one product matches the search (and no cat/subcat name match),
-     * show it directly.
-     */
-    singleGlobalSingleMatch() {
-      const query = this.searchQuery.trim().toLowerCase()
-      if (!query) return null
-      if (this.catOrSubcatNameMatches(query)) return null
+// ----- Computed -----
 
-      const allProducts = []
-      const gatherAllProducts = (cat) => {
-        if (cat.products?.length) allProducts.push(...cat.products)
-        if (cat.subcategories?.length) cat.subcategories.forEach(gatherAllProducts)
-      }
-      this.categories.forEach(gatherAllProducts)
+/**
+ * If exactly one product matches the search (and no cat/subcat name match),
+ * show it directly.
+ */
+const singleGlobalSingleMatch = computed(() => {
+  const query = searchQuery.value.trim().toLowerCase()
+  if (!query) return null
+  if (catOrSubcatNameMatches(query)) return null
 
-      const matched = allProducts.filter((p) => p.name.toLowerCase().includes(query))
-      return matched.length === 1 ? matched[0] : null
-    },
-
-    filteredCategories() {
-      if (!this.searchQuery) return this.categories
-      const q = this.searchQuery.toLowerCase()
-      return this.categories.filter((cat) => this.shouldIncludeCategory(cat, q))
-    },
-    filteredProducts() {
-      if (!this.currentCategory && !this.searchQuery) return []
-      const category = this.findCategoryByBreadcrumbs()
-      if (!category) return []
-      let products = category.products?.slice() || []
-      if (category.subcategories?.length) {
-        category.subcategories.forEach((sub) => {
-          if (sub.products?.length) products = products.concat(sub.products)
-        })
-      }
-      if (!this.searchQuery) return products
-
-      const q = this.searchQuery.toLowerCase()
-      return products.filter((p) => p.name.toLowerCase().includes(q))
-    },
-    visibleSubcategories() {
-      const category = this.findCategoryByBreadcrumbs()
-      if (!category || !category.subcategories) return []
-      const q = this.searchQuery.toLowerCase()
-      return category.subcategories.filter((sub) => sub.name.toLowerCase().includes(q))
-    },
-
-    subTotalBeforeGlobalDiscount() {
-      return this.cart.reduce((sum, item) => {
-        const line = (item.price - item.discount) * item.quantity
-        return sum + line
-      }, 0)
-    },
-    totalCartAmount() {
-      let total = this.subTotalBeforeGlobalDiscount
-      if (this.discountAllItemsPercent > 0) {
-        total *= 1 - this.discountAllItemsPercent / 100
-      }
-      if (this.discountEntireSale > 0) {
-        total -= this.discountEntireSale
-      }
-      return total < 0 ? 0 : total
-    }
-  },
-
-  methods: {
-    catOrSubcatNameMatches(query) {
-      const checkCat = (cat) => {
-        if (cat.name.toLowerCase().includes(query)) return true
-        if (cat.subcategories?.length) return cat.subcategories.some(checkCat)
-        return false
-      }
-      return this.categories.some(checkCat)
-    },
-    shouldIncludeCategory(cat, query) {
-      if (cat.name.toLowerCase().includes(query)) return true
-      if (cat.products?.some((p) => p.name.toLowerCase().includes(query))) return true
-      if (cat.subcategories?.some((sub) => this.shouldIncludeCategory(sub, query))) return true
-      return false
-    },
-    findCategoryByBreadcrumbs() {
-      let currentLevel = this.categories
-      let foundCategory = null
-      for (const crumb of this.breadcrumbs) {
-        foundCategory = currentLevel.find((c) => c.name === crumb)
-        if (!foundCategory) return {}
-        currentLevel = foundCategory.subcategories || []
-      }
-      return foundCategory || {}
-    },
-
-    // Navigation
-    selectCategory(category) {
-      this.breadcrumbs.push(category.name)
-      this.currentCategory = category.name
-    },
-    goBack() {
-      this.breadcrumbs.pop()
-      this.currentCategory = this.breadcrumbs[this.breadcrumbs.length - 1] || null
-    },
-    navigateToBreadcrumb(index) {
-      this.breadcrumbs.splice(index + 1)
-      this.currentCategory = this.breadcrumbs[this.breadcrumbs.length - 1] || null
-    },
-    resetCategories() {
-      this.breadcrumbs = []
-      this.currentCategory = null
-    },
-
-    // Cart
-    isInCart(product) {
-      return this.cart.some((i) => i.id === product.id)
-    },
-    toggleProductSelection(product) {
-      const found = this.cart.find((i) => i.id === product.id)
-      if (found) {
-        const idx = this.cart.indexOf(found)
-        this.removeFromCart(idx)
-      } else {
-        this.cart.push({ ...product, quantity: 1, discount: 0 })
-      }
-    },
-    removeFromCart(index) {
-      this.cart.splice(index, 1)
-    },
-
-    // Payment / Checkout
-    setAmountDueToTotal() {
-      this.amountDue = this.totalCartAmount
-    },
-    checkout() {
-      if (!this.selectedPaymentType) {
-        alert('Please select a payment type.')
-        return
-      }
-      let extra = {}
-      if (this.selectedPaymentType === 'Check') {
-        extra.checkNumber = this.checkNumber
-        extra.bankName = this.bankName
-      } else if (this.selectedPaymentType === 'E-Wallet') {
-        extra.walletReference = this.walletReference
-      } else if (
-        this.selectedPaymentType === 'Credit Card' ||
-        this.selectedPaymentType === 'Debit Card'
-      ) {
-        extra.cardAuthCode = this.cardAuthCode
-      } else if (this.selectedPaymentType === 'Bank') {
-        extra.bankReference = this.bankReference
-      }
-
-      alert(
-        'Checkout successful!\n\n' +
-          `Payment: ${this.selectedPaymentType}\n` +
-          `Due: ₱${this.amountDue.toFixed(2)}\n` +
-          `Cart: ₱${this.totalCartAmount.toFixed(2)}\n` +
-          `Extra: ${JSON.stringify(extra, null, 2)}`
-      )
-      // Generate a transaction ID
-      this.transactionId = Date.now().toString()
-      // Open the receipt modal while cart is intact
-      this.openReceiptModal()
-    },
-
-    // Receipt Modal
-    openReceiptModal() {
-      this.isReceiptModalOpen = true
-      this.$nextTick(() => {
-        if (this.$refs.barcode) {
-          JsBarcode(this.$refs.barcode, this.transactionId, {
-            format: 'CODE128',
-            lineColor: '#000',
-            width: 2,
-            height: 40,
-            displayValue: true
-          })
-        }
-      })
-    },
-    closeReceiptModal() {
-      this.isReceiptModalOpen = false
-      // Clear cart and reset everything AFTER the user closes the receipt
-      this.cart = []
-      this.searchQuery = ''
-      this.breadcrumbs = []
-      this.currentCategory = null
-      this.discountAllItemsPercent = 0
-      this.discountEntireSale = 0
-      this.customerName = ''
-
-      this.selectedPaymentType = ''
-      this.amountDue = 0
-      this.checkNumber = ''
-      this.bankName = ''
-      this.walletReference = ''
-      this.cardAuthCode = ''
-      this.bankReference = ''
-    },
-
-    // Item Discount Modal
-    openItemDiscountModal(index) {
-      this.itemDiscountModalIndex = index
-      this.itemDiscountModalValue = this.cart[index].discount
-      this.isItemDiscountModalOpen = true
-    },
-    closeItemDiscountModal() {
-      this.isItemDiscountModalOpen = false
-      this.itemDiscountModalIndex = null
-      this.itemDiscountModalValue = 0
-    },
-    saveItemDiscount() {
-      if (this.itemDiscountModalIndex !== null) {
-        this.cart[this.itemDiscountModalIndex].discount = this.itemDiscountModalValue
-      }
-      this.closeItemDiscountModal()
-    },
-
-    // Item Price Modal
-    openItemPriceModal(index) {
-      this.itemPriceModalIndex = index
-      this.itemPriceModalValue = this.cart[index].price
-      this.isItemPriceModalOpen = true
-    },
-    closeItemPriceModal() {
-      this.isItemPriceModalOpen = false
-      this.itemPriceModalIndex = null
-      this.itemPriceModalValue = 0
-    },
-    saveItemPrice() {
-      if (this.itemPriceModalIndex !== null) {
-        this.cart[this.itemPriceModalIndex].price = this.itemPriceModalValue
-      }
-      this.closeItemPriceModal()
-    },
-
-    // Customer Modal
-    openCustomerModal() {
-      this.isCustomerModalOpen = true
-    },
-    closeCustomerModal() {
-      this.isCustomerModalOpen = false
-      this.newCustomer = { name: '', email: '', phone: '' }
-    },
-    saveCustomer() {
-      if (this.newCustomer.name) {
-        this.customers.push({
-          ...this.newCustomer,
-          id: this.customers.length + 1
-        })
-        this.customerName = this.newCustomer.name
-      }
-      this.closeCustomerModal()
-    },
-    filterCustomers() {
-      if (this.customerName) {
-        const lower = this.customerName.toLowerCase()
-        this.filteredCustomers = this.customers.filter((c) => c.name.toLowerCase().includes(lower))
-      } else {
-        this.filteredCustomers = []
-      }
-    },
-    selectCustomer(cust) {
-      this.customerName = cust.name
-      this.filteredCustomers = []
-    }
+  const allProducts = []
+  const gatherAllProducts = (cat) => {
+    if (cat.products?.length) allProducts.push(...cat.products)
+    if (cat.subcategories?.length) cat.subcategories.forEach(gatherAllProducts)
   }
+  categories.value.forEach(gatherAllProducts)
+
+  const matched = allProducts.filter((p) => p.name.toLowerCase().includes(query))
+  return matched.length === 1 ? matched[0] : null
+})
+
+const filteredCategories = computed(() => {
+  if (!searchQuery.value) return categories.value
+  const q = searchQuery.value.toLowerCase()
+  return categories.value.filter((cat) => shouldIncludeCategory(cat, q))
+})
+
+const filteredProducts = computed(() => {
+  if (!currentCategory.value && !searchQuery.value) return []
+  const category = findCategoryByBreadcrumbs()
+  if (!category) return []
+  let products = category.products?.slice() || []
+  if (category.subcategories?.length) {
+    category.subcategories.forEach((sub) => {
+      if (sub.products?.length) products = products.concat(sub.products)
+    })
+  }
+  if (!searchQuery.value) return products
+
+  const q = searchQuery.value.toLowerCase()
+  return products.filter((p) => p.name.toLowerCase().includes(q))
+})
+
+const visibleSubcategories = computed(() => {
+  const category = findCategoryByBreadcrumbs()
+  if (!category || !category.subcategories) return []
+  const q = searchQuery.value.toLowerCase()
+  return category.subcategories.filter((sub) => sub.name.toLowerCase().includes(q))
+})
+
+const subTotalBeforeGlobalDiscount = computed(() => {
+  return cart.value.reduce((sum, item) => {
+    const line = (item.price - item.discount) * item.quantity
+    return sum + line
+  }, 0)
+})
+
+const totalCartAmount = computed(() => {
+  let total = subTotalBeforeGlobalDiscount.value
+  if (discountAllItemsPercent.value > 0) {
+    total *= 1 - discountAllItemsPercent.value / 100
+  }
+  if (discountEntireSale.value > 0) {
+    total -= discountEntireSale.value
+  }
+  return total < 0 ? 0 : total
+})
+
+// ----- Functions -----
+
+function catOrSubcatNameMatches(query) {
+  const checkCat = (cat) => {
+    if (cat.name.toLowerCase().includes(query)) return true
+    if (cat.subcategories?.length) return cat.subcategories.some(checkCat)
+    return false
+  }
+  return categories.value.some(checkCat)
+}
+
+function shouldIncludeCategory(cat, query) {
+  if (cat.name.toLowerCase().includes(query)) return true
+  if (cat.products?.some((p) => p.name.toLowerCase().includes(query))) return true
+  if (cat.subcategories?.some((sub) => shouldIncludeCategory(sub, query))) return true
+  return false
+}
+
+function findCategoryByBreadcrumbs() {
+  let currentLevel = categories.value
+  let foundCategory = null
+  for (const crumb of breadcrumbs.value) {
+    foundCategory = currentLevel.find((c) => c.name === crumb)
+    if (!foundCategory) return {}
+    currentLevel = foundCategory.subcategories || []
+  }
+  return foundCategory || {}
+}
+
+// Navigation
+function selectCategory(category) {
+  breadcrumbs.value.push(category.name)
+  currentCategory.value = category.name
+}
+
+function goBack() {
+  breadcrumbs.value.pop()
+  currentCategory.value = breadcrumbs.value[breadcrumbs.value.length - 1] || null
+}
+
+function navigateToBreadcrumb(index) {
+  breadcrumbs.value.splice(index + 1)
+  currentCategory.value = breadcrumbs.value[breadcrumbs.value.length - 1] || null
+}
+
+function resetCategories() {
+  breadcrumbs.value = []
+  currentCategory.value = null
+}
+
+// Cart
+function isInCart(product) {
+  return cart.value.some((i) => i.id === product.id)
+}
+
+function toggleProductSelection(product) {
+  const found = cart.value.find((i) => i.id === product.id)
+  if (found) {
+    const idx = cart.value.indexOf(found)
+    removeFromCart(idx)
+  } else {
+    cart.value.push({ ...product, quantity: 1, discount: 0 })
+  }
+}
+
+function removeFromCart(index) {
+  cart.value.splice(index, 1)
+}
+
+// Payment / Checkout
+function checkout() {
+  if (!selectedPaymentType.value) {
+    Swal.fire({
+      title: 'Error',
+      text: 'Please select a payment type.',
+      icon: 'error',
+      confirmButtonColor: '#b51919'
+    })
+    return
+  }
+
+  let extra = {}
+  if (selectedPaymentType.value === 'Check') {
+    extra.checkNumber = checkNumber.value
+    extra.bankName = bankName.value
+  } else if (selectedPaymentType.value === 'E-Wallet') {
+    extra.walletReference = walletReference.value
+  } else if (
+    selectedPaymentType.value === 'Credit Card' ||
+    selectedPaymentType.value === 'Debit Card'
+  ) {
+    extra.cardAuthCode = cardAuthCode.value
+  } else if (selectedPaymentType.value === 'Bank') {
+    extra.bankReference = bankReference.value
+  }
+
+  Swal.fire({
+    title: 'Checkout successful!',
+    html: `
+      <div style="text-align: left">
+        <p><strong>Payment:</strong> ${selectedPaymentType.value}</p>
+        <p><strong>Due:</strong> ₱${amountDue.value.toFixed(2)}</p>
+        <p><strong>Cart:</strong> ₱${totalCartAmount.value.toFixed(2)}</p>
+      </div>
+    `,
+    icon: 'success',
+    confirmButtonColor: '#b51919'
+  }).then(() => {
+    // After user clicks "OK," proceed
+    // Generate a transaction ID
+    transactionId.value = Date.now().toString()
+    // Open the receipt modal while cart is intact
+    openReceiptModal()
+  })
+}
+
+// Receipt Modal
+async function openReceiptModal() {
+  isReceiptModalOpen.value = true
+
+  // Let the modal render, then generate the barcode
+  await nextTick()
+  const barcodeEl = document.getElementById('barcodeElement')
+  if (barcodeEl) {
+    JsBarcode(barcodeEl, transactionId.value, {
+      format: 'CODE128',
+      lineColor: '#000',
+      width: 2,
+      height: 40,
+      displayValue: true
+    })
+  }
+}
+
+function closeReceiptModal() {
+  isReceiptModalOpen.value = false
+  // Clear cart and reset everything AFTER the user closes the receipt
+  cart.value = []
+  searchQuery.value = ''
+  breadcrumbs.value = []
+  currentCategory.value = null
+  discountAllItemsPercent.value = 0
+  discountEntireSale.value = 0
+  customerName.value = ''
+
+  selectedPaymentType.value = ''
+  checkNumber.value = ''
+  bankName.value = ''
+  walletReference.value = ''
+  cardAuthCode.value = ''
+  bankReference.value = ''
+}
+
+// Item Discount Modal
+function openItemDiscountModal(index) {
+  itemDiscountModalIndex.value = index
+  itemDiscountModalValue.value = cart.value[index].discount
+  isItemDiscountModalOpen.value = true
+}
+
+function closeItemDiscountModal() {
+  isItemDiscountModalOpen.value = false
+  itemDiscountModalIndex.value = null
+  itemDiscountModalValue.value = 0
+}
+
+function saveItemDiscount() {
+  if (itemDiscountModalIndex.value !== null) {
+    cart.value[itemDiscountModalIndex.value].discount = itemDiscountModalValue.value
+  }
+  closeItemDiscountModal()
+}
+
+// Item Price Modal
+function openItemPriceModal(index) {
+  itemPriceModalIndex.value = index
+  itemPriceModalValue.value = cart.value[index].price
+  isItemPriceModalOpen.value = true
+}
+
+function closeItemPriceModal() {
+  isItemPriceModalOpen.value = false
+  itemPriceModalIndex.value = null
+  itemPriceModalValue.value = 0
+}
+
+function saveItemPrice() {
+  if (itemPriceModalIndex.value !== null) {
+    cart.value[itemPriceModalIndex.value].price = itemPriceModalValue.value
+  }
+  closeItemPriceModal()
+}
+
+// Customer Modal
+function openCustomerModal() {
+  isCustomerModalOpen.value = true
+}
+
+function closeCustomerModal() {
+  isCustomerModalOpen.value = false
+  newCustomer.name = ''
+  newCustomer.email = ''
+  newCustomer.phone = ''
+}
+
+function saveCustomer() {
+  if (newCustomer.name) {
+    customers.value.push({
+      ...newCustomer,
+      id: customers.value.length + 1
+    })
+    customerName.value = newCustomer.name
+  }
+  closeCustomerModal()
+}
+
+function filterCustomers() {
+  if (customerName.value) {
+    const lower = customerName.value.toLowerCase()
+    filteredCustomers.value = customers.value.filter((c) => c.name.toLowerCase().includes(lower))
+  } else {
+    filteredCustomers.value = []
+  }
+}
+
+function selectCustomer(cust) {
+  customerName.value = cust.name
+  filteredCustomers.value = []
 }
 </script>
 
 <style scoped>
-/* 
-  We only replaced Tailwind color classes with red-themed classes 
-  to match the sample screenshot's color palette. No layout changes.
-*/
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s;
@@ -915,5 +979,11 @@ export default {
 
 .sticky {
   align-self: flex-start;
+}
+
+@media print {
+  :deep(.no-print) {
+    display: none !important;
+  }
 }
 </style>
