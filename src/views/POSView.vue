@@ -174,7 +174,7 @@
                 class="p-2 hover:bg-gray-100 cursor-pointer"
                 @click="selectCustomer(customer)"
               >
-                {{ customer.name }}
+                {{ customer.first_name }} {{ customer.last_name }}
               </li>
             </ul>
           </div>
@@ -310,7 +310,6 @@
             :value="amountDue"
             min="0"
             step="0.01"
-            readonly
           />
         </div>
 
@@ -538,10 +537,10 @@
           <tbody>
             <tr v-for="sale in filteredSales" :key="sale.id" class="border-b">
               <td class="p-2">{{ sale.id }}</td>
-              <td class="p-2">{{ formatDate(sale.date) }}</td>
-              <td class="p-2">{{ sale.customerName || 'N/A' }}</td>
+              <td class="p-2">{{ formatDate(sale.created_at) }}</td>
+              <td class="p-2">{{ sale.customer_name || 'N/A' }}</td>
               <td class="p-2">{{ sale.status }}</td>
-              <td class="p-2 text-right">₱{{ sale.total.toFixed(2) }}</td>
+              <td class="p-2 text-right">₱{{ (Number(sale.total_amount) || 0).toFixed(2) }}</td>
               <td class="p-2">
                 <!-- Actions -->
                 <div class="flex gap-2">
@@ -606,7 +605,7 @@
         <div class="text-sm mb-4">
           <p><strong>Customer:</strong> {{ receiptData.customerName || 'N/A' }}</p>
           <p><strong>Payment Type:</strong> {{ receiptData.paymentType }}</p>
-          <p><strong>Amount Due:</strong> ₱{{ receiptData.total.toFixed(2) }}</p>
+          <p><strong>Amount Due:</strong> ₱{{ receiptData.total }}</p>
           <p><strong>Status:</strong> {{ receiptData.status }}</p>
         </div>
 
@@ -628,7 +627,7 @@
             <div
               style="width: 10em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis"
             >
-              {{ item.name }}
+              {{ item.item.name }}
             </div>
 
             <!-- Quantity -->
@@ -637,20 +636,20 @@
             </div>
 
             <!-- Price -->
-            <div style="width: 6em; text-align: right">₱{{ item.price.toFixed(2) }}</div>
+            <div style="width: 6em; text-align: right">₱{{ item.price }}</div>
 
             <!-- Discount -->
-            <div style="width: 6em; text-align: right">₱{{ item.discount.toFixed(2) }}</div>
+            <div style="width: 6em; text-align: right">₱{{ item.discount }}</div>
 
             <!-- Line Total -->
             <div style="width: 6em; text-align: right">
-              ₱{{ ((item.price - item.discount) * item.quantity).toFixed(2) }}
+              ₱{{ (item.price - item.discount) * item.quantity }}
             </div>
           </div>
         </div>
 
         <!-- Grand Total -->
-        <p class="text-lg font-bold mb-4">Grand Total: ₱{{ receiptData.total.toFixed(2) }}</p>
+        <p class="text-lg font-bold mb-4">Grand Total: ₱{{ receiptData.total }}</p>
 
         <!-- Action buttons -->
         <div class="flex justify-end gap-2 no-print">
@@ -676,17 +675,26 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, nextTick } from 'vue'
+import { ref, reactive, computed, nextTick, watchEffect } from 'vue'
 import JsBarcode from 'jsbarcode'
 import Swal from 'sweetalert2'
 import { mdiAccountPlus } from '@mdi/js'
 import BaseIcon from '@/components/BaseIcon.vue'
 
-// Example data
-import categoriesData from '../../public/data-sources/categories.json'
-import customersData from '../../public/data-sources/customers2.json'
-// New: Sales Data
-import salesData from '../../public/data-sources/sales.json'
+// Import stores
+import { useProductCategoryStore } from '@/stores/product/category'
+import { useCustomerStore } from '@/stores/customer'
+import { useProductSaleStore } from '@/stores/product/sale'
+
+// Initialize stores
+const productCategoryStore = useProductCategoryStore()
+const customerStore = useCustomerStore()
+const productSaleStore = useProductSaleStore()
+
+// Fetch data from stores
+productCategoryStore.showAllItems()
+customerStore.fetchItems()
+productSaleStore.fetchItems()
 
 // ----- State -----
 const breadcrumbs = ref([])
@@ -694,12 +702,25 @@ const currentCategory = ref(null)
 const searchQuery = ref('')
 const cart = ref([])
 
-// Categories
-const categories = ref(categoriesData.categories)
+const categories = ref([])
+const customers = ref([])
+const sales = ref([])
+
+watchEffect(() => {
+  categories.value = productCategoryStore.items?.data?.categories || []
+})
+
+watchEffect(() => {
+  customers.value = customerStore.items?.data || []
+})
+
+watchEffect(() => {
+  sales.value = productSaleStore.items?.data || []
+})
 
 // Customer Data
+const customerId = ref('')
 const customerName = ref('')
-const customers = ref(customersData.customers)
 const filteredCustomers = ref([])
 const isCustomerModalOpen = ref(false)
 const newCustomer = reactive({
@@ -793,9 +814,6 @@ const printOptions = {
   `
 }
 
-// New: Sales array (existing + newly added)
-const sales = ref(salesData.sales)
-
 // Sales Modal
 const isSalesModalOpen = ref(false)
 const salesSearchQuery = ref('')
@@ -880,7 +898,7 @@ const filteredSales = computed(() => {
 
   return sales.value.filter((sale) => {
     // Filter by date range
-    const saleDate = new Date(sale.date)
+    const saleDate = new Date(sale.created_at)
     if (from && saleDate < from) return false
     if (to) {
       // set 'to' to end of day to include that day
@@ -891,7 +909,7 @@ const filteredSales = computed(() => {
 
     // Filter by search query in ID or customerName or status
     if (q) {
-      const combined = `${sale.id} ${sale.customerName} ${sale.status}`.toLowerCase()
+      const combined = `${sale.id} ${sale.customer_name} ${sale.status}`.toLowerCase()
       if (!combined.includes(q)) return false
     }
     return true
@@ -967,8 +985,7 @@ function removeFromCart(index) {
   cart.value.splice(index, 1)
 }
 
-// Payment / Checkout
-function checkout() {
+async function checkout() {
   if (!selectedPaymentType.value) {
     Swal.fire({
       title: 'Error',
@@ -979,58 +996,76 @@ function checkout() {
     return
   }
 
-  // Build a sale object
-  const saleId = Date.now().toString() // Or use a better unique ID
+  const saleId = Date.now().toString()
   const newSale = {
-    id: saleId,
-    date: new Date().toISOString(),
-    customerName: customerName.value,
-    items: cart.value.map((item) => ({ ...item })), // clone
-    subTotal: subTotalBeforeGlobalDiscount.value,
-    discountAllItemsPercent: discountAllItemsPercent.value,
-    discountEntireSale: discountEntireSale.value,
-    total: totalCartAmount.value,
-    paymentType: selectedPaymentType.value,
-    checkNumber: checkNumber.value,
-    bankName: bankName.value,
-    walletReference: walletReference.value,
-    cardAuthCode: cardAuthCode.value,
-    bankReference: bankReference.value,
-    status: 'Complete' // completed sale
+    user_id: 1,
+    branch_id: 1,
+    warehouse_id: 1,
+    customer_id: customerId.value || null,
+    customer_name: customerName.value,
+    status: 'completed',
+    sale_date: new Date().toISOString(),
+    total_amount: totalCartAmount.value,
+    discount_total: discountEntireSale.value || 0.0,
+    remarks: 'Sale transaction',
+    payment_type: selectedPaymentType.value,
+    checkNumber: checkNumber.value || null,
+    bankName: bankName.value || null,
+    walletReference: walletReference.value || null,
+    cardAuthCode: cardAuthCode.value || null,
+    bankReference: bankReference.value || null,
+    items: cart.value.map((item) => ({
+      item_id: item.id,
+      price: item.price,
+      quantity: item.quantity,
+      discount: item.discount,
+      total: (item.price - item.discount) * item.quantity
+    }))
   }
 
-  // Push to sales array
-  sales.value.push(newSale)
+  try {
+    const result = await productSaleStore.createItem(newSale)
 
-  Swal.fire({
-    title: 'Checkout successful!',
-    html: `
-      <div style="text-align: left">
-        <p><strong>Payment:</strong> ${selectedPaymentType.value}</p>
-        <p><strong>Due:</strong> ₱${amountDue.value.toFixed(2)}</p>
-        <p><strong>Cart:</strong> ₱${totalCartAmount.value.toFixed(2)}</p>
-      </div>
-    `,
-    icon: 'success',
-    confirmButtonColor: '#b51919'
-  }).then(() => {
-    // After user clicks "OK," proceed
-    // Generate a transaction ID (already in newSale)
-    transactionId.value = saleId
-    // Open the receipt modal while cart is intact
-    openReceiptModal(newSale)
-  })
+    if (!result || result.error) {
+      throw new Error(result?.error || 'Unknown error occurred')
+    }
+
+    Swal.fire({
+      title: 'Checkout successful!',
+      html: `
+        <div style="text-align: left">
+          <p><strong>Payment:</strong> ${selectedPaymentType.value}</p>
+          <p><strong>Due:</strong> ₱${amountDue.value.toFixed(2)}</p>
+          <p><strong>Cart:</strong> ₱${totalCartAmount.value.toFixed(2)}</p>
+        </div>
+      `,
+      icon: 'success',
+      confirmButtonColor: '#b51919'
+    }).then(() => {
+      transactionId.value = saleId
+      openReceiptModal(result)
+    })
+  } catch (error) {
+    console.error('Checkout error:', error) // ✅ Debugging log for errors
+
+    Swal.fire({
+      title: 'Checkout Failed',
+      text: error.message || 'An error occurred while processing your sale.',
+      icon: 'error',
+      confirmButtonColor: '#b51919'
+    })
+  }
 }
 
 // Receipt Modal
 async function openReceiptModal(sale) {
   // Populate receiptData
   receiptData.id = sale.id
-  receiptData.date = sale.date
-  receiptData.customerName = sale.customerName
-  receiptData.items = sale.items
-  receiptData.total = sale.total
-  receiptData.paymentType = sale.paymentType
+  receiptData.date = sale.sale_date
+  receiptData.customerName = sale.customer_name
+  receiptData.items = sale.saleItems
+  receiptData.total = sale.total_amount
+  receiptData.paymentType = sale.payment_type
   receiptData.status = sale.status
 
   isReceiptModalOpen.value = true
@@ -1044,7 +1079,7 @@ async function openReceiptModal(sale) {
       lineColor: '#000',
       width: 2,
       height: 40,
-      displayValue: true
+      displayValue: false
     })
   }
 }
@@ -1138,14 +1173,17 @@ function saveCustomer() {
 function filterCustomers() {
   if (customerName.value) {
     const lower = customerName.value.toLowerCase()
-    filteredCustomers.value = customers.value.filter((c) => c.name.toLowerCase().includes(lower))
+    filteredCustomers.value = customers.value.filter((c) =>
+      `${c.first_name} ${c.last_name}`.toLowerCase().includes(lower)
+    )
   } else {
     filteredCustomers.value = []
   }
 }
 
-function selectCustomer(cust) {
-  customerName.value = cust.name
+function selectCustomer(c) {
+  customerId.value = c.id
+  customerName.value = `${c.first_name} ${c.last_name}`
   filteredCustomers.value = []
 }
 

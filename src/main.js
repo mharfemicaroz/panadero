@@ -5,15 +5,20 @@ import App from './App.vue'
 import router from './router'
 import { useMainStore } from '@/stores/main.js'
 
+import axiosInstance from './plugins/axiosConfig'
+
 import print from 'vue3-print-nb'
 
 import './css/main.css'
 
 // Init Pinia
+const app = createApp(App)
 const pinia = createPinia()
 
+app.config.globalProperties.$axios = axiosInstance
+
 // Create Vue app
-createApp(App).use(router).use(pinia).use(print).mount('#app')
+app.use(router).use(pinia).use(print).mount('#app')
 
 // Init main store
 const mainStore = useMainStore(pinia)
