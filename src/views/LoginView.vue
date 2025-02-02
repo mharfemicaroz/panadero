@@ -1,11 +1,10 @@
 <script setup>
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import { mdiAccount, mdiAsterisk } from '@mdi/js'
-import { useAuthStore } from '@/stores/auth' // Import authStore
 import SectionFullScreen from '@/components/SectionFullScreen.vue'
 import CardBox from '@/components/CardBox.vue'
-import FormCheckRadio from '@/components/FormCheckRadio.vue'
 import FormField from '@/components/FormField.vue'
 import FormControl from '@/components/FormControl.vue'
 import BaseButton from '@/components/BaseButton.vue'
@@ -14,19 +13,22 @@ import LayoutGuest from '@/layouts/LayoutGuest.vue'
 
 const form = reactive({
   login: '',
-  pass: '',
-  remember: true
+  pass: ''
 })
 
 const router = useRouter()
-const authStore = useAuthStore() // Initialize authStore
+const authStore = useAuthStore()
+const loading = ref(false)
 
 const submit = async () => {
   try {
-    await authStore.login(form.login, form.pass) // Call login action
-    router.push('/dashboard') // Redirect to dashboard on success
+    loading.value = true
+    await authStore.login(form.login, form.pass)
+    console.log(authStore.user)
   } catch (error) {
-    alert(error.message || 'Login failed') // Display error message
+    alert(error.message || 'Login failed')
+  } finally {
+    loading.value = false
   }
 }
 </script>
@@ -35,13 +37,12 @@ const submit = async () => {
   <LayoutGuest>
     <SectionFullScreen v-slot="{ cardClass }" bg="pinkRed">
       <CardBox :class="cardClass" is-form @submit.prevent="submit">
-        <!-- Logo and Title -->
         <div class="flex items-center justify-center mb-4">
           <img src="../../public/logo.png" alt="Logo" class="mx-2" width="25" />
           <b class="font-black text-lg">Panadero</b>
         </div>
 
-        <FormField label="Login" help="Please enter your login">
+        <FormField label="Login" help="Enter your login">
           <FormControl
             v-model="form.login"
             :icon="mdiAccount"
@@ -50,7 +51,7 @@ const submit = async () => {
           />
         </FormField>
 
-        <FormField label="Password" help="Please enter your password">
+        <FormField label="Password" help="Enter your password">
           <FormControl
             v-model="form.pass"
             :icon="mdiAsterisk"
@@ -60,17 +61,9 @@ const submit = async () => {
           />
         </FormField>
 
-        <FormCheckRadio
-          v-model="form.remember"
-          name="remember"
-          label="Remember"
-          :input-value="true"
-        />
-
         <template #footer>
           <BaseButtons>
-            <BaseButton type="submit" color="info" label="Login" />
-            <BaseButton to="/dashboard" color="info" outline label="Back" />
+            <BaseButton type="submit" color="info" label="Login" :disabled="loading" />
           </BaseButtons>
         </template>
       </CardBox>

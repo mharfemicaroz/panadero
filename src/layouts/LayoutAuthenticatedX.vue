@@ -13,7 +13,7 @@ import NavBarItemPlain from '@/components/NavBarItemPlain.vue'
 import AsideMenu from '@/components/AsideMenu.vue'
 import FooterBar from '@/components/FooterBar.vue'
 
-const layoutAsidePadding = 'xl:pl-60'
+const layoutAsidePadding = 'xl:pl-72 2xl:pl-80'
 
 const darkModeStore = useDarkModeStore()
 
@@ -29,18 +29,18 @@ router.beforeEach(() => {
 })
 
 const menuClick = (event, item) => {
-  if (item.isToggleLightDark) {
-    darkModeStore.set()
-  }
-
-  if (item.isLogout) {
-    logout()
-  }
+  if (item.isToggleLightDark) darkModeStore.set()
+  if (item.isLogout) logout()
+  if (item.issettings) settings()
 }
 
 const logout = () => {
-  authStore.logout() // Clear user data from authStore
-  router.push('/login') // Redirect to login page after logout
+  authStore.logout()
+  router.push('/login')
+}
+
+const settings = () => {
+  router.push('/security')
 }
 </script>
 
@@ -51,12 +51,12 @@ const logout = () => {
     }"
   >
     <div
-      :class="[layoutAsidePadding, { 'ml-60 lg:ml-0': isAsideMobileExpanded }]"
-      class="pt-14 min-h-screen w-screen transition-position lg:w-auto bg-gray-50 dark:bg-slate-800 dark:text-slate-100"
+      :class="[layoutAsidePadding, { 'ml-72 lg:ml-0': isAsideMobileExpanded }]"
+      class="pt-16 min-h-screen w-full transition-position bg-gray-50 dark:bg-slate-800 dark:text-slate-100"
     >
       <NavBar
         :menu="menuNavBar"
-        :class="[layoutAsidePadding, { 'ml-60 lg:ml-0': isAsideMobileExpanded }]"
+        :class="[layoutAsidePadding, { 'ml-72 lg:ml-0': isAsideMobileExpanded }]"
         @menu-click="menuClick"
       >
         <NavBarItemPlain
@@ -76,13 +76,16 @@ const logout = () => {
         :is-aside-mobile-expanded="isAsideMobileExpanded"
         :is-aside-lg-active="isAsideLgActive"
         :menu="menuAside"
+        class="w-72 2xl:w-80"
         @menu-click="menuClick"
         @aside-lg-close-click="isAsideLgActive = false"
       />
-      <slot />
-      <FooterBar>
+      <div class="px-6 xl:px-8 2xl:px-12">
+        <slot />
+      </div>
+      <FooterBar class="text-center text-sm py-4">
         Get more with
-        <a href="https://area51.ph/" target="_blank" class="text-blue-600">
+        <a href="https://area51.ph/" target="_blank" class="text-blue-600 font-semibold">
           Area51 Systems Solutions
         </a>
         – Your partner for innovative technology solutions.

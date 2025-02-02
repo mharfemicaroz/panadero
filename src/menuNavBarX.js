@@ -9,7 +9,10 @@ import {
   mdiLogout,
   mdiThemeLightDark,
   mdiGithub,
-  mdiReact
+  mdiReact,
+  mdiAccountSettings,
+  mdiSettingsHelper,
+  mdiApplicationSettings
 } from '@mdi/js'
 
 export default [
@@ -22,11 +25,16 @@ export default [
         to: '/profile'
       },
       {
+        icon: mdiCogOutline,
+        label: 'Security',
+        issettings: true
+      },
+      {
         isDivider: true
       },
       {
         icon: mdiLogout,
-        label: 'Log Out',
+        label: 'Log out',
         isLogout: true
       }
     ]

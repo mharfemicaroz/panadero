@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-[#f8f8f8] min-h-screen flex">
+  <div class="bg-[#f8f8f8] min-h-screen flex p-4 md:p-8">
     <!-- MAIN CONTENT -->
     <div class="container mx-auto py-8 flex-1">
       <!-- BREADCRUMB NAVIGATION -->
@@ -546,7 +546,7 @@
                 <div class="flex gap-2">
                   <!-- Unsuspend if status = Suspended -->
                   <button
-                    v-if="sale.status === 'Suspended'"
+                    v-if="sale.status === 'suspended'"
                     @click="unsuspendSale(sale)"
                     class="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700"
                   >
@@ -554,7 +554,7 @@
                   </button>
                   <!-- Void if status = Suspended or Complete -->
                   <button
-                    v-if="sale.status === 'Suspended' || sale.status === 'Complete'"
+                    v-if="sale.status === 'suspended' || sale.status === 'completed'"
                     @click="voidSale(sale)"
                     class="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700"
                   >

@@ -1,4 +1,5 @@
 import { createWebHashHistory, createRouter } from 'vue-router'
+import { authGuard } from './routeGuard'
 
 const routes = [
   // {
@@ -12,11 +13,7 @@ const routes = [
   {
     path: '/',
     name: 'home',
-    redirect: () => {
-      // Check if the user is authenticated
-      const isAuthenticated = localStorage.getItem('authToken')
-      return isAuthenticated ? { name: 'dashboard' } : { name: 'login' }
-    }
+    redirect: { name: 'dashboard' } // No need to check auth here, let routeGuard handle it
   },
   {
     meta: {
@@ -25,6 +22,22 @@ const routes = [
     path: '/login',
     name: 'login',
     component: () => import('@/views/LoginView.vue')
+  },
+  {
+    meta: {
+      title: 'OTP Verification'
+    },
+    path: '/otp',
+    name: 'otp',
+    component: () => import('@/views/OtpView.vue')
+  },
+  {
+    meta: {
+      title: 'Two-Factor Authentication'
+    },
+    path: '/security',
+    name: 'security',
+    component: () => import('@/views/SecuritySettings.vue')
   },
   {
     meta: {
@@ -377,17 +390,6 @@ const router = createRouter({
   }
 })
 
-// Navigation guard to check authentication
-router.beforeEach((to, from, next) => {
-  const isAuthenticated = localStorage.getItem('authToken') // Check token in localStorage
-  if (to.meta.requiresAuth && !isAuthenticated) {
-    next({ name: 'login' })
-  } else if (to.name === 'login' && isAuthenticated) {
-    // Prevent accessing login page if already authenticated
-    next({ name: 'dashboard' })
-  } else {
-    next()
-  }
-})
+router.beforeEach(authGuard)
 
 export default router

@@ -1,34 +1,64 @@
 import axios from 'axios'
 import { useAuthStore } from '../stores/auth'
 
-// Determine the current origin
-const API_BASE_URL = 'http://localhost:3000/api/'
-const FRONTEND_ORIGIN =
-  window.location.origin === 'http://localhost:8081' ||
-  window.location.origin === 'https://panadero.area51.ph'
-    ? window.location.origin
-    : 'http://localhost:5173'
+// 🔹 Define API and Frontend origins
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api'
+const ALLOWED_ORIGINS = [
+  'http://localhost:8081',
+  'https://panadero.area51.ph',
+  'http://localhost:5173'
+]
+const FRONTEND_ORIGIN = ALLOWED_ORIGINS.includes(window.location.origin)
+  ? window.location.origin
+  : 'http://localhost:5173'
 
-// Create the Axios instance
+// 🔹 Create Axios instance
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    Origin: FRONTEND_ORIGIN
-  }
+  headers: { Origin: FRONTEND_ORIGIN }
 })
 
-// Add a request interceptor to include the Bearer token
+// 🔹 Request Interceptor: Attach Bearer Token
 axiosInstance.interceptors.request.use(
   (config) => {
-    const authStore = useAuthStore() // Access the Pinia auth store
-    const token = authStore.token // Retrieve the token from the store
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}` // Add the Bearer token
+    const authStore = useAuthStore()
+    if (authStore.token) {
+      config.headers.Authorization = `Bearer ${authStore.token}`
     }
     return config
   },
   (error) => Promise.reject(error)
 )
 
-// Export the Axios instance
+// 🔹 Response Interceptor: Handle Token Expiry & Refresh
+axiosInstance.interceptors.response.use(
+  (response) => response, // Pass valid responses
+  async (error) => {
+    const authStore = useAuthStore()
+    const originalRequest = error.config
+
+    // 🔥 If 401 (Unauthorized), attempt to refresh token
+    if (error.response && error.response.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true // Prevent infinite loops
+
+      try {
+        const refreshResponse = await axios.post(`${API_BASE_URL}/auth/refresh`, {
+          refreshToken: authStore.refreshToken // Send refresh token
+        })
+
+        // ✅ Update token and retry failed request
+        authStore.token = refreshResponse.data.accessToken
+        localStorage.setItem('authToken', authStore.token)
+        originalRequest.headers.Authorization = `Bearer ${authStore.token}`
+
+        return axiosInstance(originalRequest) // 🔄 Retry failed request
+      } catch (refreshError) {
+        // authStore.logout() // ❌ If refresh fails, force logout
+      }
+    }
+
+    return Promise.reject(error) // Pass other errors
+  }
+)
+
 export default axiosInstance
