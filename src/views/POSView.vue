@@ -503,9 +503,17 @@
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
     >
       <div class="bg-white p-6 rounded-lg w-2/3 max-h-[80vh] overflow-y-auto">
-        <h2 class="text-xl font-bold mb-4">All Sales</h2>
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-bold">All Sales</h2>
+          <button
+            type="button"
+            @click="closeSalesModal"
+            class="p-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+          >
+            Close
+          </button>
+        </div>
 
-        <!-- Search and Filter -->
         <div class="flex flex-wrap gap-2 mb-4">
           <input
             v-model="salesSearchQuery"
@@ -535,16 +543,14 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="sale in filteredSales" :key="sale.id" class="border-b">
+            <tr v-for="sale in sales" :key="sale.id" class="border-b">
               <td class="p-2">{{ sale.id }}</td>
               <td class="p-2">{{ formatDate(sale.created_at) }}</td>
               <td class="p-2">{{ sale.customer_name || 'N/A' }}</td>
               <td class="p-2">{{ sale.status }}</td>
               <td class="p-2 text-right">₱{{ (Number(sale.total_amount) || 0).toFixed(2) }}</td>
               <td class="p-2">
-                <!-- Actions -->
                 <div class="flex gap-2">
-                  <!-- Unsuspend if status = Suspended -->
                   <button
                     v-if="sale.status === 'suspended'"
                     @click="unsuspendSale(sale)"
@@ -552,7 +558,6 @@
                   >
                     Unsuspend
                   </button>
-                  <!-- Void if status = Suspended or Complete -->
                   <button
                     v-if="sale.status === 'suspended' || sale.status === 'completed'"
                     @click="voidSale(sale)"
@@ -560,7 +565,6 @@
                   >
                     Void
                   </button>
-                  <!-- Print (always) -->
                   <button
                     @click="printExistingSale(sale)"
                     class="px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -573,13 +577,21 @@
           </tbody>
         </table>
 
-        <div class="flex justify-end gap-2 mt-4">
+        <div class="flex justify-between items-center mt-4">
           <button
-            type="button"
-            @click="closeSalesModal"
-            class="p-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+            @click="prevPage"
+            :disabled="currentPage === 1"
+            class="p-2 bg-gray-500 text-white rounded hover:bg-gray-600 disabled:opacity-50"
           >
-            Close
+            Previous
+          </button>
+          <span>Page {{ currentPage }} of {{ totalPages }}</span>
+          <button
+            @click="nextPage"
+            :disabled="currentPage === totalPages"
+            class="p-2 bg-gray-500 text-white rounded hover:bg-gray-600 disabled:opacity-50"
+          >
+            Next
           </button>
         </div>
       </div>
@@ -627,7 +639,7 @@
             <div
               style="width: 10em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis"
             >
-              {{ item.name }}
+              {{ item.item?.name ?? item.name }}
             </div>
 
             <!-- Quantity -->
@@ -675,7 +687,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, nextTick, watchEffect } from 'vue'
+import { ref, reactive, computed, nextTick, watchEffect, watch } from 'vue'
 import JsBarcode from 'jsbarcode'
 import Swal from 'sweetalert2'
 import { mdiAccountPlus } from '@mdi/js'
@@ -706,6 +718,17 @@ const categories = ref([])
 const customers = ref([])
 const sales = ref([])
 
+// Sales Modal
+const isSalesModalOpen = ref(false)
+const salesSearchQuery = ref('')
+const salesFromDate = ref('')
+const salesToDate = ref('')
+
+const currentPage = ref(1)
+const pageSize = ref(10)
+
+const totalPages = computed(() => productSaleStore.totalPages)
+
 watchEffect(() => {
   categories.value = productCategoryStore.items?.data?.categories || []
 })
@@ -717,6 +740,29 @@ watchEffect(() => {
 watchEffect(() => {
   sales.value = productSaleStore.items?.data || []
 })
+
+watch(
+  [salesSearchQuery, salesFromDate, salesToDate, currentPage],
+  () => {
+    productSaleStore.fetchItems({
+      page: currentPage.value,
+      limit: pageSize.value,
+      filters: {
+        start_date: salesFromDate.value || null,
+        end_date: salesToDate.value || null,
+        query: salesSearchQuery.value.trim() || null
+      }
+    })
+  },
+  { immediate: true }
+)
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) currentPage.value++
+}
+const prevPage = () => {
+  if (currentPage.value > 1) currentPage.value--
+}
 
 // Customer Data
 const customerId = ref('')
@@ -813,12 +859,6 @@ const printOptions = {
     }
   `
 }
-
-// Sales Modal
-const isSalesModalOpen = ref(false)
-const salesSearchQuery = ref('')
-const salesFromDate = ref('')
-const salesToDate = ref('')
 
 // ----- Computed -----
 
@@ -1189,6 +1229,7 @@ function selectCustomer(c) {
 
 // Sales Modal
 function openSalesModal() {
+  productSaleStore.fetchItems()
   isSalesModalOpen.value = true
 }
 

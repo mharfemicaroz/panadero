@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import saleService from '../../services/product/saleService'
 
 export const useProductSaleStore = defineStore('sale', () => {
@@ -7,11 +7,18 @@ export const useProductSaleStore = defineStore('sale', () => {
   const items = ref([])
   const item = ref(null)
 
+  const totalItems = ref(0)
+  const pageSize = ref(10)
+
+  const totalPages = ref(1)
+
   // Actions
   const fetchItems = async (queryParams) => {
     try {
       const response = await saleService.list(queryParams)
       items.value = response
+      totalItems.value = response.total
+      totalPages.value = response.totalPages
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to fetch items')
     }
@@ -72,6 +79,9 @@ export const useProductSaleStore = defineStore('sale', () => {
   return {
     items,
     item,
+    totalItems,
+    totalPages,
+    pageSize,
     fetchItems,
     fetchItemById,
     createItem,
