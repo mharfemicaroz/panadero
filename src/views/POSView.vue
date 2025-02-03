@@ -627,7 +627,7 @@
             <div
               style="width: 10em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis"
             >
-              {{ item.item.name }}
+              {{ item.name }}
             </div>
 
             <!-- Quantity -->
@@ -1063,7 +1063,7 @@ async function openReceiptModal(sale) {
   receiptData.id = sale.id
   receiptData.date = sale.sale_date
   receiptData.customerName = sale.customer_name
-  receiptData.items = sale.saleItems
+  receiptData.items = sale.saleItems || cart.value
   receiptData.total = sale.total_amount
   receiptData.paymentType = sale.payment_type
   receiptData.status = sale.status
