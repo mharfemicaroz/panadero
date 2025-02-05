@@ -11,9 +11,6 @@ import print from 'vue3-print-nb'
 
 import './css/main.css'
 
-import Loading from 'vue-loading-overlay'
-import 'vue-loading-overlay/dist/css/index.css'
-
 // Init Pinia
 const app = createApp(App)
 const pinia = createPinia()
