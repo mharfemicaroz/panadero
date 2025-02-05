@@ -2,15 +2,11 @@ import axios from 'axios'
 import { useAuthStore } from '../stores/auth'
 
 // 🔹 Define API and Frontend origins
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api'
-const ALLOWED_ORIGINS = [
-  'http://localhost:8081',
-  'https://panadero.area51.ph',
-  'http://localhost:5173'
-]
-const FRONTEND_ORIGIN = ALLOWED_ORIGINS.includes(window.location.origin)
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+const ALLOWED_ORIGINS = new Set(import.meta.env.VITE_ALLOWED_ORIGINS?.split(','))
+const FRONTEND_ORIGIN = ALLOWED_ORIGINS.has(window.location.origin)
   ? window.location.origin
-  : 'http://localhost:5173'
+  : import.meta.env.VITE_FALLBACK_ORIGIN || ''
 
 // 🔹 Create Axios instance
 const axiosInstance = axios.create({
