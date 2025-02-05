@@ -1,4 +1,3 @@
-<!-- CategoryGroupView.vue -->
 <script setup>
 import { ref, computed } from 'vue'
 import { useCategoryGroupStore } from '@/stores/product/categoryGroup'
@@ -9,32 +8,21 @@ import BaseButton from '@/components/BaseButton.vue'
 import { mdiPlus, mdiTableBorder } from '@mdi/js'
 
 // --------------------------------------
-// State for adding & editing a category group
+// State for modals
 // --------------------------------------
 const showNewCategoryGroupModal = ref(false)
-const newCategoryGroupForm = ref({
-  name: ''
-})
+const newCategoryGroupForm = ref({ name: '' })
 
 const showEditCategoryGroupModal = ref(false)
-const editCategoryGroupForm = ref({
-  id: null,
-  name: ''
-})
+const editCategoryGroupForm = ref({ id: null, name: '' })
 
-// --------------------------------------
 // Store
-// --------------------------------------
 const categoryGroupStore = useCategoryGroupStore()
 
-// --------------------------------------
-// Fetch + Computed
-// --------------------------------------
+// Fetch data
 async function fetchCategoryGroups(queryParams) {
   await categoryGroupStore.fetchItems(queryParams)
 }
-
-// onMounted or initial:
 fetchCategoryGroups({ page: 1, limit: 5 })
 
 const categoryGroupData = computed(() => ({
@@ -45,9 +33,7 @@ const categoryGroupData = computed(() => ({
   data: categoryGroupStore.items?.data || []
 }))
 
-// --------------------------------------
 // Table Definition
-// --------------------------------------
 const categoryGroupColumns = [{ key: 'name', label: 'Name', sortable: true, filterable: true }]
 
 // Table events
@@ -65,41 +51,31 @@ const handleEditCategoryGroup = (row) => {
   showEditCategoryGroupModal.value = true
 }
 
-// --------------------------------------
-// CREATE + UPDATE
-// --------------------------------------
+// Create & Update
 function showNewGroupModal() {
   newCategoryGroupForm.value = { name: '' }
   showNewCategoryGroupModal.value = true
 }
-
 async function saveNewCategoryGroup() {
   try {
     await categoryGroupStore.createItem(newCategoryGroupForm.value)
-    console.log('New category group created!')
     showNewCategoryGroupModal.value = false
     await fetchCategoryGroups({ page: 1, limit: 5 })
   } catch (err) {
     console.error('Error creating group:', err)
   }
 }
-
 async function updateCategoryGroup() {
   try {
     await categoryGroupStore.updateItem(editCategoryGroupForm.value.id, {
       name: editCategoryGroupForm.value.name
     })
-    console.log('Category group updated!')
     showEditCategoryGroupModal.value = false
     await fetchCategoryGroups({ page: 1, limit: 5 })
   } catch (err) {
     console.error('Error updating group:', err)
   }
 }
-
-// --------------------------------------
-// CLOSE
-// --------------------------------------
 function closeNewGroupModal() {
   showNewCategoryGroupModal.value = false
 }
@@ -109,7 +85,6 @@ function closeEditGroupModal() {
 </script>
 
 <template>
-  <!-- Optional header, or you can remove since your main tab might have a title already -->
   <SectionTitleLineWithButton :icon="mdiTableBorder" title="Category Group" main>
     <BaseButton
       :icon="mdiPlus"
@@ -120,9 +95,11 @@ function closeEditGroupModal() {
   </SectionTitleLineWithButton>
 
   <CardBox class="mb-6">
+    <!-- Pass the isLoading state as well -->
     <BaseTable
       :columns="categoryGroupColumns"
       :data="categoryGroupData"
+      :loading="categoryGroupStore.isLoading"
       checkable
       @query-change="handleQueryChange"
       @selected="handleSelected"

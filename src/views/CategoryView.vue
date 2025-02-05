@@ -1,4 +1,3 @@
-<!-- CategoryView.vue -->
 <script setup>
 import { ref, computed } from 'vue'
 import { useProductCategoryStore } from '@/stores/product/category'
@@ -9,9 +8,6 @@ import SectionTitleLineWithButton from '@/components/SectionTitleLineWithButton.
 import BaseButton from '@/components/BaseButton.vue'
 import { mdiPlus, mdiTableBorder } from '@mdi/js'
 
-// --------------------------------------
-// Category Modals: Add & Edit
-// --------------------------------------
 const showNewCategoryModal = ref(false)
 const newCategoryForm = ref({
   name: '',
@@ -27,20 +23,16 @@ const editCategoryForm = ref({
   isActive: true
 })
 
-// --------------------------------------
 // STORES
-// --------------------------------------
 const categoryStore = useProductCategoryStore()
 const categoryGroupStore = useCategoryGroupStore()
 
-// --------------------------------------
-// FETCH + COMPUTED DATA
-// --------------------------------------
+// FETCH DATA
 async function fetchCategories(queryParams) {
+  // Make sure you set isLoading=true in your store before the fetch,
+  // and isLoading=false after the fetch completes
   await categoryStore.fetchItems(queryParams)
 }
-
-// On mounted or whenever needed, fetch data
 fetchCategories({ page: 1, limit: 5 })
 
 const categoryData = computed(() => ({
@@ -51,9 +43,7 @@ const categoryData = computed(() => ({
   data: categoryStore.items?.data || []
 }))
 
-// --------------------------------------
-// TABLE DEFINITION
-// --------------------------------------
+// Table columns
 const categoryColumns = [
   { key: 'name', label: 'Name', sortable: true, filterable: true },
   {
@@ -67,14 +57,11 @@ const categoryColumns = [
 const handleQueryChange = async (query) => {
   await fetchCategories(query)
 }
-
 const handleSelected = (selectedItems) => {
   console.log('Selected categories:', selectedItems)
 }
-
 const handleEditCategory = async (row) => {
   console.log('Edit Category:', row)
-  // fetch the latest category groups
   await categoryGroupStore.fetchItems()
 
   editCategoryForm.value = {
@@ -86,11 +73,8 @@ const handleEditCategory = async (row) => {
   showEditCategoryModal.value = true
 }
 
-// --------------------------------------
-// CREATE + UPDATE CATEGORY
-// --------------------------------------
+// Add new category
 const handleShowNewCategoryModal = async () => {
-  // fetch the latest category groups for the dropdown
   await categoryGroupStore.fetchItems()
 
   newCategoryForm.value = {
@@ -100,7 +84,6 @@ const handleShowNewCategoryModal = async () => {
   }
   showNewCategoryModal.value = true
 }
-
 async function saveNewCategory() {
   try {
     await categoryStore.createItem({
@@ -109,13 +92,13 @@ async function saveNewCategory() {
       isActive: newCategoryForm.value.isActive
     })
     showNewCategoryModal.value = false
-    console.log('New category created!')
     await fetchCategories({ page: 1, limit: 5 })
   } catch (error) {
     console.error('Error creating category:', error)
   }
 }
 
+// Update category
 async function updateCategory() {
   try {
     await categoryStore.updateItem(editCategoryForm.value.id, {
@@ -124,22 +107,18 @@ async function updateCategory() {
       isActive: editCategoryForm.value.isActive
     })
     showEditCategoryModal.value = false
-    console.log('Category updated!')
     await fetchCategories({ page: 1, limit: 5 })
   } catch (error) {
     console.error('Error updating category:', error)
   }
 }
 
-// --------------------------------------
-// CLOSE MODALS
-// --------------------------------------
+// Close modals
 const closeNewCategoryModal = () => (showNewCategoryModal.value = false)
 const closeEditCategoryModal = () => (showEditCategoryModal.value = false)
 </script>
 
 <template>
-  <!-- A title and "New Category" button (optional) -->
   <SectionTitleLineWithButton :icon="mdiTableBorder" title="Category" main>
     <BaseButton
       :icon="mdiPlus"
@@ -149,11 +128,12 @@ const closeEditCategoryModal = () => (showEditCategoryModal.value = false)
     />
   </SectionTitleLineWithButton>
 
-  <!-- Table -->
   <CardBox class="mb-6">
+    <!-- Pass `loading` prop to BaseTable -->
     <BaseTable
       :columns="categoryColumns"
       :data="categoryData"
+      :loading="categoryStore.isLoading"
       checkable
       @query-change="handleQueryChange"
       @selected="handleSelected"
@@ -161,7 +141,7 @@ const closeEditCategoryModal = () => (showEditCategoryModal.value = false)
     />
   </CardBox>
 
-  <!-- New Category Modal -->
+  <!-- Modals... -->
   <div
     v-if="showNewCategoryModal"
     class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
@@ -177,7 +157,6 @@ const closeEditCategoryModal = () => (showEditCategoryModal.value = false)
           class="w-full border p-2 rounded"
         />
       </div>
-
       <div class="mb-4">
         <label class="block mb-1" for="catGroupSelect">Category Group</label>
         <select
@@ -191,12 +170,10 @@ const closeEditCategoryModal = () => (showEditCategoryModal.value = false)
           </option>
         </select>
       </div>
-
       <div class="mb-4 flex items-center">
         <input id="isActive" type="checkbox" v-model="newCategoryForm.isActive" class="mr-2" />
         <label for="isActive">Show in POS?</label>
       </div>
-
       <div class="flex justify-end space-x-2">
         <button class="px-4 py-2 bg-gray-200 rounded" @click="closeNewCategoryModal">Cancel</button>
         <button class="px-4 py-2 bg-blue-600 text-white rounded" @click="saveNewCategory">
@@ -222,7 +199,6 @@ const closeEditCategoryModal = () => (showEditCategoryModal.value = false)
           class="w-full border p-2 rounded"
         />
       </div>
-
       <div class="mb-4">
         <label class="block mb-1" for="editCatGroupSelect">Category Group</label>
         <select
@@ -236,12 +212,10 @@ const closeEditCategoryModal = () => (showEditCategoryModal.value = false)
           </option>
         </select>
       </div>
-
       <div class="mb-4 flex items-center">
         <input id="editIsActive" type="checkbox" v-model="editCategoryForm.isActive" class="mr-2" />
         <label for="editIsActive">Show in POS?</label>
       </div>
-
       <div class="flex justify-end space-x-2">
         <button class="px-4 py-2 bg-gray-200 rounded" @click="closeEditCategoryModal">
           Cancel

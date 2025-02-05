@@ -25,7 +25,14 @@ const props = defineProps({
       data: []
     })
   },
-  checkable: Boolean
+  checkable: Boolean,
+  /**
+   * NEW: `loading` prop to indicate when data is being fetched
+   */
+  loading: {
+    type: Boolean,
+    default: false
+  }
 })
 
 // Emit events to the parent
@@ -41,7 +48,7 @@ const internalFilters = ref({})
 // Object to control display of filter inputs per column
 const showFilters = ref({})
 
-// When props.data changes, update the internal pagination state
+// Watch data changes
 watch(
   () => props.data.currentPage,
   (newVal) => {
@@ -55,17 +62,7 @@ watch(
   }
 )
 
-// Compute a “safe” data object (if not provided, fallback defaults)
-const safeData = computed(
-  () =>
-    props.data || {
-      total: 0,
-      totalPages: 1,
-      currentPage: 1,
-      pageSize: 10,
-      data: []
-    }
-)
+const safeData = computed(() => props.data)
 
 // --- Selection state ---
 const selectedRows = ref(new Set())
@@ -86,15 +83,13 @@ const allSelected = computed(
 
 // --- Pagination logic ---
 const totalPages = computed(() => {
-  // Use the safeData totalPages if provided, otherwise calculate based on total and page size
   return safeData.value.totalPages || Math.ceil(safeData.value.total / internalPageSize.value) || 1
 })
 
-// Computed property for pagination pages (with ellipsis)
 const paginationPages = computed(() => {
   const total = totalPages.value
   const current = internalPage.value
-  const delta = 2 // pages to show on each side
+  const delta = 2
   const pages = []
 
   if (total <= 7) {
@@ -130,7 +125,7 @@ const updateQuery = () => {
   })
 }
 
-// --- Methods for Pagination, Sorting, Filtering, and Selection ---
+// --- Methods ---
 const goToPage = (page) => {
   if (page >= 1 && page <= totalPages.value) {
     internalPage.value = page
@@ -140,7 +135,7 @@ const goToPage = (page) => {
 
 const updatePageSize = (event) => {
   internalPageSize.value = Number(event.target.value)
-  internalPage.value = 1 // reset to page 1
+  internalPage.value = 1
   updateQuery()
 }
 
@@ -161,12 +156,11 @@ const setFilter = (key, value) => {
   updateQuery()
 }
 
-// Toggle the visibility of the filter input for a column
 const toggleFilterDropdown = (key) => {
   showFilters.value[key] = !showFilters.value[key]
 }
 
-// Selection methods
+// --- Selection methods ---
 const toggleSelectAll = (checked) => {
   if (checked) {
     selectedRows.value = new Set(filteredItems.value.map((item) => item.id))
@@ -185,24 +179,30 @@ const toggleSelectRow = (checked, row) => {
   emit('selected', Array.from(selectedRows.value))
 }
 
-// --- Edit Row Method ---
+// --- Edit Row ---
 const editRow = (item) => {
-  // Emit the row data
   emit('edit', item)
 }
 </script>
 
 <template>
-  <div class="rounded-lg border border-gray-200 shadow-sm bg-white">
-    <table class="w-full border-collapse bg-white">
+  <div class="rounded-lg border border-gray-200 shadow-sm bg-white relative">
+    <!-- Overlay or placeholder when loading is true -->
+    <div
+      v-if="loading"
+      class="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-10"
+    >
+      <div class="text-gray-600">Loading...</div>
+    </div>
+
+    <!-- You can also dim the table with opacity if loading, up to your preference -->
+    <table class="w-full border-collapse bg-white" :class="{ 'opacity-50': loading }">
       <thead class="bg-white text-gray-700 text-sm border-b">
         <tr>
-          <!-- Checkbox column if checkable -->
           <th v-if="checkable" class="p-2 w-10 text-center">
             <TableCheckboxCell :modelValue="allSelected" @update:modelValue="toggleSelectAll" />
           </th>
 
-          <!-- Table columns -->
           <th v-for="col in columns" :key="col.key" class="px-4 py-2 text-left">
             <div class="flex items-center justify-between">
               <span class="font-medium">{{ col.label }}</span>
@@ -239,22 +239,18 @@ const editRow = (item) => {
               </div>
             </transition>
           </th>
-          <!-- Action column header -->
           <th class="px-4 py-2">Action</th>
         </tr>
       </thead>
-
       <tbody>
+        <!-- Render table rows as usual -->
         <tr v-for="item in safeData.data" :key="item.id" class="border-t text-sm hover:bg-gray-50">
-          <!-- Checkbox cell if checkable -->
           <td v-if="checkable" class="p-2 w-10 text-center">
             <TableCheckboxCell
               :modelValue="selectedRows.has(item.id)"
               @update:modelValue="toggleSelectRow($event, item)"
             />
           </td>
-
-          <!-- Data cells, possibly using a formatter -->
           <td v-for="col in columns" :key="col.key" class="px-4 py-2">
             <span v-if="col.formatter">
               {{ col.formatter(item[col.key], item) }}
@@ -264,10 +260,8 @@ const editRow = (item) => {
             </span>
           </td>
 
-          <!-- Edit button in the Action column -->
           <td class="px-4 py-2">
             <BaseButtons>
-              <!-- The Edit button now emits "edit" event with the row data -->
               <BaseButton :icon="mdiPencil" small @click="editRow(item)" />
             </BaseButtons>
           </td>
