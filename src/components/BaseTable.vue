@@ -192,7 +192,7 @@ const editRow = (item) => {
       v-if="loading"
       class="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-10"
     >
-      <div class="text-gray-600">Loading...</div>
+      <div class="spinner-dual-ring"></div>
     </div>
 
     <!-- You can also dim the table with opacity if loading, up to your preference -->

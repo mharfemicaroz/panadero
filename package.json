@@ -18,6 +18,7 @@
     "jwt-decode": "^4.0.0",
     "numeral": "^2.0.6",
     "pinia": "^2.1.6",
+    "spinners": "^1.2.2",
     "sweetalert2": "^11.15.10",
     "v-dropdown": "^3.0.0",
     "vue": "^3.3.4",
