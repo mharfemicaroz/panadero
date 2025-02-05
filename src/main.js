@@ -10,7 +10,7 @@ import axiosInstance from './plugins/axiosConfig'
 import print from 'vue3-print-nb'
 
 import './css/main.css'
-import 'spinners/dist/spinners.css'
+import 'spinners/main.css'
 
 // Init Pinia
 const app = createApp(App)
