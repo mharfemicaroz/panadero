@@ -192,7 +192,17 @@ const editRow = (item) => {
       v-if="loading"
       class="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-10"
     >
-      <div class="spinner-dual-ring"></div>
+      <Loading
+        :active="loading"
+        :can-cancel="false"
+        :is-full-page="false"
+        :color="'#3b82f6'"
+        :height="64"
+        :width="64"
+        class="z-10"
+      >
+        <div class="text-gray-600">Loading...</div>
+      </Loading>
     </div>
 
     <!-- You can also dim the table with opacity if loading, up to your preference -->
