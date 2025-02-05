@@ -3,66 +3,81 @@ import { ref } from 'vue'
 import categoryGroupService from '../../services/product/categoryGroupService'
 
 export const useCategoryGroupStore = defineStore('categoryGroup', () => {
-  // State
-  const categoryGroups = ref([])
-  const categoryGroup = ref(null)
+  // State: using an object structure for paginated items
+  const items = ref({
+    total: 0,
+    totalPages: 1,
+    currentPage: 1,
+    pageSize: 10,
+    data: []
+  })
+  const item = ref(null)
 
   // Actions
-  const fetchAll = async (queryParams) => {
+  const fetchItems = async (queryParams) => {
     try {
       const response = await categoryGroupService.list(queryParams)
-      categoryGroups.value = response
+      // Ensure reactivity by updating the object via Object.assign
+      Object.assign(items.value, {
+        total: response.total || 0,
+        totalPages: response.totalPages || 1,
+        currentPage: queryParams?.page || 1, // Ensure the requested page is set
+        pageSize: queryParams?.limit || 10,
+        data: response.data || []
+      })
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch category groups')
+      throw new Error(error.response?.data?.message || 'Failed to fetch items')
     }
   }
 
-  const fetchById = async (id) => {
+  const fetchItemById = async (itemId) => {
     try {
-      const response = await categoryGroupService.getById(id)
-      categoryGroup.value = response
+      const response = await categoryGroupService.getById(itemId)
+      item.value = response
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch category group')
+      throw new Error(error.response?.data?.message || 'Failed to fetch item')
     }
   }
 
-  const create = async (data) => {
+  const createItem = async (itemData) => {
     try {
-      const response = await categoryGroupService.create(data)
-      categoryGroups.value.push(response)
+      const response = await categoryGroupService.create(itemData)
+      items.value.data.push(response)
+      items.value.total += 1
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to create category group')
+      throw new Error(error.response?.data?.message || 'Failed to create item')
     }
   }
 
-  const updateById = async (id, data) => {
+  const updateItem = async (itemId, itemData) => {
     try {
-      const response = await categoryGroupService.updateById(id, data)
-      const index = categoryGroups.value.findIndex((cg) => cg.id === id)
+      const response = await categoryGroupService.updateById(itemId, itemData)
+      const index = items.value.data.findIndex((s) => s.id === itemId)
       if (index !== -1) {
-        categoryGroups.value[index] = response
+        items.value.data[index] = response
       }
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to update category group')
+      throw new Error(error.response?.data?.message || 'Failed to update item')
     }
   }
 
-  const deleteById = async (id) => {
+  const deleteItem = async (itemId) => {
     try {
-      await categoryGroupService.delete(id)
-      categoryGroups.value = categoryGroups.value.filter((cg) => cg.id !== id)
+      await categoryGroupService.delete(itemId)
+      items.value.data = items.value.data.filter((s) => s.id !== itemId)
+      items.value.total -= 1
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to delete category group')
+      throw new Error(error.response?.data?.message || 'Failed to delete item')
     }
   }
 
   return {
-    categoryGroups,
-    categoryGroup,
-    fetchAll,
-    fetchById,
-    create,
-    updateById,
-    deleteById
+    items,
+    item,
+    fetchItems,
+    fetchItemById,
+    createItem,
+    updateItem,
+    deleteItem
   }
 })

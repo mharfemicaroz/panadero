@@ -165,16 +165,16 @@ const routes = [
     },
     path: '/category',
     name: 'category',
-    component: () => import('@/views/CategoryView.vue')
+    component: () => import('@/views/CategoryMainView.vue')
   },
-  {
-    meta: {
-      title: 'Category Group'
-    },
-    path: '/category_group',
-    name: 'category_group',
-    component: () => import('@/views/CategoryGroupView.vue')
-  },
+  // {
+  //   meta: {
+  //     title: 'Category Group'
+  //   },
+  //   path: '/category_group',
+  //   name: 'category_group',
+  //   component: () => import('@/views/CategoryGroupView.vue')
+  // },
   {
     meta: {
       title: 'Discounts'

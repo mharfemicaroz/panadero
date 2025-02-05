@@ -4,14 +4,28 @@ import categoryService from '../../services/product/categoryService'
 
 export const useProductCategoryStore = defineStore('productCategory', () => {
   // State
-  const items = ref([])
+  const items = ref({
+    total: 0,
+    totalPages: 1,
+    currentPage: 1,
+    pageSize: 10,
+    data: []
+  })
   const item = ref(null)
 
   // Actions
   const fetchItems = async (queryParams) => {
     try {
       const response = await categoryService.list(queryParams)
-      items.value = response
+
+      // Ensure reactivity by using Object.assign
+      Object.assign(items.value, {
+        total: response.total || 0,
+        totalPages: response.totalPages || 1,
+        currentPage: queryParams?.page || 1, // Ensure the requested page is set
+        pageSize: queryParams?.limit || 10,
+        data: response.data || []
+      })
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to fetch items')
     }
@@ -29,7 +43,8 @@ export const useProductCategoryStore = defineStore('productCategory', () => {
   const createItem = async (itemData) => {
     try {
       const response = await categoryService.create(itemData)
-      items.value.push(response)
+      items.value.data.push(response)
+      items.value.total += 1
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to create item')
     }
@@ -38,9 +53,9 @@ export const useProductCategoryStore = defineStore('productCategory', () => {
   const updateItem = async (itemId, itemData) => {
     try {
       const response = await categoryService.updateById(itemId, itemData)
-      const index = items.value.findIndex((s) => s.id === itemId)
+      const index = items.value.data.findIndex((s) => s.id === itemId)
       if (index !== -1) {
-        items.value[index] = response
+        items.value.data[index] = response
       }
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to update item')
@@ -50,7 +65,8 @@ export const useProductCategoryStore = defineStore('productCategory', () => {
   const deleteItem = async (itemId) => {
     try {
       await categoryService.delete(itemId)
-      items.value = items.value.filter((s) => s.id !== itemId)
+      items.value.data = items.value.data.filter((s) => s.id !== itemId)
+      items.value.total -= 1
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to delete item')
     }
@@ -59,7 +75,13 @@ export const useProductCategoryStore = defineStore('productCategory', () => {
   const showAllItems = async (queryParams) => {
     try {
       const response = await categoryService.showAll(queryParams)
-      items.value = response
+      items.value = {
+        total: response.total || 0,
+        totalPages: response.totalPages || 1,
+        currentPage: response.currentPage || 1,
+        pageSize: response.pageSize || queryParams?.limit || 10,
+        data: response.data || []
+      }
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to show all items')
     }

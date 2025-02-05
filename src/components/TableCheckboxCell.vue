@@ -1,20 +1,29 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, defineProps, defineEmits } from 'vue'
 
-defineProps({
+const props = defineProps({
   type: {
     type: String,
     default: 'td'
-  }
+  },
+  modelValue: Boolean // Allow external control of checked state
 })
 
-const emit = defineEmits(['checked'])
+const emit = defineEmits(['update:modelValue'])
 
-const checked = ref(false)
+const checked = ref(props.modelValue)
 
 watch(checked, (newVal) => {
-  emit('checked', newVal)
+  emit('update:modelValue', newVal) // Sync with parent component
 })
+
+// Watch for external updates to modelValue
+watch(
+  () => props.modelValue,
+  (newVal) => {
+    checked.value = newVal
+  }
+)
 </script>
 
 <template>

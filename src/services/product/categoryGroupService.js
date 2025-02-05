@@ -21,8 +21,8 @@ export default {
     return response.data
   },
 
-  async list() {
-    const response = await axiosInstance.get(`${API_URL}/category-groups`)
+  async list(queryParams) {
+    const response = await axiosInstance.get(`${API_URL}/category-groups`, { params: queryParams })
     return response.data
   }
 }
