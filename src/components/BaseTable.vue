@@ -201,7 +201,6 @@ const editRow = (item) => {
         :width="64"
         class="z-10"
       >
-        <div class="text-gray-600">Loading...</div>
       </Loading>
     </div>
 
