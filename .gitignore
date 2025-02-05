@@ -36,5 +36,5 @@ coverage
 # Deployment
 .vercel
 
-# Environment Variables
-.env
+# # Environment Variables
+# .env
