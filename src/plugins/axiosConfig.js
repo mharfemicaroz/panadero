@@ -49,7 +49,7 @@ axiosInstance.interceptors.response.use(
 
         return axiosInstance(originalRequest) // 🔄 Retry failed request
       } catch (refreshError) {
-        // authStore.logout() // ❌ If refresh fails, force logout
+        authStore.logout()
       }
     }
 
