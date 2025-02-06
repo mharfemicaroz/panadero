@@ -5,7 +5,7 @@ import BaseTable from '@/components/BaseTable.vue'
 import CardBox from '@/components/CardBox.vue'
 import SectionTitleLineWithButton from '@/components/SectionTitleLineWithButton.vue'
 import BaseButton from '@/components/BaseButton.vue'
-import { mdiPlus, mdiTableBorder } from '@mdi/js'
+import { mdiPlus, mdiTableBorder, mdiDelete } from '@mdi/js' // Import a delete icon
 
 // --------------------------------------
 // State for modals
@@ -16,17 +16,21 @@ const newCategoryGroupForm = ref({ name: '' })
 const showEditCategoryGroupModal = ref(false)
 const editCategoryGroupForm = ref({ id: null, name: '' })
 
+// Keep track of selected groups (array of IDs)
+const selectedGroups = ref([])
+
 // Store
 const categoryGroupStore = useCategoryGroupStore()
 
-// 1. Create a function to fetch data with an optional forceRefresh
+// Fetch data
 async function fetchCategoryGroups(queryParams, forceRefresh = false) {
   await categoryGroupStore.fetchItems(queryParams, forceRefresh)
 }
 
-// 2. Initial fetch: no forceRefresh => won't fetch again if already loaded
+// Initial fetch (no forceRefresh => won’t re-fetch if already loaded)
 fetchCategoryGroups({ page: 1, limit: 5 })
 
+// Compute table data
 const categoryGroupData = computed(() => ({
   total: categoryGroupStore.items?.total || 0,
   totalPages: categoryGroupStore.items?.totalPages || 1,
@@ -40,13 +44,13 @@ const categoryGroupColumns = [{ key: 'name', label: 'Name', sortable: true, filt
 
 // Table events
 const handleQueryChange = async (query) => {
-  // For user-driven sorting/filtering/pagination,
-  // we do want fresh data each time => pass forceRefresh: true
+  // For user-driven sorting/filtering/pagination => force a refresh
   await fetchCategoryGroups(query, true)
 }
 
 const handleSelected = (selected) => {
-  console.log('Selected Groups:', selected)
+  // selected is an array of row IDs (from BaseTable)
+  selectedGroups.value = selected
 }
 
 const handleEditCategoryGroup = (row) => {
@@ -87,10 +91,31 @@ async function updateCategoryGroup() {
   }
 }
 
+// Delete selected category groups
+async function deleteSelectedCategoryGroups() {
+  if (!confirm('Are you sure you want to delete the selected category groups?')) {
+    return
+  }
+
+  try {
+    // Loop each selected ID, call the store delete action
+    for (const groupId of selectedGroups.value) {
+      await categoryGroupStore.deleteItem(groupId)
+    }
+    // Clear local selection
+    selectedGroups.value = []
+
+    // Optionally re-fetch from server
+    await fetchCategoryGroups({ page: 1, limit: 5 }, true)
+  } catch (err) {
+    console.error('Error deleting groups:', err)
+  }
+}
+
+// Close modals
 function closeNewGroupModal() {
   showNewCategoryGroupModal.value = false
 }
-
 function closeEditGroupModal() {
   showEditCategoryGroupModal.value = false
 }
@@ -98,16 +123,29 @@ function closeEditGroupModal() {
 
 <template>
   <SectionTitleLineWithButton :icon="mdiTableBorder" title="Category Group" main>
-    <BaseButton
-      :icon="mdiPlus"
-      color="primary"
-      label="New Category Group"
-      @click="showNewGroupModal"
-    />
+    <!-- Wrap buttons together to keep them close, e.g. flex with gap -->
+    <div class="flex items-center gap-2">
+      <!-- New Group Button -->
+      <BaseButton
+        :icon="mdiPlus"
+        color="primary"
+        label="New Category Group"
+        @click="showNewGroupModal"
+      />
+
+      <!-- Delete Button: only show if there's at least one selected group -->
+      <BaseButton
+        v-if="selectedGroups.length"
+        :icon="mdiDelete"
+        color="danger"
+        label="Delete"
+        @click="deleteSelectedCategoryGroups"
+      />
+    </div>
   </SectionTitleLineWithButton>
 
   <CardBox class="mb-6">
-    <!-- Pass the isLoading state from the store -->
+    <!-- Pass isLoading from store, table is checkable to allow row selection -->
     <BaseTable
       :columns="categoryGroupColumns"
       :data="categoryGroupData"

@@ -6,8 +6,10 @@ import BaseTable from '@/components/BaseTable.vue'
 import CardBox from '@/components/CardBox.vue'
 import SectionTitleLineWithButton from '@/components/SectionTitleLineWithButton.vue'
 import BaseButton from '@/components/BaseButton.vue'
-import { mdiPlus, mdiTableBorder } from '@mdi/js'
 
+import { mdiPlus, mdiTableBorder, mdiDelete } from '@mdi/js' // Import an icon for delete
+
+// Modals for create & edit
 const showNewCategoryModal = ref(false)
 const newCategoryForm = ref({ name: '', categoryGroup: null, isActive: true })
 
@@ -18,14 +20,18 @@ const editCategoryForm = ref({ id: null, name: '', categoryGroup: null, isActive
 const categoryStore = useProductCategoryStore()
 const categoryGroupStore = useCategoryGroupStore()
 
-// FETCH DATA
+// Keep track of which categories are currently selected (array of IDs)
+const selectedCategories = ref([])
+
+// Fetch data
 async function fetchCategories(queryParams, forceRefresh = false) {
-  // We pass forceRefresh if we truly want to re-fetch data from the server
   await categoryStore.fetchItems(queryParams, forceRefresh)
 }
-// On component mount, fetch categories (no forceRefresh, so only first time fetch)
+
+// On component mount, do an initial fetch (no forced refresh)
 fetchCategories({ page: 1, limit: 5 })
 
+// Compute the table data
 const categoryData = computed(() => ({
   total: categoryStore.items?.total || 0,
   totalPages: categoryStore.items?.totalPages || 1,
@@ -44,18 +50,20 @@ const categoryColumns = [
   }
 ]
 
-// Handle table events
+// Table event handlers
 const handleQueryChange = async (query) => {
-  // This might be a user-initiated sort/filter/page change, so we DO want a refresh
+  // For user-initiated sort/filter/page changes, force a refresh
   await fetchCategories(query, true)
 }
 
 const handleSelected = (selectedItems) => {
-  console.log('Selected categories:', selectedItems)
+  // This is triggered when rows are (de)selected in BaseTable.
+  // `selectedItems` is an array of row IDs.
+  selectedCategories.value = selectedItems
 }
 
 const handleEditCategory = async (row) => {
-  console.log('Edit Category:', row)
+  // Fetch category groups so user can choose from the dropdown
   await categoryGroupStore.fetchItems()
 
   editCategoryForm.value = {
@@ -70,9 +78,16 @@ const handleEditCategory = async (row) => {
 // Add new category
 const handleShowNewCategoryModal = async () => {
   await categoryGroupStore.fetchItems()
-  newCategoryForm.value = { name: '', categoryGroup: null, isActive: true }
+
+  newCategoryForm.value = {
+    name: '',
+    categoryGroup: null,
+    isActive: true
+  }
+
   showNewCategoryModal.value = true
 }
+
 async function saveNewCategory() {
   try {
     await categoryStore.createItem({
@@ -81,7 +96,6 @@ async function saveNewCategory() {
       isActive: newCategoryForm.value.isActive
     })
     showNewCategoryModal.value = false
-    // Force refresh so we see the newly added category
     await fetchCategories({ page: 1, limit: 5 }, true)
   } catch (error) {
     console.error('Error creating category:', error)
@@ -97,30 +111,67 @@ async function updateCategory() {
       isActive: editCategoryForm.value.isActive
     })
     showEditCategoryModal.value = false
-    // Force refresh so we see updated data
     await fetchCategories({ page: 1, limit: 5 }, true)
   } catch (error) {
     console.error('Error updating category:', error)
   }
 }
 
+// Delete selected categories
+async function deleteSelectedCategories() {
+  // Optional confirmation
+  if (!confirm('Are you sure you want to delete the selected categories?')) {
+    return
+  }
+
+  try {
+    // Loop over each selected ID and call store's delete action
+    for (const categoryId of selectedCategories.value) {
+      await categoryStore.deleteItem(categoryId)
+    }
+
+    // Clear local selected list
+    selectedCategories.value = []
+
+    // Optionally re-fetch from server to ensure data is up to date
+    await fetchCategories({ page: 1, limit: 5 }, true)
+  } catch (error) {
+    console.error('Error deleting categories:', error)
+  }
+}
+
 // Close modals
-const closeNewCategoryModal = () => (showNewCategoryModal.value = false)
-const closeEditCategoryModal = () => (showEditCategoryModal.value = false)
+const closeNewCategoryModal = () => {
+  showNewCategoryModal.value = false
+}
+
+const closeEditCategoryModal = () => {
+  showEditCategoryModal.value = false
+}
 </script>
 
 <template>
   <SectionTitleLineWithButton :icon="mdiTableBorder" title="Category" main>
-    <BaseButton
-      :icon="mdiPlus"
-      color="primary"
-      label="New Category"
-      @click="handleShowNewCategoryModal"
-    />
+    <!-- Wrap the two buttons in a single container -->
+    <div class="flex items-center gap-2">
+      <BaseButton
+        :icon="mdiPlus"
+        color="primary"
+        label="New Category"
+        @click="handleShowNewCategoryModal"
+      />
+      <BaseButton
+        v-if="selectedCategories.length"
+        :icon="mdiDelete"
+        color="danger"
+        label="Delete"
+        @click="deleteSelectedCategories"
+      />
+    </div>
   </SectionTitleLineWithButton>
 
   <CardBox class="mb-6">
-    <!-- Pass `loading` prop to BaseTable -->
+    <!-- The table displays categories, handles selection, sorting, paging, etc. -->
     <BaseTable
       :columns="categoryColumns"
       :data="categoryData"
@@ -132,7 +183,7 @@ const closeEditCategoryModal = () => (showEditCategoryModal.value = false)
     />
   </CardBox>
 
-  <!-- New Category Modal -->
+  <!-- Modal to create a new category -->
   <div
     v-if="showNewCategoryModal"
     class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
@@ -148,6 +199,7 @@ const closeEditCategoryModal = () => (showEditCategoryModal.value = false)
           class="w-full border p-2 rounded"
         />
       </div>
+
       <div class="mb-4">
         <label class="block mb-1" for="catGroupSelect">Category Group</label>
         <select
@@ -161,10 +213,12 @@ const closeEditCategoryModal = () => (showEditCategoryModal.value = false)
           </option>
         </select>
       </div>
+
       <div class="mb-4 flex items-center">
         <input id="isActive" type="checkbox" v-model="newCategoryForm.isActive" class="mr-2" />
         <label for="isActive">Show in POS?</label>
       </div>
+
       <div class="flex justify-end space-x-2">
         <button class="px-4 py-2 bg-gray-200 rounded" @click="closeNewCategoryModal">Cancel</button>
         <button class="px-4 py-2 bg-blue-600 text-white rounded" @click="saveNewCategory">
@@ -174,7 +228,7 @@ const closeEditCategoryModal = () => (showEditCategoryModal.value = false)
     </div>
   </div>
 
-  <!-- Edit Category Modal -->
+  <!-- Modal to edit an existing category -->
   <div
     v-if="showEditCategoryModal"
     class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
@@ -190,6 +244,7 @@ const closeEditCategoryModal = () => (showEditCategoryModal.value = false)
           class="w-full border p-2 rounded"
         />
       </div>
+
       <div class="mb-4">
         <label class="block mb-1" for="editCatGroupSelect">Category Group</label>
         <select
@@ -203,10 +258,12 @@ const closeEditCategoryModal = () => (showEditCategoryModal.value = false)
           </option>
         </select>
       </div>
+
       <div class="mb-4 flex items-center">
         <input id="editIsActive" type="checkbox" v-model="editCategoryForm.isActive" class="mr-2" />
         <label for="editIsActive">Show in POS?</label>
       </div>
+
       <div class="flex justify-end space-x-2">
         <button class="px-4 py-2 bg-gray-200 rounded" @click="closeEditCategoryModal">
           Cancel

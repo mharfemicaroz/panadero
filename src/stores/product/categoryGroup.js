@@ -73,7 +73,7 @@ export const useCategoryGroupStore = defineStore('categoryGroup', () => {
   const deleteItem = async (id) => {
     try {
       isLoading.value = true
-      await categoryGroupService.deleteById(id)
+      await categoryGroupService.delete(id)
       items.value.data = items.value.data.filter((g) => g.id !== id)
       items.value.total -= 1
     } catch (error) {
