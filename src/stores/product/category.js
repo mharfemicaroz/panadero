@@ -130,6 +130,37 @@ export const useProductCategoryStore = defineStore('productCategory', () => {
   }
 
   /**
+   * Show all items (using the showAll endpoint)
+   *
+   * This action calls the categoryService.showAll method, which returns all categories
+   * with their products and subcategories. It then maps the nested `categories` array
+   * to the store's `data` property.
+   */
+  const showAllItems = async (queryParams = {}) => {
+    // Reset error before new request
+    error.value = null
+
+    try {
+      isLoading.value = true
+      const response = await categoryService.showAll(queryParams)
+
+      // Map the response to the store state.
+      // Note: the server returns `data: { categories: [...] }`
+      Object.assign(items.value, {
+        total: response.total || 0,
+        totalPages: response.totalPages || 1,
+        currentPage: response.currentPage || 1,
+        pageSize: response.pageSize || 10,
+        data: response.data || []
+      })
+    } catch (err) {
+      error.value = err?.response?.message || 'Failed to show all items'
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
    * Reset the store (useful e.g. on logout)
    */
   const resetStore = () => {
@@ -158,6 +189,7 @@ export const useProductCategoryStore = defineStore('productCategory', () => {
     createItem,
     updateItem,
     deleteItem,
+    showAllItems,
     resetStore
   }
 })
