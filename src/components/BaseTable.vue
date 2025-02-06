@@ -1,7 +1,7 @@
 <template>
   <div
     ref="tableContainer"
-    class="table-container relative rounded-lg border border-gray-200 shadow-sm bg-white overflow-x-auto"
+    class="table-container relative rounded-lg border border-gray-200 shadow-sm bg-white"
   >
     <table class="w-full border-collapse bg-white min-w-max">
       <thead class="bg-white text-gray-700 text-sm border-b">
@@ -56,7 +56,7 @@
       <tbody>
         <tr v-for="item in safeData.data" :key="item.id" class="border-t text-sm hover:bg-gray-50">
           <!-- Checkbox cell -->
-          <td v-if="checkable" class="p-2 w-10 text-center">
+          <td v-if="checkable" class="p-2 w-10 text-center" data-label="Select">
             <TableCheckboxCell
               :modelValue="selectedRows.has(item.id)"
               @update:modelValue="toggleSelectRow($event, item)"
@@ -64,7 +64,12 @@
           </td>
 
           <!-- Data cells -->
-          <td v-for="col in columns" :key="col.key" class="px-4 py-2 whitespace-nowrap">
+          <td
+            v-for="col in columns"
+            :key="col.key"
+            class="px-4 py-2 whitespace-nowrap"
+            :data-label="col.label"
+          >
             <span v-if="col.formatter">
               {{ col.formatter(item[col.key], item) }}
             </span>
@@ -74,7 +79,7 @@
           </td>
 
           <!-- Edit button -->
-          <td class="px-4 py-2 whitespace-nowrap">
+          <td class="px-4 py-2 whitespace-nowrap" data-label="Action">
             <BaseButtons>
               <BaseButton :icon="mdiPencil" small @click="editRow(item)" />
             </BaseButtons>
@@ -84,13 +89,15 @@
     </table>
 
     <!-- Pagination Footer -->
-    <div class="p-3 border-t bg-white text-sm flex justify-between items-center">
-      <span>
+    <div
+      class="p-3 border-t bg-white text-sm flex flex-col sm:flex-row sm:justify-between sm:items-center"
+    >
+      <span class="mb-2 sm:mb-0">
         {{ (internalPage - 1) * internalPageSize + 1 }} -
         {{ Math.min(internalPage * internalPageSize, safeData.total) }} of
         {{ safeData.total }} items
       </span>
-      <BaseButtons>
+      <div class="flex flex-wrap items-center gap-2">
         <BaseButton
           :icon="mdiChevronLeft"
           small
@@ -112,12 +119,16 @@
           :disabled="internalPage === totalPages"
           @click="goToPage(internalPage + 1)"
         />
-      </BaseButtons>
-      <select class="border p-1 text-sm rounded" @change="updatePageSize">
-        <option :selected="internalPageSize === 5" value="5">5 / page</option>
-        <option :selected="internalPageSize === 10" value="10">10 / page</option>
-        <option :selected="internalPageSize === 20" value="20">20 / page</option>
-      </select>
+        <select
+          class="border p-1 text-sm rounded"
+          @change="updatePageSize"
+          :value="internalPageSize"
+        >
+          <option value="5">5 / page</option>
+          <option value="10">10 / page</option>
+          <option value="20">20 / page</option>
+        </select>
+      </div>
     </div>
   </div>
 </template>
@@ -374,7 +385,7 @@ const editRow = (item) => {
 </script>
 
 <style scoped>
-/* Ensure horizontal scrolling */
+/* Ensure horizontal scrolling on larger screens */
 .table-container {
   overflow-x: auto;
   white-space: nowrap;
@@ -386,7 +397,7 @@ td {
   white-space: nowrap;
 }
 
-/* Example fade transition */
+/* Fade transition for filters */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s;
@@ -394,5 +405,60 @@ td {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+/* Responsive styling for mobile devices */
+@media (max-width: 640px) {
+  /* Hide table header on small screens */
+  thead {
+    display: none;
+  }
+
+  /* Make each row display as a block */
+  table,
+  tbody,
+  tr,
+  td {
+    display: block;
+    width: 100%;
+  }
+
+  tr {
+    margin-bottom: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    overflow: hidden;
+  }
+
+  /* Style each cell like a row in a card */
+  td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    position: relative;
+    text-align: left;
+  }
+
+  /* Remove right border from the last cell */
+  td:last-child {
+    border-bottom: 0;
+  }
+
+  /* Add the header label using the data-label attribute */
+  td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    color: #6b7280;
+    flex-basis: 40%;
+  }
+
+  /* Adjust cell content spacing */
+  td > *:first-child {
+    flex-basis: 60%;
+  }
 }
 </style>
