@@ -161,6 +161,14 @@ const routes = [
   },
   {
     meta: {
+      title: 'Subcategory'
+    },
+    path: '/subcategory',
+    name: 'subcategory',
+    component: () => import('@/views/SubCategoryView.vue')
+  },
+  {
+    meta: {
       title: 'Items Modifier'
     },
     path: '/items_modifier',

@@ -1,25 +1,21 @@
 <template>
-  <!-- We wrap the entire table in a container <div> with ref="tableContainer".
-       This container is where the loading overlay will appear. -->
   <div
     ref="tableContainer"
-    class="table-container relative rounded-lg border border-gray-200 shadow-sm bg-white"
+    class="table-container relative rounded-lg border border-gray-200 shadow-sm bg-white overflow-x-auto"
   >
-    <!-- The actual table -->
-    <table class="w-full border-collapse bg-white">
+    <table class="w-full border-collapse bg-white min-w-max">
       <thead class="bg-white text-gray-700 text-sm border-b">
         <tr>
-          <!-- Checkbox column if checkable -->
+          <!-- Checkbox column -->
           <th v-if="checkable" class="p-2 w-10 text-center">
             <TableCheckboxCell :modelValue="allSelected" @update:modelValue="toggleSelectAll" />
           </th>
 
           <!-- Table columns -->
-          <th v-for="col in columns" :key="col.key" class="px-4 py-2 text-left">
+          <th v-for="col in columns" :key="col.key" class="px-4 py-2 text-left whitespace-nowrap">
             <div class="flex items-center justify-between">
               <span class="font-medium">{{ col.label }}</span>
               <div class="flex items-center gap-2">
-                <!-- Sorting button -->
                 <BaseButton
                   v-if="col.sortable"
                   :icon="
@@ -32,7 +28,6 @@
                   small
                   @click="toggleSort(col.key)"
                 />
-                <!-- Filter button -->
                 <BaseButton
                   v-if="col.filterable"
                   :icon="mdiMagnify"
@@ -41,7 +36,6 @@
                 />
               </div>
             </div>
-            <!-- Filter dropdown -->
             <transition name="fade">
               <div v-if="showFilters[col.key]" class="mt-1 p-2 border rounded bg-white shadow-md">
                 <input
@@ -54,14 +48,14 @@
             </transition>
           </th>
 
-          <!-- Action column header -->
-          <th class="px-4 py-2">Action</th>
+          <!-- Action column -->
+          <th class="px-4 py-2 whitespace-nowrap">Action</th>
         </tr>
       </thead>
 
       <tbody>
         <tr v-for="item in safeData.data" :key="item.id" class="border-t text-sm hover:bg-gray-50">
-          <!-- Checkbox cell if checkable -->
+          <!-- Checkbox cell -->
           <td v-if="checkable" class="p-2 w-10 text-center">
             <TableCheckboxCell
               :modelValue="selectedRows.has(item.id)"
@@ -69,8 +63,8 @@
             />
           </td>
 
-          <!-- Data cells (with optional formatter) -->
-          <td v-for="col in columns" :key="col.key" class="px-4 py-2">
+          <!-- Data cells -->
+          <td v-for="col in columns" :key="col.key" class="px-4 py-2 whitespace-nowrap">
             <span v-if="col.formatter">
               {{ col.formatter(item[col.key], item) }}
             </span>
@@ -79,8 +73,8 @@
             </span>
           </td>
 
-          <!-- Edit button in the Action column -->
-          <td class="px-4 py-2">
+          <!-- Edit button -->
+          <td class="px-4 py-2 whitespace-nowrap">
             <BaseButtons>
               <BaseButton :icon="mdiPencil" small @click="editRow(item)" />
             </BaseButtons>
@@ -380,7 +374,19 @@ const editRow = (item) => {
 </script>
 
 <style scoped>
-/* Example fade transition (optional) */
+/* Ensure horizontal scrolling */
+.table-container {
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+/* Ensure table content doesn't wrap */
+th,
+td {
+  white-space: nowrap;
+}
+
+/* Example fade transition */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s;

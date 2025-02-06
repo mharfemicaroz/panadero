@@ -12,6 +12,7 @@ export const useProductCategoryStore = defineStore('productCategory', () => {
     data: []
   })
   const item = ref(null)
+  const subcategories = ref([]) // Holds subcategories for a selected category
 
   // Track loading and error states
   const isLoading = ref(false)
@@ -26,10 +27,8 @@ export const useProductCategoryStore = defineStore('productCategory', () => {
    * Fetch a list of categories
    */
   const fetchItems = async (queryParams = {}, forceRefresh = false) => {
-    // Reset any previous error
     error.value = null
 
-    // Skip API call if we've already loaded data once and not forcing a refresh
     if (!forceRefresh && isLoaded.value) {
       return
     }
@@ -48,7 +47,6 @@ export const useProductCategoryStore = defineStore('productCategory', () => {
 
       isLoaded.value = true
     } catch (err) {
-      // Capture the error in the store state
       error.value = err?.response?.message || 'Failed to fetch categories'
     } finally {
       isLoading.value = false
@@ -79,7 +77,6 @@ export const useProductCategoryStore = defineStore('productCategory', () => {
     try {
       isLoading.value = true
       const response = await categoryService.create(itemData)
-      // Append the new item to our store list
       items.value.data.push(response)
       items.value.total += 1
     } catch (err) {
@@ -98,7 +95,6 @@ export const useProductCategoryStore = defineStore('productCategory', () => {
       isLoading.value = true
       const response = await categoryService.updateById(itemId, itemData)
 
-      // If found, replace the existing item
       const index = items.value.data.findIndex((cat) => cat.id === itemId)
       if (index !== -1) {
         items.value.data[index] = response
@@ -119,7 +115,6 @@ export const useProductCategoryStore = defineStore('productCategory', () => {
       isLoading.value = true
       await categoryService.delete(itemId)
 
-      // Remove from local store
       items.value.data = items.value.data.filter((cat) => cat.id !== itemId)
       items.value.total -= 1
     } catch (err) {
@@ -130,22 +125,31 @@ export const useProductCategoryStore = defineStore('productCategory', () => {
   }
 
   /**
+   * Fetch subcategories of a given category
+   */
+  const fetchSubcategoriesByCategory = async (categoryId, queryParams = {}) => {
+    error.value = null
+    try {
+      isLoading.value = true
+      const response = await categoryService.listSubcategoriesByCategory(categoryId, queryParams)
+      subcategories.value = response.data || []
+    } catch (err) {
+      error.value = err?.response?.message || 'Failed to fetch subcategories'
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
    * Show all items (using the showAll endpoint)
-   *
-   * This action calls the categoryService.showAll method, which returns all categories
-   * with their products and subcategories. It then maps the nested `categories` array
-   * to the store's `data` property.
    */
   const showAllItems = async (queryParams = {}) => {
-    // Reset error before new request
     error.value = null
 
     try {
       isLoading.value = true
       const response = await categoryService.showAll(queryParams)
 
-      // Map the response to the store state.
-      // Note: the server returns `data: { categories: [...] }`
       Object.assign(items.value, {
         total: response.total || 0,
         totalPages: response.totalPages || 1,
@@ -172,15 +176,16 @@ export const useProductCategoryStore = defineStore('productCategory', () => {
       data: []
     }
     item.value = null
+    subcategories.value = []
     isLoading.value = false
     error.value = null
     isLoaded.value = false
   }
 
-  // Return everything we need
   return {
     items,
     item,
+    subcategories,
     isLoading,
     error,
     isLoaded,
@@ -189,6 +194,7 @@ export const useProductCategoryStore = defineStore('productCategory', () => {
     createItem,
     updateItem,
     deleteItem,
+    fetchSubcategoriesByCategory,
     showAllItems,
     resetStore
   }
