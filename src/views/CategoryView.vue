@@ -9,30 +9,21 @@ import BaseButton from '@/components/BaseButton.vue'
 import { mdiPlus, mdiTableBorder } from '@mdi/js'
 
 const showNewCategoryModal = ref(false)
-const newCategoryForm = ref({
-  name: '',
-  categoryGroup: null,
-  isActive: true
-})
+const newCategoryForm = ref({ name: '', categoryGroup: null, isActive: true })
 
 const showEditCategoryModal = ref(false)
-const editCategoryForm = ref({
-  id: null,
-  name: '',
-  categoryGroup: null,
-  isActive: true
-})
+const editCategoryForm = ref({ id: null, name: '', categoryGroup: null, isActive: true })
 
 // STORES
 const categoryStore = useProductCategoryStore()
 const categoryGroupStore = useCategoryGroupStore()
 
 // FETCH DATA
-async function fetchCategories(queryParams) {
-  // Make sure you set isLoading=true in your store before the fetch,
-  // and isLoading=false after the fetch completes
-  await categoryStore.fetchItems(queryParams)
+async function fetchCategories(queryParams, forceRefresh = false) {
+  // We pass forceRefresh if we truly want to re-fetch data from the server
+  await categoryStore.fetchItems(queryParams, forceRefresh)
 }
+// On component mount, fetch categories (no forceRefresh, so only first time fetch)
 fetchCategories({ page: 1, limit: 5 })
 
 const categoryData = computed(() => ({
@@ -53,13 +44,16 @@ const categoryColumns = [
   }
 ]
 
-// Table events
+// Handle table events
 const handleQueryChange = async (query) => {
-  await fetchCategories(query)
+  // This might be a user-initiated sort/filter/page change, so we DO want a refresh
+  await fetchCategories(query, true)
 }
+
 const handleSelected = (selectedItems) => {
   console.log('Selected categories:', selectedItems)
 }
+
 const handleEditCategory = async (row) => {
   console.log('Edit Category:', row)
   await categoryGroupStore.fetchItems()
@@ -76,12 +70,7 @@ const handleEditCategory = async (row) => {
 // Add new category
 const handleShowNewCategoryModal = async () => {
   await categoryGroupStore.fetchItems()
-
-  newCategoryForm.value = {
-    name: '',
-    categoryGroup: null,
-    isActive: true
-  }
+  newCategoryForm.value = { name: '', categoryGroup: null, isActive: true }
   showNewCategoryModal.value = true
 }
 async function saveNewCategory() {
@@ -92,7 +81,8 @@ async function saveNewCategory() {
       isActive: newCategoryForm.value.isActive
     })
     showNewCategoryModal.value = false
-    await fetchCategories({ page: 1, limit: 5 })
+    // Force refresh so we see the newly added category
+    await fetchCategories({ page: 1, limit: 5 }, true)
   } catch (error) {
     console.error('Error creating category:', error)
   }
@@ -107,7 +97,8 @@ async function updateCategory() {
       isActive: editCategoryForm.value.isActive
     })
     showEditCategoryModal.value = false
-    await fetchCategories({ page: 1, limit: 5 })
+    // Force refresh so we see updated data
+    await fetchCategories({ page: 1, limit: 5 }, true)
   } catch (error) {
     console.error('Error updating category:', error)
   }
@@ -141,7 +132,7 @@ const closeEditCategoryModal = () => (showEditCategoryModal.value = false)
     />
   </CardBox>
 
-  <!-- Modals... -->
+  <!-- New Category Modal -->
   <div
     v-if="showNewCategoryModal"
     class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"

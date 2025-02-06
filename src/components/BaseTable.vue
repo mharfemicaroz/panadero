@@ -389,9 +389,4 @@ const editRow = (item) => {
 .fade-leave-to {
   opacity: 0;
 }
-
-/* Optionally style your .table-container for overlay, if needed */
-.table-container {
-  /* position: relative; (already included above) */
-}
 </style>

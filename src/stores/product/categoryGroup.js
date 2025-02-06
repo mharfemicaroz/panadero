@@ -11,89 +11,99 @@ export const useCategoryGroupStore = defineStore('categoryGroup', () => {
     pageSize: 10,
     data: []
   })
-  const item = ref(null)
-  const isLoading = ref(false) // <-- Add the isLoading state
+
+  // Controls
+  const isLoading = ref(false)
+  const isLoaded = ref(false) // Once fetched, mark loaded
 
   // Actions
-  const fetchItems = async (queryParams) => {
+  const fetchItems = async (queryParams = {}, forceRefresh = false) => {
+    // If we've already loaded data and aren't forcing a refresh, skip the API call
+    if (!forceRefresh && isLoaded.value) {
+      return
+    }
     try {
       isLoading.value = true
       const response = await categoryGroupService.list(queryParams)
+
       Object.assign(items.value, {
         total: response.total || 0,
         totalPages: response.totalPages || 1,
-        currentPage: queryParams?.page || 1,
-        pageSize: queryParams?.limit || 10,
+        currentPage: queryParams.page || 1,
+        pageSize: queryParams.limit || 10,
         data: response.data || []
       })
+
+      isLoaded.value = true // Mark store as having loaded data
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch items')
+      throw new Error(error.response?.data?.message || 'Failed to fetch category groups')
     } finally {
       isLoading.value = false
     }
   }
 
-  const fetchItemById = async (itemId) => {
+  const createItem = async (data) => {
     try {
-      // isLoading.value = true (optional if you want loading for single item)
-      const response = await categoryGroupService.getById(itemId)
-      item.value = response
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch item')
-    } finally {
-      // isLoading.value = false
-    }
-  }
-
-  const createItem = async (itemData) => {
-    try {
-      // isLoading.value = true
-      const response = await categoryGroupService.create(itemData)
+      isLoading.value = true
+      const response = await categoryGroupService.create(data)
       items.value.data.push(response)
       items.value.total += 1
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to create item')
+      throw new Error(error.response?.data?.message || 'Failed to create category group')
     } finally {
-      // isLoading.value = false
+      isLoading.value = false
     }
   }
 
-  const updateItem = async (itemId, itemData) => {
+  const updateItem = async (id, data) => {
     try {
-      // isLoading.value = true
-      const response = await categoryGroupService.updateById(itemId, itemData)
-      const index = items.value.data.findIndex((s) => s.id === itemId)
+      isLoading.value = true
+      const response = await categoryGroupService.updateById(id, data)
+      const index = items.value.data.findIndex((g) => g.id === id)
       if (index !== -1) {
         items.value.data[index] = response
       }
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to update item')
+      throw new Error(error.response?.data?.message || 'Failed to update category group')
     } finally {
-      // isLoading.value = false
+      isLoading.value = false
     }
   }
 
-  const deleteItem = async (itemId) => {
+  const deleteItem = async (id) => {
     try {
-      // isLoading.value = true
-      await categoryGroupService.delete(itemId)
-      items.value.data = items.value.data.filter((s) => s.id !== itemId)
+      isLoading.value = true
+      await categoryGroupService.deleteById(id)
+      items.value.data = items.value.data.filter((g) => g.id !== id)
       items.value.total -= 1
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to delete item')
+      throw new Error(error.response?.data?.message || 'Failed to delete category group')
     } finally {
-      // isLoading.value = false
+      isLoading.value = false
     }
+  }
+
+  // Optional helper to reset store if you ever need to
+  const resetStore = () => {
+    items.value = {
+      total: 0,
+      totalPages: 1,
+      currentPage: 1,
+      pageSize: 10,
+      data: []
+    }
+    isLoaded.value = false
+    isLoading.value = false
   }
 
   return {
     items,
-    item,
-    isLoading, // <-- expose isLoading
+    isLoading,
+    isLoaded,
     fetchItems,
-    fetchItemById,
     createItem,
     updateItem,
-    deleteItem
+    deleteItem,
+    resetStore
   }
 })

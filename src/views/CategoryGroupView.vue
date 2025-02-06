@@ -19,10 +19,12 @@ const editCategoryGroupForm = ref({ id: null, name: '' })
 // Store
 const categoryGroupStore = useCategoryGroupStore()
 
-// Fetch data
-async function fetchCategoryGroups(queryParams) {
-  await categoryGroupStore.fetchItems(queryParams)
+// 1. Create a function to fetch data with an optional forceRefresh
+async function fetchCategoryGroups(queryParams, forceRefresh = false) {
+  await categoryGroupStore.fetchItems(queryParams, forceRefresh)
 }
+
+// 2. Initial fetch: no forceRefresh => won't fetch again if already loaded
 fetchCategoryGroups({ page: 1, limit: 5 })
 
 const categoryGroupData = computed(() => ({
@@ -38,11 +40,15 @@ const categoryGroupColumns = [{ key: 'name', label: 'Name', sortable: true, filt
 
 // Table events
 const handleQueryChange = async (query) => {
-  await fetchCategoryGroups(query)
+  // For user-driven sorting/filtering/pagination,
+  // we do want fresh data each time => pass forceRefresh: true
+  await fetchCategoryGroups(query, true)
 }
+
 const handleSelected = (selected) => {
   console.log('Selected Groups:', selected)
 }
+
 const handleEditCategoryGroup = (row) => {
   editCategoryGroupForm.value = {
     id: row.id,
@@ -56,29 +62,35 @@ function showNewGroupModal() {
   newCategoryGroupForm.value = { name: '' }
   showNewCategoryGroupModal.value = true
 }
+
 async function saveNewCategoryGroup() {
   try {
     await categoryGroupStore.createItem(newCategoryGroupForm.value)
     showNewCategoryGroupModal.value = false
-    await fetchCategoryGroups({ page: 1, limit: 5 })
+    // Force refresh to see the newly added group
+    await fetchCategoryGroups({ page: 1, limit: 5 }, true)
   } catch (err) {
     console.error('Error creating group:', err)
   }
 }
+
 async function updateCategoryGroup() {
   try {
     await categoryGroupStore.updateItem(editCategoryGroupForm.value.id, {
       name: editCategoryGroupForm.value.name
     })
     showEditCategoryGroupModal.value = false
-    await fetchCategoryGroups({ page: 1, limit: 5 })
+    // Force refresh to see updated group
+    await fetchCategoryGroups({ page: 1, limit: 5 }, true)
   } catch (err) {
     console.error('Error updating group:', err)
   }
 }
+
 function closeNewGroupModal() {
   showNewCategoryGroupModal.value = false
 }
+
 function closeEditGroupModal() {
   showEditCategoryGroupModal.value = false
 }
@@ -95,7 +107,7 @@ function closeEditGroupModal() {
   </SectionTitleLineWithButton>
 
   <CardBox class="mb-6">
-    <!-- Pass the isLoading state as well -->
+    <!-- Pass the isLoading state from the store -->
     <BaseTable
       :columns="categoryGroupColumns"
       :data="categoryGroupData"
