@@ -23,9 +23,10 @@ export default [
     label: 'Dashboard'
   },
   {
-    to: '/pos',
+    to: '',
     icon: mdiCalculator,
-    label: 'POS'
+    label: 'POS',
+    isPOS: true
   },
   {
     label: 'Reports',
