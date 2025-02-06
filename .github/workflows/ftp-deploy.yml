@@ -19,10 +19,10 @@ jobs:
         uses: SamKirkland/FTP-Deploy-Action@4.1.0
         with:
           # Use your FTP host (include the port if necessary)
-          ftp-server: "ftp://ftp.panadero-api.site:21"
+          server: "ftp://ftp.panadero-api.site:21"
           # Retrieve credentials from GitHub Secrets
-          ftp-username: ${{ secrets.FTP_USERNAME }}
-          ftp-password: ${{ secrets.FTP_PASSWORD }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
           # Local directory to deploy. Adjust if needed.
           local-dir: "./"
           # Remote directory (the "path" from your FTP config)
