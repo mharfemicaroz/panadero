@@ -1,158 +1,11 @@
-<script setup>
-import { ref, computed } from 'vue'
-import { useProductCategoryStore } from '@/stores/product/category'
-import { useCategoryGroupStore } from '@/stores/product/categoryGroup'
-import BaseTable from '@/components/BaseTable.vue'
-import CardBox from '@/components/CardBox.vue'
-import SectionTitleLineWithButton from '@/components/SectionTitleLineWithButton.vue'
-import BaseButton from '@/components/BaseButton.vue'
-
-import { mdiPlus, mdiTableBorder, mdiDelete } from '@mdi/js' // Import an icon for delete
-
-// Modals for create & edit
-const showNewCategoryModal = ref(false)
-const newCategoryForm = ref({ name: '', categoryGroup: null, isActive: true })
-
-const showEditCategoryModal = ref(false)
-const editCategoryForm = ref({ id: null, name: '', categoryGroup: null, isActive: true })
-
-// STORES
-const categoryStore = useProductCategoryStore()
-const categoryGroupStore = useCategoryGroupStore()
-
-// Keep track of which categories are currently selected (array of IDs)
-const selectedCategories = ref([])
-
-// Fetch data
-async function fetchCategories(queryParams, forceRefresh = false) {
-  await categoryStore.fetchItems(queryParams, forceRefresh)
-}
-
-// On component mount, do an initial fetch (no forced refresh)
-fetchCategories({ page: 1, limit: 5 })
-
-// Compute the table data
-const categoryData = computed(() => ({
-  total: categoryStore.items?.total || 0,
-  totalPages: categoryStore.items?.totalPages || 1,
-  currentPage: categoryStore.items?.currentPage || 1,
-  pageSize: categoryStore.items?.pageSize || 5,
-  data: categoryStore.items?.data || []
-}))
-
-// Table columns
-const categoryColumns = [
-  { key: 'name', label: 'Name', sortable: true, filterable: true },
-  {
-    key: 'categoryGroup',
-    label: 'Category Group',
-    formatter: (value, row) => (row.categoryGroup ? row.categoryGroup.name : '')
-  }
-]
-
-// Table event handlers
-const handleQueryChange = async (query) => {
-  // For user-initiated sort/filter/page changes, force a refresh
-  await fetchCategories(query, true)
-}
-
-const handleSelected = (selectedItems) => {
-  // This is triggered when rows are (de)selected in BaseTable.
-  // `selectedItems` is an array of row IDs.
-  selectedCategories.value = selectedItems
-}
-
-const handleEditCategory = async (row) => {
-  // Fetch category groups so user can choose from the dropdown
-  await categoryGroupStore.fetchItems()
-
-  editCategoryForm.value = {
-    id: row.id,
-    name: row.name,
-    categoryGroup: row.categoryGroup ? row.categoryGroup.id : null,
-    isActive: row.isActive ?? true
-  }
-  showEditCategoryModal.value = true
-}
-
-// Add new category
-const handleShowNewCategoryModal = async () => {
-  await categoryGroupStore.fetchItems()
-
-  newCategoryForm.value = {
-    name: '',
-    categoryGroup: null,
-    isActive: true
-  }
-
-  showNewCategoryModal.value = true
-}
-
-async function saveNewCategory() {
-  try {
-    await categoryStore.createItem({
-      name: newCategoryForm.value.name,
-      categoryGroupId: newCategoryForm.value.categoryGroup,
-      isActive: newCategoryForm.value.isActive
-    })
-    showNewCategoryModal.value = false
-    await fetchCategories({ page: 1, limit: 5 }, true)
-  } catch (error) {
-    console.error('Error creating category:', error)
-  }
-}
-
-// Update category
-async function updateCategory() {
-  try {
-    await categoryStore.updateItem(editCategoryForm.value.id, {
-      name: editCategoryForm.value.name,
-      categoryGroupId: editCategoryForm.value.categoryGroup,
-      isActive: editCategoryForm.value.isActive
-    })
-    showEditCategoryModal.value = false
-    await fetchCategories({ page: 1, limit: 5 }, true)
-  } catch (error) {
-    console.error('Error updating category:', error)
-  }
-}
-
-// Delete selected categories
-async function deleteSelectedCategories() {
-  // Optional confirmation
-  if (!confirm('Are you sure you want to delete the selected categories?')) {
-    return
-  }
-
-  try {
-    // Loop over each selected ID and call store's delete action
-    for (const categoryId of selectedCategories.value) {
-      await categoryStore.deleteItem(categoryId)
-    }
-
-    // Clear local selected list
-    selectedCategories.value = []
-
-    // Optionally re-fetch from server to ensure data is up to date
-    await fetchCategories({ page: 1, limit: 5 }, true)
-  } catch (error) {
-    console.error('Error deleting categories:', error)
-  }
-}
-
-// Close modals
-const closeNewCategoryModal = () => {
-  showNewCategoryModal.value = false
-}
-
-const closeEditCategoryModal = () => {
-  showEditCategoryModal.value = false
-}
-</script>
-
 <template>
+  <!-- 1. Show a NotificationBar if there's an error in the store -->
+  <NotificationBar v-if="categoryStore.error" :icon="mdiAlertCircle" color="danger">
+    {{ categoryStore.error }}
+  </NotificationBar>
+
   <SectionTitleLineWithButton :icon="mdiTableBorder" title="Category" main>
-    <!-- Wrap the two buttons in a single container -->
+    <!-- Buttons in a small flex container -->
     <div class="flex items-center gap-2">
       <BaseButton
         :icon="mdiPlus"
@@ -235,6 +88,7 @@ const closeEditCategoryModal = () => {
   >
     <div class="bg-white p-6 rounded shadow-lg w-96">
       <h2 class="text-xl mb-4">Edit Category</h2>
+
       <div class="mb-4">
         <label class="block mb-1" for="editCatName">Name</label>
         <input
@@ -275,3 +129,188 @@ const closeEditCategoryModal = () => {
     </div>
   </div>
 </template>
+
+<script setup>
+import { ref, computed } from 'vue'
+
+// 1. Import your store that has `error`, `isLoading`, etc.
+import { useProductCategoryStore } from '@/stores/product/category'
+import { useCategoryGroupStore } from '@/stores/product/categoryGroup'
+
+// 2. Import icons, NotificationBar, and SweetAlert2
+import { mdiPlus, mdiTableBorder, mdiDelete, mdiAlertCircle } from '@mdi/js'
+import NotificationBar from '@/components/NotificationBar.vue'
+import Swal from 'sweetalert2'
+import 'sweetalert2/dist/sweetalert2.css'
+
+// 3. Import any base components
+import BaseTable from '@/components/BaseTable.vue'
+import CardBox from '@/components/CardBox.vue'
+import SectionTitleLineWithButton from '@/components/SectionTitleLineWithButton.vue'
+import BaseButton from '@/components/BaseButton.vue'
+
+// --- Local State ---
+const showNewCategoryModal = ref(false)
+const newCategoryForm = ref({
+  name: '',
+  categoryGroup: null,
+  isActive: true
+})
+
+const showEditCategoryModal = ref(false)
+const editCategoryForm = ref({
+  id: null,
+  name: '',
+  categoryGroup: null,
+  isActive: true
+})
+
+// --- Stores ---
+const categoryStore = useProductCategoryStore()
+const categoryGroupStore = useCategoryGroupStore()
+
+// Track which categories are selected (IDs)
+const selectedCategories = ref([])
+
+// --- Fetch Data ---
+async function fetchCategories(queryParams, forceRefresh = false) {
+  await categoryStore.fetchItems(queryParams, forceRefresh)
+}
+
+// Initial fetch
+fetchCategories({ page: 1, limit: 5 })
+
+// Table Data
+const categoryData = computed(() => ({
+  total: categoryStore.items?.total || 0,
+  totalPages: categoryStore.items?.totalPages || 1,
+  currentPage: categoryStore.items?.currentPage || 1,
+  pageSize: categoryStore.items?.pageSize || 5,
+  data: categoryStore.items?.data || []
+}))
+
+// Table columns
+const categoryColumns = [
+  { key: 'name', label: 'Name', sortable: true, filterable: true },
+  {
+    key: 'categoryGroup',
+    label: 'Category Group',
+    formatter: (value, row) => (row.categoryGroup ? row.categoryGroup.name : '')
+  }
+]
+
+// --- Table Events ---
+const handleQueryChange = async (query) => {
+  // Force a refresh for user-initiated sort/filter/page changes
+  await fetchCategories(query, true)
+}
+
+const handleSelected = (selectedItems) => {
+  selectedCategories.value = selectedItems
+}
+
+const handleEditCategory = async (row) => {
+  // Also fetch all category groups in case the user changes the group
+  await categoryGroupStore.fetchItems()
+
+  editCategoryForm.value = {
+    id: row.id,
+    name: row.name,
+    categoryGroup: row.categoryGroup ? row.categoryGroup.id : null,
+    isActive: row.isActive ?? true
+  }
+
+  showEditCategoryModal.value = true
+}
+
+// --- Create Category ---
+const handleShowNewCategoryModal = async () => {
+  // Pre-fetch category groups for the dropdown
+  await categoryGroupStore.fetchItems()
+
+  newCategoryForm.value = {
+    name: '',
+    categoryGroup: null,
+    isActive: true
+  }
+
+  showNewCategoryModal.value = true
+}
+
+async function saveNewCategory() {
+  await categoryStore.createItem({
+    name: newCategoryForm.value.name,
+    categoryGroupId: newCategoryForm.value.categoryGroup,
+    isActive: newCategoryForm.value.isActive
+  })
+
+  // If there's no error, close modal & refresh
+  if (!categoryStore.error) {
+    showNewCategoryModal.value = false
+    await fetchCategories({ page: 1, limit: 5 }, true)
+  }
+}
+
+// --- Update Category ---
+async function updateCategory() {
+  await categoryStore.updateItem(editCategoryForm.value.id, {
+    name: editCategoryForm.value.name,
+    categoryGroupId: editCategoryForm.value.categoryGroup,
+    isActive: editCategoryForm.value.isActive
+  })
+
+  if (!categoryStore.error) {
+    showEditCategoryModal.value = false
+    await fetchCategories({ page: 1, limit: 5 }, true)
+  }
+}
+
+// --- Delete Selected (using SweetAlert2) ---
+async function deleteSelectedCategories() {
+  if (!selectedCategories.value.length) return
+
+  // Show the SweetAlert2 confirmation
+  const result = await Swal.fire({
+    title: 'Are you sure?',
+    text: `You are about to delete ${selectedCategories.value.length} selected categories. This action cannot be undone.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, delete',
+    cancelButtonText: 'Cancel',
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6'
+  })
+
+  // If user cancels, do nothing
+  if (!result.isConfirmed) return
+
+  // Otherwise, proceed with deletion
+  for (const categoryId of selectedCategories.value) {
+    await categoryStore.deleteItem(categoryId)
+    if (categoryStore.error) break
+  }
+
+  // If no error, clear selection & refresh
+  if (!categoryStore.error) {
+    selectedCategories.value = []
+    await fetchCategories({ page: 1, limit: 5 }, true)
+
+    Swal.fire({
+      icon: 'success',
+      title: 'Deleted!',
+      text: 'Selected categories have been deleted.',
+      timer: 1500,
+      showConfirmButton: false
+    })
+  }
+}
+
+// --- Close Modals ---
+const closeNewCategoryModal = () => {
+  showNewCategoryModal.value = false
+}
+
+const closeEditCategoryModal = () => {
+  showEditCategoryModal.value = false
+}
+</script>

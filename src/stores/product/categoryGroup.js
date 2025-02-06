@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import categoryGroupService from '../../services/product/categoryGroupService'
 
 export const useCategoryGroupStore = defineStore('categoryGroup', () => {
-  // State
+  // --- STATE ---
   const items = ref({
     total: 0,
     totalPages: 1,
@@ -12,16 +12,27 @@ export const useCategoryGroupStore = defineStore('categoryGroup', () => {
     data: []
   })
 
-  // Controls
+  // Track loading and error states
   const isLoading = ref(false)
-  const isLoaded = ref(false) // Once fetched, mark loaded
+  const error = ref(null)
 
-  // Actions
+  // Control to indicate we've fetched data once already
+  const isLoaded = ref(false)
+
+  // --- ACTIONS ---
+
+  /**
+   * Fetch a list of category groups
+   */
   const fetchItems = async (queryParams = {}, forceRefresh = false) => {
-    // If we've already loaded data and aren't forcing a refresh, skip the API call
+    // Clear any old error
+    error.value = null
+
+    // Skip API if data already loaded and not forcing refresh
     if (!forceRefresh && isLoaded.value) {
       return
     }
+
     try {
       isLoading.value = true
       const response = await categoryGroupService.list(queryParams)
@@ -34,28 +45,37 @@ export const useCategoryGroupStore = defineStore('categoryGroup', () => {
         data: response.data || []
       })
 
-      isLoaded.value = true // Mark store as having loaded data
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch category groups')
+      isLoaded.value = true
+    } catch (err) {
+      // Capture error in store instead of throwing
+      error.value = err?.response?.message || 'Failed to fetch category groups'
     } finally {
       isLoading.value = false
     }
   }
 
+  /**
+   * Create a new category group
+   */
   const createItem = async (data) => {
+    error.value = null
     try {
       isLoading.value = true
       const response = await categoryGroupService.create(data)
       items.value.data.push(response)
       items.value.total += 1
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to create category group')
+    } catch (err) {
+      error.value = err?.response?.message || 'Failed to create category group'
     } finally {
       isLoading.value = false
     }
   }
 
+  /**
+   * Update an existing category group
+   */
   const updateItem = async (id, data) => {
+    error.value = null
     try {
       isLoading.value = true
       const response = await categoryGroupService.updateById(id, data)
@@ -63,27 +83,33 @@ export const useCategoryGroupStore = defineStore('categoryGroup', () => {
       if (index !== -1) {
         items.value.data[index] = response
       }
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to update category group')
+    } catch (err) {
+      error.value = err?.response?.message || 'Failed to update category group'
     } finally {
       isLoading.value = false
     }
   }
 
+  /**
+   * Delete a category group by ID
+   */
   const deleteItem = async (id) => {
+    error.value = null
     try {
       isLoading.value = true
       await categoryGroupService.delete(id)
       items.value.data = items.value.data.filter((g) => g.id !== id)
       items.value.total -= 1
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to delete category group')
+    } catch (err) {
+      error.value = err?.response?.message || 'Failed to delete category group'
     } finally {
       isLoading.value = false
     }
   }
 
-  // Optional helper to reset store if you ever need to
+  /**
+   * Reset store if you ever need to (e.g. on logout)
+   */
   const resetStore = () => {
     items.value = {
       total: 0,
@@ -94,11 +120,14 @@ export const useCategoryGroupStore = defineStore('categoryGroup', () => {
     }
     isLoaded.value = false
     isLoading.value = false
+    error.value = null
   }
 
+  // --- RETURN ---
   return {
     items,
     isLoading,
+    error, // <-- export error so components can check or display it
     isLoaded,
     fetchItems,
     createItem,

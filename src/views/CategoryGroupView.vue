@@ -1,131 +1,12 @@
-<script setup>
-import { ref, computed } from 'vue'
-import { useCategoryGroupStore } from '@/stores/product/categoryGroup'
-import BaseTable from '@/components/BaseTable.vue'
-import CardBox from '@/components/CardBox.vue'
-import SectionTitleLineWithButton from '@/components/SectionTitleLineWithButton.vue'
-import BaseButton from '@/components/BaseButton.vue'
-import { mdiPlus, mdiTableBorder, mdiDelete } from '@mdi/js' // Import a delete icon
-
-// --------------------------------------
-// State for modals
-// --------------------------------------
-const showNewCategoryGroupModal = ref(false)
-const newCategoryGroupForm = ref({ name: '' })
-
-const showEditCategoryGroupModal = ref(false)
-const editCategoryGroupForm = ref({ id: null, name: '' })
-
-// Keep track of selected groups (array of IDs)
-const selectedGroups = ref([])
-
-// Store
-const categoryGroupStore = useCategoryGroupStore()
-
-// Fetch data
-async function fetchCategoryGroups(queryParams, forceRefresh = false) {
-  await categoryGroupStore.fetchItems(queryParams, forceRefresh)
-}
-
-// Initial fetch (no forceRefresh => won’t re-fetch if already loaded)
-fetchCategoryGroups({ page: 1, limit: 5 })
-
-// Compute table data
-const categoryGroupData = computed(() => ({
-  total: categoryGroupStore.items?.total || 0,
-  totalPages: categoryGroupStore.items?.totalPages || 1,
-  currentPage: categoryGroupStore.items?.currentPage || 1,
-  pageSize: categoryGroupStore.items?.pageSize || 5,
-  data: categoryGroupStore.items?.data || []
-}))
-
-// Table Definition
-const categoryGroupColumns = [{ key: 'name', label: 'Name', sortable: true, filterable: true }]
-
-// Table events
-const handleQueryChange = async (query) => {
-  // For user-driven sorting/filtering/pagination => force a refresh
-  await fetchCategoryGroups(query, true)
-}
-
-const handleSelected = (selected) => {
-  // selected is an array of row IDs (from BaseTable)
-  selectedGroups.value = selected
-}
-
-const handleEditCategoryGroup = (row) => {
-  editCategoryGroupForm.value = {
-    id: row.id,
-    name: row.name
-  }
-  showEditCategoryGroupModal.value = true
-}
-
-// Create & Update
-function showNewGroupModal() {
-  newCategoryGroupForm.value = { name: '' }
-  showNewCategoryGroupModal.value = true
-}
-
-async function saveNewCategoryGroup() {
-  try {
-    await categoryGroupStore.createItem(newCategoryGroupForm.value)
-    showNewCategoryGroupModal.value = false
-    // Force refresh to see the newly added group
-    await fetchCategoryGroups({ page: 1, limit: 5 }, true)
-  } catch (err) {
-    console.error('Error creating group:', err)
-  }
-}
-
-async function updateCategoryGroup() {
-  try {
-    await categoryGroupStore.updateItem(editCategoryGroupForm.value.id, {
-      name: editCategoryGroupForm.value.name
-    })
-    showEditCategoryGroupModal.value = false
-    // Force refresh to see updated group
-    await fetchCategoryGroups({ page: 1, limit: 5 }, true)
-  } catch (err) {
-    console.error('Error updating group:', err)
-  }
-}
-
-// Delete selected category groups
-async function deleteSelectedCategoryGroups() {
-  if (!confirm('Are you sure you want to delete the selected category groups?')) {
-    return
-  }
-
-  try {
-    // Loop each selected ID, call the store delete action
-    for (const groupId of selectedGroups.value) {
-      await categoryGroupStore.deleteItem(groupId)
-    }
-    // Clear local selection
-    selectedGroups.value = []
-
-    // Optionally re-fetch from server
-    await fetchCategoryGroups({ page: 1, limit: 5 }, true)
-  } catch (err) {
-    console.error('Error deleting groups:', err)
-  }
-}
-
-// Close modals
-function closeNewGroupModal() {
-  showNewCategoryGroupModal.value = false
-}
-function closeEditGroupModal() {
-  showEditCategoryGroupModal.value = false
-}
-</script>
-
 <template>
+  <!-- 1. Show a NotificationBar if there's an error in the store -->
+  <NotificationBar v-if="categoryGroupStore.error" :icon="mdiAlertCircle" color="danger">
+    {{ categoryGroupStore.error }}
+  </NotificationBar>
+
   <SectionTitleLineWithButton :icon="mdiTableBorder" title="Category Group" main>
-    <!-- Wrap buttons together to keep them close, e.g. flex with gap -->
+    <!-- Buttons in a small flex container -->
     <div class="flex items-center gap-2">
-      <!-- New Group Button -->
       <BaseButton
         :icon="mdiPlus"
         color="primary"
@@ -133,7 +14,6 @@ function closeEditGroupModal() {
         @click="showNewGroupModal"
       />
 
-      <!-- Delete Button: only show if there's at least one selected group -->
       <BaseButton
         v-if="selectedGroups.length"
         :icon="mdiDelete"
@@ -145,7 +25,7 @@ function closeEditGroupModal() {
   </SectionTitleLineWithButton>
 
   <CardBox class="mb-6">
-    <!-- Pass isLoading from store, table is checkable to allow row selection -->
+    <!-- The table displays category groups, handles selection, sorting, pagination, etc. -->
     <BaseTable
       :columns="categoryGroupColumns"
       :data="categoryGroupData"
@@ -207,3 +87,155 @@ function closeEditGroupModal() {
     </div>
   </div>
 </template>
+
+<script setup>
+import { ref, computed } from 'vue'
+
+// 1. Import the store and icons
+import { useCategoryGroupStore } from '@/stores/product/categoryGroup'
+import { mdiPlus, mdiTableBorder, mdiDelete, mdiAlertCircle } from '@mdi/js'
+
+// 2. Import NotificationBar and other components
+import NotificationBar from '@/components/NotificationBar.vue'
+import BaseTable from '@/components/BaseTable.vue'
+import CardBox from '@/components/CardBox.vue'
+import SectionTitleLineWithButton from '@/components/SectionTitleLineWithButton.vue'
+import BaseButton from '@/components/BaseButton.vue'
+
+// 3. Import SweetAlert2
+// If you declared SweetAlert2 globally (via main.js -> app.config.globalProperties.$swal),
+// you can call `this.$swal` or `getCurrentInstance().proxy.$swal`.
+// Otherwise, import locally:
+import Swal from 'sweetalert2'
+import 'sweetalert2/dist/sweetalert2.css'
+
+// --- State for modals ---
+const showNewCategoryGroupModal = ref(false)
+const newCategoryGroupForm = ref({ name: '' })
+
+const showEditCategoryGroupModal = ref(false)
+const editCategoryGroupForm = ref({ id: null, name: '' })
+
+// Keep track of selected groups (array of IDs)
+const selectedGroups = ref([])
+
+// Store
+const categoryGroupStore = useCategoryGroupStore()
+
+// Fetch data
+async function fetchCategoryGroups(queryParams, forceRefresh = false) {
+  await categoryGroupStore.fetchItems(queryParams, forceRefresh)
+}
+
+// Initial fetch
+fetchCategoryGroups({ page: 1, limit: 5 })
+
+// Compute table data
+const categoryGroupData = computed(() => ({
+  total: categoryGroupStore.items?.total || 0,
+  totalPages: categoryGroupStore.items?.totalPages || 1,
+  currentPage: categoryGroupStore.items?.currentPage || 1,
+  pageSize: categoryGroupStore.items?.pageSize || 5,
+  data: categoryGroupStore.items?.data || []
+}))
+
+// Table Definition
+const categoryGroupColumns = [{ key: 'name', label: 'Name', sortable: true, filterable: true }]
+
+// Table events
+const handleQueryChange = async (query) => {
+  // Force a refresh for user-driven sorting/filtering/pagination
+  await fetchCategoryGroups(query, true)
+}
+
+const handleSelected = (selected) => {
+  // Selected is an array of row IDs (from BaseTable)
+  selectedGroups.value = selected
+}
+
+const handleEditCategoryGroup = (row) => {
+  editCategoryGroupForm.value = {
+    id: row.id,
+    name: row.name
+  }
+  showEditCategoryGroupModal.value = true
+}
+
+// Create & Update
+function showNewGroupModal() {
+  newCategoryGroupForm.value = { name: '' }
+  showNewCategoryGroupModal.value = true
+}
+
+async function saveNewCategoryGroup() {
+  await categoryGroupStore.createItem(newCategoryGroupForm.value)
+
+  // If there's no error, close the modal & refresh
+  if (!categoryGroupStore.error) {
+    showNewCategoryGroupModal.value = false
+    await fetchCategoryGroups({ page: 1, limit: 5 }, true)
+  }
+}
+
+async function updateCategoryGroup() {
+  await categoryGroupStore.updateItem(editCategoryGroupForm.value.id, {
+    name: editCategoryGroupForm.value.name
+  })
+
+  // If successful, close modal & refresh
+  if (!categoryGroupStore.error) {
+    showEditCategoryGroupModal.value = false
+    await fetchCategoryGroups({ page: 1, limit: 5 }, true)
+  }
+}
+
+// Delete selected category groups using SweetAlert2
+async function deleteSelectedCategoryGroups() {
+  if (!selectedGroups.value.length) return
+
+  const result = await Swal.fire({
+    title: 'Are you sure?',
+    text: `You are about to delete ${selectedGroups.value.length} selected category groups. This action cannot be undone.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, delete',
+    cancelButtonText: 'Cancel',
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6'
+  })
+
+  if (!result.isConfirmed) {
+    return
+  }
+
+  // Loop each selected ID, call the store's delete action
+  for (const groupId of selectedGroups.value) {
+    await categoryGroupStore.deleteItem(groupId)
+    if (categoryGroupStore.error) break
+  }
+
+  // If no error, clear selection & refresh
+  if (!categoryGroupStore.error) {
+    selectedGroups.value = []
+    await fetchCategoryGroups({ page: 1, limit: 5 }, true)
+
+    // Show success alert
+    Swal.fire({
+      icon: 'success',
+      title: 'Deleted!',
+      text: 'Selected category groups have been deleted.',
+      timer: 1500,
+      showConfirmButton: false
+    })
+  }
+}
+
+// Close modals
+function closeNewGroupModal() {
+  showNewCategoryGroupModal.value = false
+}
+
+function closeEditGroupModal() {
+  showEditCategoryGroupModal.value = false
+}
+</script>

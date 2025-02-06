@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import categoryService from '../../services/product/categoryService'
 
 export const useProductCategoryStore = defineStore('productCategory', () => {
-  // State
+  // --- STATE ---
   const items = ref({
     total: 0,
     totalPages: 1,
@@ -13,18 +13,27 @@ export const useProductCategoryStore = defineStore('productCategory', () => {
   })
   const item = ref(null)
 
-  /**
-   * Controls
-   */
+  // Track loading and error states
   const isLoading = ref(false)
-  const isLoaded = ref(false) // <-- Once data is fetched, mark true
+  const error = ref(null)
 
-  // Actions
+  // Mark if we already fetched data once (to skip re-fetch on subsequent uses)
+  const isLoaded = ref(false)
+
+  // --- ACTIONS ---
+
+  /**
+   * Fetch a list of categories
+   */
   const fetchItems = async (queryParams = {}, forceRefresh = false) => {
-    // If data is already loaded and we're NOT forcing a refresh, skip the API call
+    // Reset any previous error
+    error.value = null
+
+    // Skip API call if we've already loaded data once and not forcing a refresh
     if (!forceRefresh && isLoaded.value) {
       return
     }
+
     try {
       isLoading.value = true
       const response = await categoryService.list(queryParams)
@@ -37,57 +46,92 @@ export const useProductCategoryStore = defineStore('productCategory', () => {
         data: response.data || []
       })
 
-      isLoaded.value = true // Mark as loaded
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch items')
+      isLoaded.value = true
+    } catch (err) {
+      // Capture the error in the store state
+      error.value = err?.response?.message || 'Failed to fetch categories'
     } finally {
       isLoading.value = false
     }
   }
 
+  /**
+   * Fetch a single category by ID
+   */
   const fetchItemById = async (itemId) => {
+    error.value = null
     try {
+      isLoading.value = true
       const response = await categoryService.getById(itemId)
       item.value = response
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch item')
+    } catch (err) {
+      error.value = err?.response?.message || 'Failed to fetch item'
+    } finally {
+      isLoading.value = false
     }
   }
 
+  /**
+   * Create a new category
+   */
   const createItem = async (itemData) => {
+    error.value = null
     try {
+      isLoading.value = true
       const response = await categoryService.create(itemData)
-      // Upsert to local state
+      // Append the new item to our store list
       items.value.data.push(response)
       items.value.total += 1
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to create item')
+    } catch (err) {
+      error.value = err?.response?.message || 'Failed to create category'
+    } finally {
+      isLoading.value = false
     }
   }
 
+  /**
+   * Update an existing category
+   */
   const updateItem = async (itemId, itemData) => {
+    error.value = null
     try {
+      isLoading.value = true
       const response = await categoryService.updateById(itemId, itemData)
-      const index = items.value.data.findIndex((s) => s.id === itemId)
+
+      // If found, replace the existing item
+      const index = items.value.data.findIndex((cat) => cat.id === itemId)
       if (index !== -1) {
         items.value.data[index] = response
       }
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to update item')
+    } catch (err) {
+      error.value = err?.response?.message || 'Failed to update category'
+    } finally {
+      isLoading.value = false
     }
   }
 
+  /**
+   * Delete a category by ID
+   */
   const deleteItem = async (itemId) => {
+    error.value = null
     try {
+      isLoading.value = true
       await categoryService.delete(itemId)
-      items.value.data = items.value.data.filter((s) => s.id !== itemId)
+
+      // Remove from local store
+      items.value.data = items.value.data.filter((cat) => cat.id !== itemId)
       items.value.total -= 1
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to delete item')
+    } catch (err) {
+      error.value = err?.response?.message || 'Failed to delete category'
+    } finally {
+      isLoading.value = false
     }
   }
 
-  // Optional helper to reset store state
+  /**
+   * Reset the store (useful e.g. on logout)
+   */
   const resetStore = () => {
     items.value = {
       total: 0,
@@ -98,13 +142,16 @@ export const useProductCategoryStore = defineStore('productCategory', () => {
     }
     item.value = null
     isLoading.value = false
+    error.value = null
     isLoaded.value = false
   }
 
+  // Return everything we need
   return {
     items,
     item,
     isLoading,
+    error,
     isLoaded,
     fetchItems,
     fetchItemById,
