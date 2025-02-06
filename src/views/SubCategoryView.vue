@@ -198,7 +198,6 @@ const closeEditSubcategoryModal = () => {
           v-model="newSubcategoryForm.categoryId"
           class="w-full border p-2 rounded"
         >
-          <option :value="null">None</option>
           <option
             v-for="category in categoryStore.items.data"
             :key="category.id"
@@ -227,20 +226,42 @@ const closeEditSubcategoryModal = () => {
   >
     <div class="bg-white p-6 rounded shadow-lg w-96">
       <h2 class="text-xl mb-4">Edit Subcategory</h2>
-      <input v-model="editSubcategoryForm.name" type="text" class="w-full border p-2 rounded" />
-      <select v-model="editSubcategoryForm.categoryId" class="w-full border p-2 rounded">
-        <option :value="null">None</option>
-        <option
-          v-for="category in categoryStore.items.data"
-          :key="category.id"
-          :value="category.id"
+
+      <div class="mb-4">
+        <label class="block mb-1" for="editSubcatName">Name</label>
+        <input
+          id="editSubcatName"
+          v-model="editSubcategoryForm.name"
+          type="text"
+          class="w-full border p-2 rounded"
+        />
+      </div>
+
+      <div class="mb-4">
+        <label class="block mb-1" for="editCategorySelect">Category</label>
+        <select
+          id="editCategorySelect"
+          v-model="editSubcategoryForm.categoryId"
+          class="w-full border p-2 rounded"
         >
-          {{ category.name }}
-        </option>
-      </select>
-      <button class="px-4 py-2 bg-blue-600 text-white rounded mt-4" @click="updateSubcategory">
-        Update
-      </button>
+          <option
+            v-for="category in categoryStore.items.data"
+            :key="category.id"
+            :value="category.id"
+          >
+            {{ category.name }}
+          </option>
+        </select>
+      </div>
+
+      <div class="flex justify-end space-x-2">
+        <button class="px-4 py-2 bg-gray-200 rounded" @click="closeEditSubcategoryModal">
+          Cancel
+        </button>
+        <button class="px-4 py-2 bg-blue-600 text-white rounded" @click="updateSubcategory">
+          Update
+        </button>
+      </div>
     </div>
   </div>
 </template>

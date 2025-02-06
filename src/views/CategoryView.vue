@@ -210,17 +210,9 @@ const handleSelected = (selectedItems) => {
 }
 
 const handleEditCategory = async (row) => {
-  categoryStore.isLoading = true
-
-  // Fetch category groups before proceeding
+  // Also fetch all category groups in case the user changes the group
   await categoryGroupStore.fetchItems()
 
-  // Ensure all data has finished loading
-  while (categoryGroupStore.isLoading) {
-    await new Promise((resolve) => setTimeout(resolve, 100)) // Small delay to check again
-  }
-
-  // Populate the edit form
   editCategoryForm.value = {
     id: row.id,
     name: row.name,
@@ -228,33 +220,21 @@ const handleEditCategory = async (row) => {
     isActive: row.isActive ?? true
   }
 
-  // Show edit modal after everything is ready
   showEditCategoryModal.value = true
-  categoryStore.isLoading = false
 }
 
 // --- Create Category ---
 const handleShowNewCategoryModal = async () => {
-  categoryStore.isLoading = true
-
-  // Fetch category groups before proceeding
+  // Pre-fetch category groups for the dropdown
   await categoryGroupStore.fetchItems()
 
-  // Ensure all data has finished loading
-  while (categoryGroupStore.isLoading) {
-    await new Promise((resolve) => setTimeout(resolve, 100)) // Small delay to check again
-  }
-
-  // Reset new category form
   newCategoryForm.value = {
     name: '',
     categoryGroup: null,
     isActive: true
   }
 
-  // Show new category modal after everything is ready
   showNewCategoryModal.value = true
-  categoryStore.isLoading = false
 }
 
 async function saveNewCategory() {
