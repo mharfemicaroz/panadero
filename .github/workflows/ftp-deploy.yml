@@ -19,7 +19,8 @@ jobs:
         uses: SamKirkland/FTP-Deploy-Action@4.1.0
         with:
           # Use your FTP host (include the port if necessary)
-          server: "ftp://ftp.panadero-api.site:21"
+          server: "ftp.panadero-api.site"
+          port: 21
           # Retrieve credentials from GitHub Secrets
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
