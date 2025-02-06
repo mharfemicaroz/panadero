@@ -5,7 +5,6 @@ import SectionMain from '@/components/SectionMain.vue'
 import { useItemStore } from '@/stores/product/item'
 import { useWarehouseStore } from '@/stores/warehouse'
 import { useProductCategoryStore } from '@/stores/product/category'
-import { useSubcategoryStore } from '@/stores/product/subcategory'
 import NotificationBar from '@/components/NotificationBar.vue'
 import BaseTable from '@/components/BaseTable.vue'
 import CardBox from '@/components/CardBox.vue'
@@ -98,10 +97,19 @@ const handleSelected = (selectedItemsList) => {
 }
 
 const handleEditItem = async (row) => {
-  // Fetch all necessary related data before showing the modal
-  await warehouseStore.fetchAll()
-  await categoryStore.fetchItems()
-  await categoryStore.fetchSubcategoriesByCategory(row.category.id)
+  itemStore.isLoading = true
+
+  // Fetch all necessary related data in parallel
+  await Promise.all([
+    warehouseStore.fetchAll(),
+    categoryStore.fetchItems(),
+    categoryStore.fetchSubcategoriesByCategory(row.category?.id)
+  ])
+
+  // Ensure all stores have finished loading before proceeding
+  while (warehouseStore.isLoading || categoryStore.isLoading) {
+    await new Promise((resolve) => setTimeout(resolve, 100)) // Small delay to recheck
+  }
 
   // Populate the edit form ensuring relationships are properly assigned
   editItemForm.value = {
@@ -120,8 +128,9 @@ const handleEditItem = async (row) => {
     subcategory_id: row.subcategory ? row.subcategory.id : null
   }
 
-  // Show the edit modal
+  // Show the edit modal after loading is complete
   showEditItemModal.value = true
+  itemStore.isLoading = false
 }
 
 // --- FETCH SUBCATEGORIES ---
@@ -131,8 +140,17 @@ async function fetchSubcategories(CategoryId) {
 
 // --- CREATE NEW ITEM ---
 const handleShowNewItemModal = async () => {
-  await warehouseStore.fetchAll()
-  await categoryStore.fetchItems()
+  itemStore.isLoading = true
+
+  // Wait for both warehouseStore and categoryStore to finish loading
+  await Promise.all([warehouseStore.fetchAll(), categoryStore.fetchItems()])
+
+  // Ensure their isLoading flags are false before proceeding
+  while (warehouseStore.isLoading || categoryStore.isLoading) {
+    await new Promise((resolve) => setTimeout(resolve, 100)) // Small delay to check again
+  }
+
+  // Reset form values
   categoryStore.subcategories = []
   newItemForm.value = {
     name: '',
@@ -148,7 +166,10 @@ const handleShowNewItemModal = async () => {
     category_id: null,
     subcategory_id: null
   }
+
+  // Show modal after loading completes
   showNewItemModal.value = true
+  itemStore.isLoading = false
 }
 
 async function saveNewItem() {
