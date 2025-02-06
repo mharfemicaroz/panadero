@@ -210,6 +210,14 @@ const routes = [
   },
   {
     meta: {
+      title: 'Inventory'
+    },
+    path: '/inventory',
+    name: 'inventory',
+    component: () => import('@/views/InventoryView.vue')
+  },
+  {
+    meta: {
       title: 'Devices'
     },
     path: '/devices',

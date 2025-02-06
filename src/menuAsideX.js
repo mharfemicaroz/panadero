@@ -168,7 +168,7 @@ export default [
       },
       {
         label: 'Item Stocks',
-        to: '/item-stocks'
+        to: '/inventory'
       },
       {
         label: 'Item Transfer',
