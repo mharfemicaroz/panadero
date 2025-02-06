@@ -16,43 +16,47 @@ const activeTab = ref('category_group')
   <LayoutAuthenticated>
     <SectionMain>
       <!-- Top Bar / Tabs -->
-      <div class="flex space-x-4 border-b mb-4">
-        <!-- Category Group Tab -->
-        <button
-          class="px-4 py-2 font-semibold"
-          :class="
-            activeTab === 'category_group'
-              ? 'border-b-2 border-blue-500 text-blue-600'
-              : 'text-gray-500'
-          "
-          @click="activeTab = 'category_group'"
-        >
-          Category Group
-        </button>
+      <div class="overflow-x-auto">
+        <div class="flex space-x-4 border-b mb-4 whitespace-nowrap">
+          <!-- Category Group Tab -->
+          <button
+            class="px-4 py-2 font-semibold focus:outline-none"
+            :class="
+              activeTab === 'category_group'
+                ? 'border-b-2 border-blue-500 text-blue-600'
+                : 'text-gray-500'
+            "
+            @click="activeTab = 'category_group'"
+          >
+            Category Group
+          </button>
 
-        <!-- Category Tab -->
-        <button
-          class="px-4 py-2 font-semibold"
-          :class="
-            activeTab === 'category' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'
-          "
-          @click="activeTab = 'category'"
-        >
-          Category
-        </button>
+          <!-- Category Tab -->
+          <button
+            class="px-4 py-2 font-semibold focus:outline-none"
+            :class="
+              activeTab === 'category'
+                ? 'border-b-2 border-blue-500 text-blue-600'
+                : 'text-gray-500'
+            "
+            @click="activeTab = 'category'"
+          >
+            Category
+          </button>
 
-        <!-- Subcategory Tab -->
-        <button
-          class="px-4 py-2 font-semibold"
-          :class="
-            activeTab === 'subcategory'
-              ? 'border-b-2 border-blue-500 text-blue-600'
-              : 'text-gray-500'
-          "
-          @click="activeTab = 'subcategory'"
-        >
-          Subcategory
-        </button>
+          <!-- Subcategory Tab -->
+          <button
+            class="px-4 py-2 font-semibold focus:outline-none"
+            :class="
+              activeTab === 'subcategory'
+                ? 'border-b-2 border-blue-500 text-blue-600'
+                : 'text-gray-500'
+            "
+            @click="activeTab = 'subcategory'"
+          >
+            Subcategory
+          </button>
+        </div>
       </div>
 
       <!-- Conditionally Render Each View -->

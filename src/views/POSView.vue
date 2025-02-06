@@ -1,9 +1,10 @@
 <template>
-  <div class="bg-[#f8f8f8] min-h-screen flex p-4 md:p-8">
+  <!-- Outer container: stack columns on mobile, side-by-side on md+ -->
+  <div class="bg-[#f8f8f8] min-h-screen flex flex-col md:flex-row p-4 md:p-8">
     <!-- MAIN CONTENT -->
     <div class="container mx-auto py-8 flex-1">
       <!-- BREADCRUMB NAVIGATION -->
-      <div class="mb-6 flex items-center gap-2">
+      <div class="mb-6 flex flex-wrap items-center gap-2">
         <span class="text-[#b51919] cursor-pointer hover:underline" @click="resetCategories">
           Home
         </span>
@@ -120,9 +121,11 @@
     </div>
 
     <!-- CART SIDEBAR -->
-    <div class="w-1/3 bg-white shadow-lg p-6 border-l sticky top-0 h-screen overflow-y-auto">
+    <div
+      class="bg-white shadow-lg p-6 border-l md:w-1/3 w-full md:sticky md:top-0 h-screen overflow-y-auto"
+    >
       <!-- Buttons: View Sales, Suspend Sale, Cancel Sale -->
-      <div class="mb-6 flex gap-2">
+      <div class="mb-6 flex flex-wrap gap-2">
         <!-- VIEW SALES (always visible) -->
         <button
           @click="openSalesModal"
@@ -374,12 +377,12 @@
       </div>
     </div>
 
-    <!-- Customer Modal -->
+    <!-- CUSTOMER MODAL -->
     <div
       v-if="isCustomerModalOpen"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
     >
-      <div class="bg-white p-6 rounded-lg w-1/3">
+      <div class="bg-white p-6 rounded-lg md:w-1/3 w-full max-w-md">
         <h2 class="text-xl font-bold mb-4">Add Customer</h2>
         <form @submit.prevent="saveCustomer">
           <div class="mb-4">
@@ -425,12 +428,12 @@
       </div>
     </div>
 
-    <!-- Item Discount Modal -->
+    <!-- ITEM DISCOUNT MODAL -->
     <div
       v-if="isItemDiscountModalOpen"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
     >
-      <div class="bg-white p-6 rounded-lg w-1/3">
+      <div class="bg-white p-6 rounded-lg md:w-1/3 w-full max-w-md">
         <h2 class="text-xl font-bold mb-4">Edit Discount</h2>
         <div class="mb-4 flex items-center gap-2">
           <label class="block text-sm font-medium">Discount Amount (₱):</label>
@@ -461,12 +464,12 @@
       </div>
     </div>
 
-    <!-- Item Price Modal -->
+    <!-- ITEM PRICE MODAL -->
     <div
       v-if="isItemPriceModalOpen"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
     >
-      <div class="bg-white p-6 rounded-lg w-1/3">
+      <div class="bg-white p-6 rounded-lg md:w-1/3 w-full max-w-md">
         <h2 class="text-xl font-bold mb-4">Edit Price</h2>
         <div class="mb-4 flex items-center gap-2">
           <label class="block text-sm font-medium">New Price (₱):</label>
@@ -497,13 +500,13 @@
       </div>
     </div>
 
-    <!-- Sales Modal -->
+    <!-- SALES MODAL -->
     <div
       v-if="isSalesModalOpen"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
     >
-      <div class="bg-white p-6 rounded-lg w-2/3 max-h-[80vh] overflow-y-auto">
-        <div class="flex justify-between items-center mb-4">
+      <div class="bg-white p-6 rounded-lg md:w-2/3 w-full max-w-3xl max-h-[80vh] overflow-y-auto">
+        <div class="flex flex-wrap md:flex-nowrap justify-between items-center mb-4">
           <h2 class="text-xl font-bold">All Sales</h2>
           <button
             type="button"
@@ -577,7 +580,7 @@
           </tbody>
         </table>
 
-        <div class="flex justify-between items-center mt-4">
+        <div class="flex flex-wrap justify-between items-center mt-4">
           <button
             @click="prevPage"
             :disabled="currentPage === 1"
@@ -597,23 +600,23 @@
       </div>
     </div>
 
-    <!-- Receipt Modal -->
+    <!-- RECEIPT MODAL -->
     <div
       v-if="isReceiptModalOpen"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
     >
-      <div class="bg-white p-6 rounded-lg w-1/3" id="receiptContainer">
+      <div class="bg-white p-6 rounded-lg md:w-1/3 w-full max-w-md" id="receiptContainer">
         <h2 class="text-xl font-bold mb-4">Transaction Receipt</h2>
 
         <!-- Transaction ID Display -->
         <p><strong>Transaction ID:</strong> {{ transactionId }}</p>
 
-        <!-- Add the barcode element here -->
-        <div style="text-align: center; margin: 1rem 0">
+        <!-- Barcode Element -->
+        <div class="my-4 text-center">
           <svg id="barcodeElement"></svg>
         </div>
 
-        <!-- Basic purchase summary, cart items, etc. -->
+        <!-- Purchase Summary -->
         <div class="text-sm mb-4">
           <p><strong>Customer:</strong> {{ receiptData.customerName || 'N/A' }}</p>
           <p><strong>Payment Type:</strong> {{ receiptData.paymentType }}</p>
@@ -621,51 +624,34 @@
           <p><strong>Status:</strong> {{ receiptData.status }}</p>
         </div>
 
-        <div
-          v-if="receiptData.items && receiptData.items.length"
-          style="font-family: monospace; font-size: 0.8rem"
-        >
+        <div v-if="receiptData.items && receiptData.items.length" class="font-mono text-xs mb-4">
           <!-- Header row -->
-          <div style="display: flex; border-bottom: 1px solid #000; padding-bottom: 2px">
-            <div style="width: 10em">Item</div>
-            <div style="width: 4em; text-align: right">Qty</div>
-            <div style="width: 6em; text-align: right">Price</div>
-            <div style="width: 6em; text-align: right">Disc</div>
-            <div style="width: 6em; text-align: right">Total</div>
+          <div class="flex border-b pb-1">
+            <div class="w-40">Item</div>
+            <div class="w-16 text-right">Qty</div>
+            <div class="w-24 text-right">Price</div>
+            <div class="w-24 text-right">Disc</div>
+            <div class="w-24 text-right">Total</div>
           </div>
           <!-- Cart items -->
-          <div v-for="item in receiptData.items" :key="item.id" style="display: flex">
-            <!-- Item name (truncated if too long) -->
-            <div
-              style="width: 10em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis"
-            >
+          <div v-for="item in receiptData.items" :key="item.id" class="flex">
+            <div class="w-40 truncate">
               {{ item.item?.name ?? item.name }}
             </div>
-
-            <!-- Quantity -->
-            <div style="width: 4em; text-align: right">
+            <div class="w-16 text-right">
               {{ item.quantity }}
             </div>
-
-            <!-- Price -->
-            <div style="width: 6em; text-align: right">₱{{ item.price }}</div>
-
-            <!-- Discount -->
-            <div style="width: 6em; text-align: right">₱{{ item.discount }}</div>
-
-            <!-- Line Total -->
-            <div style="width: 6em; text-align: right">
-              ₱{{ (item.price - item.discount) * item.quantity }}
-            </div>
+            <div class="w-24 text-right">₱{{ item.price }}</div>
+            <div class="w-24 text-right">₱{{ item.discount }}</div>
+            <div class="w-24 text-right">₱{{ (item.price - item.discount) * item.quantity }}</div>
           </div>
         </div>
 
         <!-- Grand Total -->
         <p class="text-lg font-bold mb-4">Grand Total: ₱{{ receiptData.total }}</p>
 
-        <!-- Action buttons -->
+        <!-- Action Buttons -->
         <div class="flex justify-end gap-2 no-print">
-          <!-- Print -->
           <button
             type="button"
             v-print="printOptions"
@@ -827,7 +813,6 @@ const printOptions = {
       .no-print {
         display: none !important;
       }
-
       html, body {
         margin: 0;
         padding: 0;
@@ -941,7 +926,6 @@ const filteredSales = computed(() => {
     const saleDate = new Date(sale.created_at)
     if (from && saleDate < from) return false
     if (to) {
-      // set 'to' to end of day to include that day
       let toEnd = new Date(to)
       toEnd.setHours(23, 59, 59, 999)
       if (saleDate > toEnd) return false
@@ -1086,8 +1070,7 @@ async function checkout() {
       openReceiptModal(result)
     })
   } catch (error) {
-    console.error('Checkout error:', error) // ✅ Debugging log for errors
-
+    console.error('Checkout error:', error)
     Swal.fire({
       title: 'Checkout Failed',
       text: error.message || 'An error occurred while processing your sale.',
@@ -1099,7 +1082,6 @@ async function checkout() {
 
 // Receipt Modal
 async function openReceiptModal(sale) {
-  // Populate receiptData
   receiptData.id = sale.id
   receiptData.date = sale.sale_date
   receiptData.customerName = sale.customer_name
@@ -1110,7 +1092,6 @@ async function openReceiptModal(sale) {
 
   isReceiptModalOpen.value = true
 
-  // Let the modal render, then generate the barcode
   await nextTick()
   const barcodeEl = document.getElementById('barcodeElement')
   if (barcodeEl) {
@@ -1126,11 +1107,9 @@ async function openReceiptModal(sale) {
 
 function closeReceiptModal() {
   isReceiptModalOpen.value = false
-  // Clear cart and reset everything AFTER the user closes the receipt
   clearPos()
 }
 
-// Reusable function to clear POS
 function clearPos() {
   cart.value = []
   searchQuery.value = ''
@@ -1253,12 +1232,12 @@ function suspendSale() {
     id: saleId,
     date: new Date().toISOString(),
     customerName: customerName.value,
-    items: cart.value.map((item) => ({ ...item })), // clone
+    items: cart.value.map((item) => ({ ...item })),
     subTotal: subTotalBeforeGlobalDiscount.value,
     discountAllItemsPercent: discountAllItemsPercent.value,
     discountEntireSale: discountEntireSale.value,
     total: totalCartAmount.value,
-    paymentType: selectedPaymentType.value || 'N/A', // might not be chosen yet
+    paymentType: selectedPaymentType.value || 'N/A',
     checkNumber: checkNumber.value,
     bankName: bankName.value,
     walletReference: walletReference.value,
@@ -1267,7 +1246,6 @@ function suspendSale() {
     status: 'Suspended'
   }
 
-  // Add to sales
   sales.value.push(newSale)
 
   Swal.fire({
@@ -1284,7 +1262,6 @@ function suspendSale() {
 function cancelSale() {
   if (!cart.value.length) return
 
-  // If you *do* want to record a "Voided" sale, do this:
   const saleId = Date.now().toString()
   const voidedSale = {
     id: saleId,
@@ -1308,11 +1285,9 @@ function cancelSale() {
   clearPos()
 }
 
-// Unsuspend (load that sale into cart again)
+// Unsuspend Sale
 function unsuspendSale(sale) {
-  // 1) Clear current cart
   clearPos()
-  // 2) Load suspended sale into cart
   cart.value = sale.items.map((item) => ({ ...item }))
   customerName.value = sale.customerName
   discountAllItemsPercent.value = sale.discountAllItemsPercent
@@ -1324,12 +1299,7 @@ function unsuspendSale(sale) {
   cardAuthCode.value = sale.cardAuthCode
   bankReference.value = sale.bankReference
 
-  // 3) Remove or update the original sale from the array
-  // Typically, you'd remove it from "Suspended" list or change its status
-  sale.status = 'Re-Opened' // or remove from array entirely
-  // If you want to remove it altogether:
-  // const idx = sales.value.findIndex(s => s.id === sale.id)
-  // if (idx !== -1) sales.value.splice(idx, 1)
+  sale.status = 'Re-Opened'
 
   Swal.fire({
     title: 'Sale Unsuspended',
@@ -1354,7 +1324,6 @@ function voidSale(sale) {
 
 // Print an existing sale from the sales list
 function printExistingSale(sale) {
-  // Reuse the receipt modal logic
   openReceiptModal(sale)
 }
 </script>
