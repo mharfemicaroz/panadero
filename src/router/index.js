@@ -153,6 +153,14 @@ const routes = [
   },
   {
     meta: {
+      title: 'Warehouses'
+    },
+    path: '/warehouses',
+    name: 'warehouses',
+    component: () => import('@/views/WarehousesView.vue')
+  },
+  {
+    meta: {
       title: 'Items Modifier'
     },
     path: '/items_modifier',
