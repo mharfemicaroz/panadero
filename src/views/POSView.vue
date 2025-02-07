@@ -682,8 +682,7 @@ import BaseIcon from '@/components/BaseIcon.vue'
 import { useLoading } from 'vue-loading-overlay'
 import 'vue-loading-overlay/dist/css/index.css'
 
-// Destructure the loader functions (available for your entire component)
-const { show, hide } = useLoading()
+const $loading = useLoading()
 
 // Import stores
 import { useProductCategoryStore } from '@/stores/product/category'
@@ -1043,46 +1042,51 @@ async function checkout() {
     return
   }
 
-  // Show full-screen loader with optional configuration.
-  show({
-    isFullPage: true, // Ensures the overlay covers the entire screen
-    color: '#b51919', // Customize the loader color
-    loader: 'dots' // Choose a loader style (optional)
+  // Show a full-page loader during checkout processing.
+  const loaderInstance = $loading.show({
+    container: document.body, // attach to the whole document
+    isFullPage: true, // cover the entire page
+    canCancel: false,
+    color: '#3b82f6',
+    opacity: 0.8
   })
 
-  try {
-    const saleId = Date.now().toString()
-    const newSale = {
-      user_id: 1,
-      branch_id: 1,
-      warehouse_id: 1,
-      customer_id: customerId.value || null,
-      customer_name: customerName.value,
-      status: 'completed',
-      sale_date: new Date().toISOString(),
-      total_amount: totalCartAmount.value,
-      discount_total: discountEntireSale.value || 0.0,
-      remarks: 'Sale transaction',
-      payment_type: selectedPaymentType.value,
-      checkNumber: checkNumber.value || null,
-      bankName: bankName.value || null,
-      walletReference: walletReference.value || null,
-      cardAuthCode: cardAuthCode.value || null,
-      bankReference: bankReference.value || null,
-      items: cart.value.map((item) => ({
-        item_id: item.id,
-        price: item.price,
-        quantity: item.quantity,
-        discount: item.discount,
-        total: (item.price - item.discount) * item.quantity
-      }))
-    }
+  const saleId = Date.now().toString()
+  const newSale = {
+    user_id: 1,
+    branch_id: 1,
+    warehouse_id: 1,
+    customer_id: customerId.value || null,
+    customer_name: customerName.value,
+    status: 'completed',
+    sale_date: new Date().toISOString(),
+    total_amount: totalCartAmount.value,
+    discount_total: discountEntireSale.value || 0.0,
+    remarks: 'Sale transaction',
+    payment_type: selectedPaymentType.value,
+    checkNumber: checkNumber.value || null,
+    bankName: bankName.value || null,
+    walletReference: walletReference.value || null,
+    cardAuthCode: cardAuthCode.value || null,
+    bankReference: bankReference.value || null,
+    items: cart.value.map((item) => ({
+      item_id: item.id,
+      price: item.price,
+      quantity: item.quantity,
+      discount: item.discount,
+      total: (item.price - item.discount) * item.quantity
+    }))
+  }
 
+  try {
     const result = await productSaleStore.createItem(newSale)
 
     if (!result || result.error) {
       throw new Error(result?.error || 'Unknown error occurred')
     }
+
+    // Hide the loader once the checkout has completed.
+    loaderInstance.hide()
 
     Swal.fire({
       title: 'Checkout successful!',
@@ -1100,6 +1104,8 @@ async function checkout() {
       openReceiptModal(result)
     })
   } catch (error) {
+    // Ensure the loader is hidden even if an error occurs.
+    loaderInstance.hide()
     console.error('Checkout error:', error)
     Swal.fire({
       title: 'Checkout Failed',
@@ -1107,9 +1113,6 @@ async function checkout() {
       icon: 'error',
       confirmButtonColor: '#b51919'
     })
-  } finally {
-    // Hide the loader regardless of success or error.
-    hide()
   }
 }
 
