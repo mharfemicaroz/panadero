@@ -9,7 +9,7 @@ export default {
 
   // Fetch all categories with related products and subcategories
   async showAll(queryParams) {
-    const response = await axiosInstance.get(`${API_URL}/categories/showall`, {
+    const response = await axiosInstance.get(`${API_URL}/categories/showall?warehouse_id=1`, {
       params: queryParams
     })
     return response.data

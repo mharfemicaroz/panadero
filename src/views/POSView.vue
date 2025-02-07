@@ -875,18 +875,35 @@ const filteredCategories = computed(() => {
 
 const filteredProducts = computed(() => {
   if (!currentCategory.value && !searchQuery.value) return []
+
   const category = findCategoryByBreadcrumbs()
   if (!category) return []
+
+  // Gather products from the category and its subcategories
   let products = category.products?.slice() || []
   if (category.subcategories?.length) {
     category.subcategories.forEach((sub) => {
-      if (sub.products?.length) products = products.concat(sub.products)
+      if (sub.products?.length) {
+        products = products.concat(sub.products)
+      }
     })
   }
-  if (!searchQuery.value) return products
 
+  // Deduplicate products by their unique id
+  const uniqueProductsMap = new Map()
+  products.forEach((product) => {
+    if (!uniqueProductsMap.has(product.id)) {
+      uniqueProductsMap.set(product.id, product)
+    }
+  })
+  const uniqueProducts = Array.from(uniqueProductsMap.values())
+
+  // If there's no search query, return the deduplicated products
+  if (!searchQuery.value) return uniqueProducts
+
+  // Otherwise, filter the unique products based on the search query
   const q = searchQuery.value.toLowerCase()
-  return products.filter((p) => p.name.toLowerCase().includes(q))
+  return uniqueProducts.filter((p) => p.name.toLowerCase().includes(q))
 })
 
 const visibleSubcategories = computed(() => {
