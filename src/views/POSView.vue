@@ -679,6 +679,12 @@ import Swal from 'sweetalert2'
 import { mdiAccountPlus } from '@mdi/js'
 import BaseIcon from '@/components/BaseIcon.vue'
 
+import { useLoading } from 'vue-loading-overlay'
+import 'vue-loading-overlay/dist/css/index.css'
+
+// Destructure the loader functions (available for your entire component)
+const { show, hide } = useLoading()
+
 // Import stores
 import { useProductCategoryStore } from '@/stores/product/category'
 import { useCustomerStore } from '@/stores/customer'
@@ -1037,34 +1043,41 @@ async function checkout() {
     return
   }
 
-  const saleId = Date.now().toString()
-  const newSale = {
-    user_id: 1,
-    branch_id: 1,
-    warehouse_id: 1,
-    customer_id: customerId.value || null,
-    customer_name: customerName.value,
-    status: 'completed',
-    sale_date: new Date().toISOString(),
-    total_amount: totalCartAmount.value,
-    discount_total: discountEntireSale.value || 0.0,
-    remarks: 'Sale transaction',
-    payment_type: selectedPaymentType.value,
-    checkNumber: checkNumber.value || null,
-    bankName: bankName.value || null,
-    walletReference: walletReference.value || null,
-    cardAuthCode: cardAuthCode.value || null,
-    bankReference: bankReference.value || null,
-    items: cart.value.map((item) => ({
-      item_id: item.id,
-      price: item.price,
-      quantity: item.quantity,
-      discount: item.discount,
-      total: (item.price - item.discount) * item.quantity
-    }))
-  }
+  // Show full-screen loader with optional configuration.
+  show({
+    isFullPage: true, // Ensures the overlay covers the entire screen
+    color: '#b51919', // Customize the loader color
+    loader: 'dots' // Choose a loader style (optional)
+  })
 
   try {
+    const saleId = Date.now().toString()
+    const newSale = {
+      user_id: 1,
+      branch_id: 1,
+      warehouse_id: 1,
+      customer_id: customerId.value || null,
+      customer_name: customerName.value,
+      status: 'completed',
+      sale_date: new Date().toISOString(),
+      total_amount: totalCartAmount.value,
+      discount_total: discountEntireSale.value || 0.0,
+      remarks: 'Sale transaction',
+      payment_type: selectedPaymentType.value,
+      checkNumber: checkNumber.value || null,
+      bankName: bankName.value || null,
+      walletReference: walletReference.value || null,
+      cardAuthCode: cardAuthCode.value || null,
+      bankReference: bankReference.value || null,
+      items: cart.value.map((item) => ({
+        item_id: item.id,
+        price: item.price,
+        quantity: item.quantity,
+        discount: item.discount,
+        total: (item.price - item.discount) * item.quantity
+      }))
+    }
+
     const result = await productSaleStore.createItem(newSale)
 
     if (!result || result.error) {
@@ -1094,6 +1107,9 @@ async function checkout() {
       icon: 'error',
       confirmButtonColor: '#b51919'
     })
+  } finally {
+    // Hide the loader regardless of success or error.
+    hide()
   }
 }
 
