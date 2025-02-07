@@ -27,7 +27,7 @@ export default {
   },
 
   async adjustQuantity(id, quantityChange) {
-    const response = await axiosInstance.post(`${API_URL}/inventory/${id}/adjust`, {
+    const response = await axiosInstance.patch(`${API_URL}/inventory/${id}/adjust-quantity`, {
       quantityChange
     })
     return response.data

@@ -8,7 +8,6 @@ import BaseTable from '@/components/BaseTable.vue'
 import CardBox from '@/components/CardBox.vue'
 import SectionTitleLineWithButton from '@/components/SectionTitleLineWithButton.vue'
 import BaseButton from '@/components/BaseButton.vue'
-import Swal from 'sweetalert2'
 import { mdiTableBorder, mdiAlertCircle, mdiImport, mdiExport } from '@mdi/js'
 
 // --- STATE ---
@@ -101,21 +100,46 @@ const handleEditInventory = async (row) => {
 
 // --- UPDATE INVENTORY ---
 async function updateInventory() {
-  if (autoCompute.value) {
-    // If auto-compute is ON, add the quantityChange to current_quantity
-    editInventoryForm.value.current_quantity += editInventoryForm.value.quantityChange
-  }
+  try {
+    const form = editInventoryForm.value
+    const { id, quantityChange } = form
 
-  await inventoryStore.updateItem(editInventoryForm.value.id, {
-    current_quantity: editInventoryForm.value.current_quantity,
-    minimum_quantity: editInventoryForm.value.minimum_quantity,
-    maximum_quantity: editInventoryForm.value.maximum_quantity,
-    reorder_level: editInventoryForm.value.reorder_level
-  })
+    // If auto-compute is enabled, update current_quantity by adding quantityChange.
+    if (autoCompute.value) {
+      form.current_quantity += quantityChange
+    }
 
-  if (!inventoryStore.error) {
-    showEditInventoryModal.value = false
+    // Fetch the current inventory details.
+    await inventoryStore.fetchItemById(id)
+    const storeCurrent = inventoryStore.item?.current_quantity || 0
+
+    // Determine the effective quantity change.
+    const effectiveQtyChange = autoCompute.value
+      ? quantityChange
+      : form.current_quantity - storeCurrent
+
+    // Adjust the inventory by the effective quantity change.
+    await inventoryStore.adjustItemQuantity(id, effectiveQtyChange)
+
+    // If there was an error during adjustment, throw to jump to the catch block.
+    if (inventoryStore.error) {
+      throw new Error(inventoryStore.error)
+    }
+
+    // Update the additional inventory details.
+    await inventoryStore.updateItem(id, {
+      minimum_quantity: form.minimum_quantity,
+      maximum_quantity: form.maximum_quantity,
+      reorder_level: form.reorder_level
+    })
+
+    // Refresh the inventories list.
     await fetchInventories({ page: 1, limit: 5 }, true)
+  } catch (error) {
+    console.error('Error updating inventory:', error)
+  } finally {
+    // Close the modal regardless of success or error.
+    showEditInventoryModal.value = false
   }
 }
 
