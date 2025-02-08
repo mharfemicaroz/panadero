@@ -335,11 +335,13 @@ function isInCart(product) {
 function toggleProductSelection(product) {
   const found = cart.value.find((i) => i.id === product.id)
   if (found) {
-    removeFromCart(cart.value.indexOf(found))
+    // Increase the quantity instead of removing the product
+    found.quantity += 1
   } else {
     cart.value.push({ ...product, quantity: 1, discount: 0 })
   }
 }
+
 function removeFromCart(index) {
   cart.value.splice(index, 1)
 }

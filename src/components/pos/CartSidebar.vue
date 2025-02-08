@@ -85,27 +85,51 @@
         <tbody>
           <tr v-for="(item, index) in cart" :key="item.id" class="border-b">
             <td>{{ item.name }}</td>
+            <!-- Quantity Cell with Toggleable Stepper -->
             <td>
-              <input
-                v-model.number="item.quantity"
-                type="number"
-                min="1"
-                class="w-12 p-1 border rounded"
-              />
+              <div v-if="stepperToggle[index]" class="flex items-center space-x-1">
+                <button
+                  @click="decrementQuantity(index)"
+                  class="bg-red-500 text-white w-6 h-6 rounded flex items-center justify-center"
+                >
+                  –
+                </button>
+                <div class="w-8 text-center">{{ item.quantity }}</div>
+                <button
+                  @click="incrementQuantity(index)"
+                  class="bg-green-500 text-white w-6 h-6 rounded flex items-center justify-center"
+                >
+                  +
+                </button>
+                <button
+                  @click="toggleStepper(index)"
+                  class="bg-blue-500 text-white w-12 h-6 rounded flex items-center justify-center"
+                >
+                  Done
+                </button>
+              </div>
+              <div v-else class="flex items-center space-x-1">
+                <span>{{ item.quantity }}</span>
+                <button @click="toggleStepper(index)" class="text-sm text-blue-500 underline">
+                  Edit
+                </button>
+              </div>
             </td>
             <td>
               <a
                 class="text-[#b51919] hover:underline cursor-pointer"
                 @click.stop="$emit('openItemPriceModal', index)"
-                >₱{{ item.price.toFixed(2) }}</a
               >
+                ₱{{ item.price.toFixed(2) }}
+              </a>
             </td>
             <td>
               <a
                 class="text-[#b51919] hover:underline cursor-pointer"
                 @click.stop="$emit('openItemDiscountModal', index)"
-                >₱{{ item.discount.toFixed(2) }}</a
               >
+                ₱{{ item.discount.toFixed(2) }}
+              </a>
             </td>
             <td>₱{{ ((item.price - item.discount) * item.quantity).toFixed(2) }}</td>
             <td class="text-center">
@@ -122,14 +146,13 @@
       <!-- Global Discounts -->
       <div class="mt-4 text-sm">
         <p>
-          <strong>Subtotal (Items & Per-Item Discounts):</strong> ₱{{
-            subTotalBeforeGlobalDiscount.toFixed(2)
-          }}
+          <strong>Subtotal (Items & Per-Item Discounts):</strong>
+          ₱{{ subTotalBeforeGlobalDiscount.toFixed(2) }}
         </p>
         <p class="mt-2">
-          <label for="discountAllItemsPercent" class="font-bold"
-            >Discount All Items by Percent:</label
-          >
+          <label for="discountAllItemsPercent" class="font-bold">
+            Discount All Items by Percent:
+          </label>
           <input
             id="discountAllItemsPercent"
             v-model.number="localDiscountAllItemsPercent"
@@ -140,7 +163,7 @@
           />%
         </p>
         <p class="mt-2">
-          <label for="discountEntireSale" class="font-bold">Discount Entire Sale:</label>
+          <label for="discountEntireSale" class="font-bold"> Discount Entire Sale: </label>
           <input
             id="discountEntireSale"
             v-model.number="localDiscountEntireSale"
@@ -159,7 +182,9 @@
         <label class="block text-sm font-medium mb-1">Payment Type</label>
         <select v-model="localSelectedPaymentType" class="w-full p-2 border rounded">
           <option disabled value="">-- Select Payment Type --</option>
-          <option v-for="type in paymentTypes" :key="type" :value="type">{{ type }}</option>
+          <option v-for="type in paymentTypes" :key="type" :value="type">
+            {{ type }}
+          </option>
         </select>
       </div>
       <div class="mb-4">
@@ -191,7 +216,7 @@
         />
       </div>
       <div v-else-if="localSelectedPaymentType === 'E-Wallet'" class="mb-4">
-        <label class="block text-sm font-medium mb-1">E-Wallet Reference/Code</label>
+        <label class="block text-sm font-medium mb-1"> E-Wallet Reference/Code </label>
         <input
           type="text"
           class="w-full p-2 border rounded"
@@ -205,7 +230,7 @@
         "
         class="mb-4"
       >
-        <label class="block text-sm font-medium mb-1">Transaction / Auth Code</label>
+        <label class="block text-sm font-medium mb-1"> Transaction / Auth Code </label>
         <input
           type="text"
           class="w-full p-2 border rounded"
@@ -214,7 +239,7 @@
         />
       </div>
       <div v-else-if="localSelectedPaymentType === 'Bank'" class="mb-4">
-        <label class="block text-sm font-medium mb-1">Bank Transfer Reference</label>
+        <label class="block text-sm font-medium mb-1"> Bank Transfer Reference </label>
         <input
           type="text"
           class="w-full p-2 border rounded"
@@ -236,6 +261,7 @@
 import BaseIcon from '@/components/BaseIcon.vue'
 import { mdiAccountPlus, mdiFullscreen, mdiFullscreenExit } from '@mdi/js'
 import { computed, defineProps, defineEmits, ref } from 'vue'
+
 const props = defineProps({
   cart: Array,
   customerName: String,
@@ -253,6 +279,7 @@ const props = defineProps({
   bankReference: String,
   subTotalBeforeGlobalDiscount: Number
 })
+
 const emit = defineEmits([
   'update:customerName',
   'update:discountAllItemsPercent',
@@ -275,6 +302,7 @@ const emit = defineEmits([
   'openSalesModal'
 ])
 
+// Two-way bindings for various fields
 const localCustomerName = computed({
   get: () => props.customerName,
   set: (val) => emit('update:customerName', val)
@@ -311,9 +339,9 @@ const localBankReference = computed({
   get: () => props.bankReference,
   set: (val) => emit('update:bankReference', val)
 })
+
 // ----- Fullscreen Functionality -----
 const isFullscreen = ref(false)
-
 function toggleFullscreen() {
   if (!document.fullscreenElement) {
     document.documentElement
@@ -335,8 +363,27 @@ function toggleFullscreen() {
       })
   }
 }
-
 document.addEventListener('fullscreenchange', () => {
   isFullscreen.value = !!document.fullscreenElement
 })
+
+// ----- Quantity Stepper Functions -----
+// We'll track whether the stepper is visible per row (keyed by index)
+const stepperToggle = ref({})
+
+function toggleStepper(index) {
+  stepperToggle.value[index] = !stepperToggle.value[index]
+}
+
+function incrementQuantity(index) {
+  const item = props.cart[index]
+  item.quantity = Number(item.quantity) + 1
+}
+
+function decrementQuantity(index) {
+  const item = props.cart[index]
+  if (item.quantity > 1) {
+    item.quantity = Number(item.quantity) - 1
+  }
+}
 </script>
