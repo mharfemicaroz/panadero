@@ -144,6 +144,7 @@ import { useCustomerStore } from '@/stores/customer'
 import { useProductSaleStore } from '@/stores/product/sale'
 const productCategoryStore = useProductCategoryStore()
 const customerStore = useCustomerStore()
+const productSaleStore = useProductSaleStore()
 // (The sale store is used inside SalesModal, so we don’t use it here)
 
 // Fetch initial data for categories and customers
