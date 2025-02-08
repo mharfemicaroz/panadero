@@ -6,6 +6,13 @@
     <!-- Buttons -->
     <div class="mb-6 flex flex-wrap gap-2">
       <button
+        @click="toggleFullscreen"
+        class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+      >
+        <BaseIcon v-if="!isFullscreen" :path="mdiFullscreen" size="16" />
+        <BaseIcon v-else :path="mdiFullscreenExit" size="16" />
+      </button>
+      <button
         @click="$emit('openSalesModal')"
         class="p-2 bg-blue-600 text-white rounded hover:bg-blue-700"
       >
@@ -227,8 +234,8 @@
 
 <script setup>
 import BaseIcon from '@/components/BaseIcon.vue'
-import { mdiAccountPlus } from '@mdi/js'
-import { computed, defineProps, defineEmits } from 'vue'
+import { mdiAccountPlus, mdiFullscreen, mdiFullscreenExit } from '@mdi/js'
+import { computed, defineProps, defineEmits, ref } from 'vue'
 const props = defineProps({
   cart: Array,
   customerName: String,
@@ -267,6 +274,7 @@ const emit = defineEmits([
   'cancelSale',
   'openSalesModal'
 ])
+
 const localCustomerName = computed({
   get: () => props.customerName,
   set: (val) => emit('update:customerName', val)
@@ -302,5 +310,33 @@ const localCardAuthCode = computed({
 const localBankReference = computed({
   get: () => props.bankReference,
   set: (val) => emit('update:bankReference', val)
+})
+// ----- Fullscreen Functionality -----
+const isFullscreen = ref(false)
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement
+      .requestFullscreen()
+      .then(() => {
+        isFullscreen.value = true
+      })
+      .catch((err) => {
+        console.error('Error attempting to enable full-screen mode:', err)
+      })
+  } else {
+    document
+      .exitFullscreen()
+      .then(() => {
+        isFullscreen.value = false
+      })
+      .catch((err) => {
+        console.error('Error attempting to exit full-screen mode:', err)
+      })
+  }
+}
+
+document.addEventListener('fullscreenchange', () => {
+  isFullscreen.value = !!document.fullscreenElement
 })
 </script>

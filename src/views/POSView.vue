@@ -133,6 +133,8 @@ import EditItemModal from '@/components/pos/EditItemModal.vue'
 import SalesModal from '@/components/pos/SalesModal.vue'
 import ReceiptModal from '@/components/pos/ReceiptModal.vue'
 
+import BaseIcon from '@/components/BaseIcon.vue'
+
 // Import and set up loading overlay
 import { useLoading } from 'vue-loading-overlay'
 import 'vue-loading-overlay/dist/css/index.css'
@@ -142,6 +144,7 @@ const $loading = useLoading()
 import { useProductCategoryStore } from '@/stores/product/category'
 import { useCustomerStore } from '@/stores/customer'
 import { useProductSaleStore } from '@/stores/product/sale'
+import { mdiFullscreen } from '@mdi/js'
 const productCategoryStore = useProductCategoryStore()
 const customerStore = useCustomerStore()
 const productSaleStore = useProductSaleStore()
@@ -274,6 +277,10 @@ const totalCartAmount = computed(() => {
   if (discountAllItemsPercent.value > 0) total *= 1 - discountAllItemsPercent.value / 100
   if (discountEntireSale.value > 0) total -= discountEntireSale.value
   return total < 0 ? 0 : total
+})
+
+document.addEventListener('fullscreenchange', () => {
+  isFullscreen.value = !!document.fullscreenElement
 })
 
 // ----- Helper Functions -----
