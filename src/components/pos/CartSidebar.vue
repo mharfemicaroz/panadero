@@ -1,6 +1,6 @@
 <!-- src/components/CartSidebar.vue -->
 <template>
-  <div class="cart-sidebar bg-white shadow-lg p-4 border-l md:w-1/4 w-full md:sticky md:top-0">
+  <div class="cart-sidebar bg-white shadow-lg p-4 border-l md:w-1/3 w-full md:sticky md:top-0">
     <!-- Buttons Row -->
     <div class="mb-4 flex flex-wrap gap-2">
       <button
