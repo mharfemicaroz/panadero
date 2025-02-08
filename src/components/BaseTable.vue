@@ -1,3 +1,4 @@
+<!-- src/components/BaseTable.vue -->
 <template>
   <div
     ref="tableContainer"
@@ -78,11 +79,13 @@
             </span>
           </td>
 
-          <!-- Edit button -->
+          <!-- Action cell with slot integration -->
           <td class="px-4 py-2 whitespace-nowrap" data-label="Action">
-            <BaseButtons>
-              <BaseButton :icon="mdiPencil" small @click="editRow(item)" />
-            </BaseButtons>
+            <slot name="cell-actions" :row="item">
+              <BaseButtons>
+                <BaseButton :icon="mdiPencil" small @click="editRow(item)" />
+              </BaseButtons>
+            </slot>
           </td>
         </tr>
       </tbody>
@@ -136,7 +139,7 @@
 <script setup>
 import { ref, computed, watch, onBeforeUnmount, defineProps, defineEmits } from 'vue'
 import { useLoading } from 'vue-loading-overlay'
-import 'vue-loading-overlay/dist/css/index.css' // import overlay styles
+import 'vue-loading-overlay/dist/css/index.css'
 
 import TableCheckboxCell from '@/components/TableCheckboxCell.vue'
 import BaseButton from '@/components/BaseButton.vue'
@@ -165,9 +168,6 @@ const props = defineProps({
     })
   },
   checkable: Boolean,
-  /**
-   * Pass a boolean from the parent to show/hide the loading overlay.
-   */
   loading: {
     type: Boolean,
     default: false
@@ -177,31 +177,27 @@ const props = defineProps({
 // Emits
 const emit = defineEmits(['query-change', 'selected', 'sort', 'filter', 'edit'])
 
-// A reference to the table container div
+// Reference to table container
 const tableContainer = ref(null)
 
-// Use the useLoading() composable from vue-loading-overlay
+// Set up loading overlay
 const $loading = useLoading()
 const loaderInstance = ref(null)
 
-// Watch the `loading` prop. Show or hide the overlay accordingly.
 watch(
   () => props.loading,
   (newVal) => {
     if (newVal) {
-      // Show loader if not already shown
       if (!loaderInstance.value) {
         loaderInstance.value = $loading.show({
-          container: tableContainer.value, // Over the table container only
+          container: tableContainer.value,
           canCancel: false,
-          isFullPage: false, // set `true` if you want the entire page
+          isFullPage: false,
           color: '#3b82f6',
           opacity: 0.8
-          // ...other options see docs
         })
       }
     } else {
-      // Hide loader if it was showing
       if (loaderInstance.value) {
         loaderInstance.value.hide()
         loaderInstance.value = null
@@ -211,7 +207,6 @@ watch(
   { immediate: true }
 )
 
-// Hide any active loader on unmount
 onBeforeUnmount(() => {
   if (loaderInstance.value) {
     loaderInstance.value.hide()
@@ -219,25 +214,18 @@ onBeforeUnmount(() => {
   }
 })
 
-/* ------------------
-   TABLE LOGIC BELOW
------------------- */
-// Internal pagination state
+// --- Table Logic ---
 const internalPage = ref(props.data.currentPage || 1)
 const internalPageSize = ref(props.data.pageSize || 10)
 
-// Sort and Filter
 const internalSortKey = ref(null)
 const internalSortOrder = ref('desc')
 const internalFilters = ref({})
 
-// Show filter dropdown
 const showFilters = ref({})
 
-// Keep track of selected rows
 const selectedRows = ref(new Set())
 
-// Whenever props.data's currentPage/pageSize changes, sync our internal state
 watch(
   () => props.data.currentPage,
   (newVal) => {
@@ -251,7 +239,6 @@ watch(
   }
 )
 
-// Safe data fallback
 const safeData = computed(
   () =>
     props.data || {
@@ -263,7 +250,6 @@ const safeData = computed(
     }
 )
 
-// Filtered items (if you also do client-side filtering)
 const filteredItems = computed(() => {
   return safeData.value.data.filter((item) => {
     return Object.keys(internalFilters.value).every((key) => {
@@ -277,12 +263,10 @@ const allSelected = computed(
   () => selectedRows.value.size === filteredItems.value.length && filteredItems.value.length > 0
 )
 
-// Calculate total pages (in case you also do client-side pagination)
 const totalPages = computed(() => {
   return safeData.value.totalPages || Math.ceil(safeData.value.total / internalPageSize.value) || 1
 })
 
-// Pagination pages with ellipses
 const paginationPages = computed(() => {
   const total = totalPages.value
   const current = internalPage.value
@@ -311,7 +295,6 @@ const paginationPages = computed(() => {
   return pages
 })
 
-// Emit query changes to parent
 const updateQuery = () => {
   emit('query-change', {
     page: internalPage.value,
@@ -322,7 +305,6 @@ const updateQuery = () => {
   })
 }
 
-// Pagination methods
 const goToPage = (page) => {
   if (page >= 1 && page <= totalPages.value) {
     internalPage.value = page
@@ -336,7 +318,6 @@ const updatePageSize = (event) => {
   updateQuery()
 }
 
-// Sorting
 const toggleSort = (key) => {
   if (internalSortKey.value === key) {
     internalSortOrder.value = internalSortOrder.value === 'asc' ? 'desc' : 'asc'
@@ -348,7 +329,6 @@ const toggleSort = (key) => {
   updateQuery()
 }
 
-// Filtering
 const toggleFilterDropdown = (key) => {
   showFilters.value[key] = !showFilters.value[key]
 }
@@ -359,7 +339,6 @@ const setFilter = (key, value) => {
   updateQuery()
 }
 
-// Selection
 const toggleSelectAll = (checked) => {
   if (checked) {
     selectedRows.value = new Set(filteredItems.value.map((item) => item.id))
@@ -378,26 +357,20 @@ const toggleSelectRow = (checked, row) => {
   emit('selected', Array.from(selectedRows.value))
 }
 
-// Edit Row
 const editRow = (item) => {
   emit('edit', item)
 }
 </script>
 
 <style scoped>
-/* Ensure horizontal scrolling on larger screens */
 .table-container {
   overflow-x: auto;
   white-space: nowrap;
 }
-
-/* Ensure table content doesn't wrap */
 th,
 td {
   white-space: nowrap;
 }
-
-/* Fade transition for filters */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s;
@@ -406,15 +379,10 @@ td {
 .fade-leave-to {
   opacity: 0;
 }
-
-/* Responsive styling for mobile devices */
 @media (max-width: 640px) {
-  /* Hide table header on small screens */
   thead {
     display: none;
   }
-
-  /* Make each row display as a block */
   table,
   tbody,
   tr,
@@ -422,15 +390,12 @@ td {
     display: block;
     width: 100%;
   }
-
   tr {
     margin-bottom: 1rem;
     border: 1px solid #e5e7eb;
     border-radius: 0.5rem;
     overflow: hidden;
   }
-
-  /* Style each cell like a row in a card */
   td {
     display: flex;
     justify-content: space-between;
@@ -440,13 +405,9 @@ td {
     position: relative;
     text-align: left;
   }
-
-  /* Remove right border from the last cell */
   td:last-child {
     border-bottom: 0;
   }
-
-  /* Add the header label using the data-label attribute */
   td::before {
     content: attr(data-label);
     font-weight: 600;
@@ -455,8 +416,6 @@ td {
     color: #6b7280;
     flex-basis: 40%;
   }
-
-  /* Adjust cell content spacing */
   td > *:first-child {
     flex-basis: 60%;
   }

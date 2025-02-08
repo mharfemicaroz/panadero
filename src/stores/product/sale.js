@@ -1,92 +1,187 @@
+// src/stores/product/sale.js
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import saleService from '../../services/product/saleService'
 
 export const useProductSaleStore = defineStore('sale', () => {
-  // State
-  const items = ref([])
+  // --- STATE ---
+  const items = ref({
+    total: 0,
+    totalPages: 1,
+    currentPage: 1,
+    pageSize: 10,
+    data: []
+  })
   const item = ref(null)
+  const isLoading = ref(false)
+  const error = ref(null)
+  const isLoaded = ref(false) // Prevents redundant fetching
 
-  const totalItems = ref(0)
-  const pageSize = ref(10)
+  // --- ACTIONS ---
 
-  const totalPages = ref(1)
+  /**
+   * Fetch paginated list of sales with optional filters.
+   *
+   * @param {Object} queryParams - parameters such as page, limit, filters, etc.
+   * @param {Boolean} forceRefresh - if true, forces a re-fetch even if already loaded
+   */
+  const fetchItems = async (queryParams = {}, forceRefresh = false) => {
+    error.value = null // Reset any previous error
 
-  // Actions
-  const fetchItems = async (queryParams) => {
+    // Skip API call if already loaded and not forcing refresh
+    if (!forceRefresh && isLoaded.value) return
+
     try {
+      isLoading.value = true
       const response = await saleService.list(queryParams)
-      items.value = response
-      totalItems.value = response.total
-      totalPages.value = response.totalPages
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch items')
+      // Assuming your API returns an object with total, totalPages, and a data array
+      Object.assign(items.value, {
+        total: response.total || 0,
+        totalPages: response.totalPages || 1,
+        currentPage: queryParams.page || 1,
+        pageSize: queryParams.limit || 10,
+        data: response.data || []
+      })
+      isLoaded.value = true
+    } catch (err) {
+      error.value = err?.response?.data?.message || 'Failed to fetch sales'
+    } finally {
+      isLoading.value = false
     }
   }
 
-  const fetchItemById = async (itemId) => {
+  /**
+   * Fetch a single sale by ID.
+   *
+   * @param {Number|String} saleId - the ID of the sale to fetch
+   */
+  const fetchItemById = async (saleId) => {
+    error.value = null
     try {
-      const response = await saleService.getById(itemId)
+      isLoading.value = true
+      const response = await saleService.getById(saleId)
       item.value = response
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch item')
+    } catch (err) {
+      error.value = err?.response?.data?.message || 'Failed to fetch sale'
+    } finally {
+      isLoading.value = false
     }
   }
 
-  const createItem = async (itemData) => {
+  /**
+   * Create a new sale.
+   *
+   * @param {Object} saleData - the data for the new sale
+   * @returns {Object} the newly created sale (if successful)
+   */
+  const createItem = async (saleData) => {
+    error.value = null
     try {
-      const response = await saleService.create(itemData)
-      items.value = response
+      isLoading.value = true
+      const response = await saleService.create(saleData)
+      // Optionally add the new sale to the items list:
+      items.value.data.push(response)
+      items.value.total += 1
       return response
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to create item')
+    } catch (err) {
+      error.value = err?.response?.data?.message || 'Failed to create sale'
+    } finally {
+      isLoading.value = false
     }
   }
 
-  const updateItem = async (itemId, itemData) => {
+  /**
+   * Update an existing sale.
+   *
+   * @param {Number|String} saleId - the ID of the sale to update
+   * @param {Object} saleData - the updated sale data
+   */
+  const updateItem = async (saleId, saleData) => {
+    error.value = null
     try {
-      const response = await saleService.updateById(itemId, itemData)
-      const index = items.value.findIndex((s) => s.id === itemId)
+      isLoading.value = true
+      const response = await saleService.updateById(saleId, saleData)
+      const index = items.value.data.findIndex((s) => s.id === saleId)
       if (index !== -1) {
-        items.value[index] = response
+        items.value.data[index] = response
       }
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to update item')
+    } catch (err) {
+      error.value = err?.response?.data?.message || 'Failed to update sale'
+    } finally {
+      isLoading.value = false
     }
   }
 
-  const deleteItem = async (itemId) => {
+  /**
+   * Delete a sale by ID.
+   *
+   * @param {Number|String} saleId - the ID of the sale to delete
+   */
+  const deleteItem = async (saleId) => {
+    error.value = null
     try {
-      await saleService.delete(itemId)
-      items.value = items.value.filter((s) => s.id !== itemId)
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to delete item')
+      isLoading.value = true
+      await saleService.delete(saleId)
+      items.value.data = items.value.data.filter((s) => s.id !== saleId)
+      items.value.total -= 1
+    } catch (err) {
+      error.value = err?.response?.data?.message || 'Failed to delete sale'
+    } finally {
+      isLoading.value = false
     }
   }
 
-  const completeItem = async (itemId) => {
+  /**
+   * Mark a sale as complete.
+   *
+   * @param {Number|String} saleId - the ID of the sale to complete
+   */
+  const completeItem = async (saleId) => {
+    error.value = null
     try {
-      const response = await saleService.complete(itemId)
-      const index = items.value.findIndex((s) => s.id === itemId)
+      isLoading.value = true
+      const response = await saleService.complete(saleId)
+      const index = items.value.data.findIndex((s) => s.id === saleId)
       if (index !== -1) {
-        items.value[index] = response
+        items.value.data[index] = response
       }
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to complete item')
+    } catch (err) {
+      error.value = err?.response?.data?.message || 'Failed to complete sale'
+    } finally {
+      isLoading.value = false
     }
   }
 
+  /**
+   * Reset the store (for example on logout).
+   */
+  const resetStore = () => {
+    items.value = {
+      total: 0,
+      totalPages: 1,
+      currentPage: 1,
+      pageSize: 10,
+      data: []
+    }
+    item.value = null
+    isLoading.value = false
+    error.value = null
+    isLoaded.value = false
+  }
+
+  // --- RETURN STORE ---
   return {
     items,
     item,
-    totalItems,
-    totalPages,
-    pageSize,
+    isLoading,
+    error,
+    isLoaded,
     fetchItems,
     fetchItemById,
     createItem,
     updateItem,
     deleteItem,
-    completeItem
+    completeItem,
+    resetStore
   }
 })
