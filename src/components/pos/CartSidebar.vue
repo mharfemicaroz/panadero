@@ -1,58 +1,57 @@
 <!-- src/components/CartSidebar.vue -->
 <template>
-  <div
-    class="cart-sidebar bg-white shadow-lg p-6 border-l md:w-1/3 w-full md:sticky md:top-0 h-screen overflow-y-auto"
-  >
-    <!-- Buttons -->
-    <div class="mb-6 flex flex-wrap gap-2">
+  <div class="cart-sidebar bg-white shadow-lg p-4 border-l md:w-1/4 w-full md:sticky md:top-0">
+    <!-- Buttons Row -->
+    <div class="mb-4 flex flex-wrap gap-2">
       <button
         @click="toggleFullscreen"
-        class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+        class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded"
       >
-        <BaseIcon v-if="!isFullscreen" :path="mdiFullscreen" size="16" />
-        <BaseIcon v-else :path="mdiFullscreenExit" size="16" />
+        <BaseIcon v-if="!isFullscreen" :path="mdiFullscreen" size="14" />
+        <BaseIcon v-else :path="mdiFullscreenExit" size="14" />
       </button>
       <button
         @click="$emit('openSalesModal')"
-        class="p-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        class="py-1 px-2 bg-blue-600 text-white rounded hover:bg-blue-700"
       >
-        View Sales
+        Sales
       </button>
       <button
         v-if="cart.length > 0"
         @click="$emit('suspendSale')"
-        class="p-2 bg-yellow-600 text-white rounded hover:bg-yellow-700"
+        class="py-1 px-2 bg-yellow-600 text-white rounded hover:bg-yellow-700"
       >
-        Suspend Sale
+        Suspend
       </button>
       <button
         v-if="cart.length > 0"
         @click="$emit('cancelSale')"
-        class="p-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+        class="py-1 px-2 bg-gray-600 text-white rounded hover:bg-gray-700"
       >
-        Cancel Sale
+        Cancel
       </button>
     </div>
+
     <!-- Customer Section -->
-    <div class="mb-6">
-      <h2 class="text-xl font-bold mb-4">Customer</h2>
-      <div class="flex items-start space-x-2">
+    <div class="mb-4">
+      <h2 class="text-lg font-bold mb-2">Customer</h2>
+      <div class="flex items-center space-x-1">
         <div class="relative w-full">
           <input
             v-model="localCustomerName"
             type="text"
-            placeholder="Customer Name"
-            class="w-full p-2 border rounded"
+            placeholder="Customer"
+            class="w-full p-1 border rounded text-sm"
             @input="$emit('filterCustomers')"
           />
           <ul
             v-if="filteredCustomers && filteredCustomers.length"
-            class="absolute z-10 bg-white border rounded mt-1 w-full"
+            class="absolute z-10 bg-white border rounded mt-1 w-full text-xs"
           >
             <li
               v-for="customer in filteredCustomers"
               :key="customer.id"
-              class="p-2 hover:bg-gray-100 cursor-pointer"
+              class="p-1 hover:bg-gray-100 cursor-pointer"
               @click="$emit('selectCustomer', customer)"
             >
               {{ customer.first_name }} {{ customer.last_name }}
@@ -61,81 +60,84 @@
         </div>
         <button
           @click="$emit('openCustomerModal')"
-          class="p-2 bg-[#b51919] text-white rounded hover:bg-[#a31818]"
+          class="p-1 bg-[#b51919] text-white rounded hover:bg-[#a31818]"
         >
-          <BaseIcon :path="mdiAccountPlus" size="16" />
+          <BaseIcon :path="mdiAccountPlus" size="14" />
         </button>
       </div>
     </div>
+
     <!-- Cart Table -->
-    <h2 class="text-xl font-bold mb-4">Cart</h2>
-    <div v-if="cart.length === 0" class="text-gray-500 text-center">No items in cart</div>
+    <h2 class="text-lg font-bold mb-2">Cart</h2>
+    <div v-if="cart.length === 0" class="text-gray-500 text-center text-xs">No items in cart</div>
     <div v-else>
-      <table class="w-full text-sm">
+      <table class="w-full text-xs">
         <thead>
           <tr class="border-b">
-            <th class="text-left py-2">Product</th>
-            <th class="text-left py-2">Qty</th>
-            <th class="text-left py-2">Price</th>
-            <th class="text-left py-2">Discount</th>
-            <th class="text-left py-2">Total</th>
-            <th class="text-center py-2">Action</th>
+            <th class="text-left py-1">Product</th>
+            <th class="text-left py-1">Qty</th>
+            <th class="text-left py-1">Price</th>
+            <th class="text-left py-1">Disc.</th>
+            <th class="text-left py-1">Total</th>
+            <th class="text-center py-1">Act</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="(item, index) in cart" :key="item.id" class="border-b">
-            <td>{{ item.name }}</td>
+            <td class="py-1">{{ item.name }}</td>
             <!-- Quantity Cell with Toggleable Stepper -->
-            <td>
+            <td class="py-1">
               <div v-if="stepperToggle[index]" class="flex items-center space-x-1">
                 <button
                   @click="decrementQuantity(index)"
-                  class="bg-red-500 text-white w-6 h-6 rounded flex items-center justify-center"
+                  class="bg-red-500 text-white w-5 h-5 rounded flex items-center justify-center text-xs"
                 >
                   –
                 </button>
-                <div class="w-8 text-center">{{ item.quantity }}</div>
+                <div class="w-6 text-center text-xs">{{ item.quantity }}</div>
                 <button
                   @click="incrementQuantity(index)"
-                  class="bg-green-500 text-white w-6 h-6 rounded flex items-center justify-center"
+                  class="bg-green-500 text-white w-5 h-5 rounded flex items-center justify-center text-xs"
                 >
                   +
                 </button>
                 <button
                   @click="toggleStepper(index)"
-                  class="bg-blue-500 text-white w-12 h-6 rounded flex items-center justify-center"
+                  class="bg-blue-500 w-10 h-5 rounded flex items-center justify-center text-xs"
                 >
                   Done
                 </button>
               </div>
               <div v-else class="flex items-center space-x-1">
-                <span>{{ item.quantity }}</span>
-                <button @click="toggleStepper(index)" class="text-sm text-blue-500 underline">
+                <span class="text-xs">{{ item.quantity }}</span>
+                <button @click="toggleStepper(index)" class="text-xs text-blue-500 underline">
                   Edit
                 </button>
               </div>
             </td>
-            <td>
+            <td class="py-1">
               <a
-                class="text-[#b51919] hover:underline cursor-pointer"
+                class="text-[#b51919] hover:underline cursor-pointer text-xs"
                 @click.stop="$emit('openItemPriceModal', index)"
               >
                 ₱{{ item.price.toFixed(2) }}
               </a>
             </td>
-            <td>
+            <td class="py-1">
               <a
-                class="text-[#b51919] hover:underline cursor-pointer"
+                class="text-[#b51919] hover:underline cursor-pointer text-xs"
                 @click.stop="$emit('openItemDiscountModal', index)"
               >
                 ₱{{ item.discount.toFixed(2) }}
               </a>
             </td>
-            <td>₱{{ ((item.price - item.discount) * item.quantity).toFixed(2) }}</td>
-            <td class="text-center">
+            <td class="py-1 text-xs">
+              ₱{{ ((item.price - item.discount) * item.quantity).toFixed(2) }}
+            </td>
+            <td class="py-1 text-center">
               <button
                 @click="$emit('removeFromCart', index)"
-                class="p-1 bg-[#b51919] text-white rounded"
+                class="p-1 bg-[#b51919] text-white rounded text-xs"
               >
                 ✘
               </button>
@@ -144,112 +146,127 @@
         </tbody>
       </table>
       <!-- Global Discounts -->
-      <div class="mt-4 text-sm">
+      <div class="mt-2 text-xs">
         <p>
-          <strong>Subtotal (Items & Per-Item Discounts):</strong>
+          <strong>Subtotal:</strong>
           ₱{{ subTotalBeforeGlobalDiscount.toFixed(2) }}
         </p>
-        <p class="mt-2">
-          <label for="discountAllItemsPercent" class="font-bold">
-            Discount All Items by Percent:
-          </label>
+        <p class="mt-1">
+          <label for="discountAllItemsPercent" class="font-bold text-xs"> Discount All (%): </label>
           <input
             id="discountAllItemsPercent"
             v-model.number="localDiscountAllItemsPercent"
             type="number"
             min="0"
             max="100"
-            class="w-16 p-1 border rounded ml-2"
-          />%
+            class="w-12 p-1 border rounded ml-1 text-xs"
+          />
+          %
         </p>
-        <p class="mt-2">
-          <label for="discountEntireSale" class="font-bold"> Discount Entire Sale: </label>
+        <p class="mt-1">
+          <label for="discountEntireSale" class="font-bold text-xs"> Sale Discount: </label>
           <input
             id="discountEntireSale"
             v-model.number="localDiscountEntireSale"
             type="number"
             min="0"
-            class="w-16 p-1 border rounded ml-2"
+            class="w-12 p-1 border rounded ml-1 text-xs"
           />
         </p>
-        <div class="mt-4 text-lg font-bold">Total: ₱{{ totalCartAmount.toFixed(2) }}</div>
+        <div class="mt-2 text-base font-bold">Total: ₱{{ totalCartAmount.toFixed(2) }}</div>
       </div>
     </div>
-    <!-- Payment Section -->
-    <div class="mt-6">
-      <h2 class="text-xl font-bold mb-4">Payment</h2>
-      <div class="mb-4">
-        <label class="block text-sm font-medium mb-1">Payment Type</label>
-        <select v-model="localSelectedPaymentType" class="w-full p-2 border rounded">
-          <option disabled value="">-- Select Payment Type --</option>
-          <option v-for="type in paymentTypes" :key="type" :value="type">
+
+    <!-- Payment Section with Enhanced UI -->
+    <div class="mt-4">
+      <h2 class="text-lg font-bold mb-2">Payment</h2>
+
+      <!-- Payment Type Buttons -->
+      <div class="mb-2">
+        <label class="block text-xs font-medium mb-1">Payment Type</label>
+        <div class="flex flex-wrap gap-1">
+          <button
+            v-for="type in paymentTypes"
+            :key="type"
+            @click="localSelectedPaymentType = type"
+            :class="[
+              'p-2 border rounded flex-1 text-center text-xs',
+              localSelectedPaymentType === type
+                ? 'bg-[#b51919] text-white border-[#b51919]'
+                : 'bg-gray-200 text-gray-800 border-gray-300'
+            ]"
+          >
             {{ type }}
-          </option>
-        </select>
+          </button>
+        </div>
       </div>
-      <div class="mb-4">
-        <label class="block text-sm font-medium mb-1">Amount Due</label>
+
+      <!-- Amount Due -->
+      <div class="mb-2">
+        <label class="block text-xs font-medium mb-1">Amount Due</label>
         <input
           type="number"
-          class="p-2 border rounded w-full"
+          class="p-1 border rounded w-full text-xs"
           :value="amountDue"
           min="0"
           step="0.01"
           readonly
         />
       </div>
+
       <!-- Conditional Payment Fields -->
-      <div v-if="localSelectedPaymentType === 'Check'" class="mb-4">
-        <label class="block text-sm font-medium mb-1">Check Number</label>
+      <div v-if="localSelectedPaymentType === 'Check'" class="mb-2">
+        <label class="block text-xs font-medium mb-1">Check Number</label>
         <input
           type="text"
-          class="w-full p-2 border rounded"
+          class="w-full p-1 border rounded text-xs"
           v-model="localCheckNumber"
           placeholder="Enter check number"
         />
-        <label class="block text-sm font-medium mb-1 mt-2">Bank Name</label>
+        <label class="block text-xs font-medium mb-1 mt-1">Bank Name</label>
         <input
           type="text"
-          class="w-full p-2 border rounded"
+          class="w-full p-1 border rounded text-xs"
           v-model="localBankName"
           placeholder="Enter bank name"
         />
       </div>
-      <div v-else-if="localSelectedPaymentType === 'E-Wallet'" class="mb-4">
-        <label class="block text-sm font-medium mb-1"> E-Wallet Reference/Code </label>
+      <div v-else-if="localSelectedPaymentType === 'E-Wallet'" class="mb-2">
+        <label class="block text-xs font-medium mb-1"> E-Wallet Ref/Code </label>
         <input
           type="text"
-          class="w-full p-2 border rounded"
+          class="w-full p-1 border rounded text-xs"
           v-model="localWalletReference"
-          placeholder="Enter e-wallet reference/code"
+          placeholder="Enter e-wallet ref/code"
         />
       </div>
       <div
         v-else-if="
           localSelectedPaymentType === 'Credit Card' || localSelectedPaymentType === 'Debit Card'
         "
-        class="mb-4"
+        class="mb-2"
       >
-        <label class="block text-sm font-medium mb-1"> Transaction / Auth Code </label>
+        <label class="block text-xs font-medium mb-1"> Transaction/Auth Code </label>
         <input
           type="text"
-          class="w-full p-2 border rounded"
+          class="w-full p-1 border rounded text-xs"
           v-model="localCardAuthCode"
-          placeholder="Enter authorization code"
+          placeholder="Enter auth code"
         />
       </div>
-      <div v-else-if="localSelectedPaymentType === 'Bank'" class="mb-4">
-        <label class="block text-sm font-medium mb-1"> Bank Transfer Reference </label>
+      <div v-else-if="localSelectedPaymentType === 'Bank'" class="mb-2">
+        <label class="block text-xs font-medium mb-1"> Bank Ref </label>
         <input
           type="text"
-          class="w-full p-2 border rounded"
+          class="w-full p-1 border rounded text-xs"
           v-model="localBankReference"
-          placeholder="Enter bank transaction ID"
+          placeholder="Enter bank ref"
         />
       </div>
+
       <button
         @click="$emit('checkout')"
-        class="w-full mt-4 p-4 bg-[#b51919] text-white rounded hover:bg-[#a31818]"
+        class="w-full mt-2 p-2 bg-[#b51919] text-white rounded text-xs hover:bg-[#a31818]"
       >
         Checkout
       </button>
@@ -258,9 +275,9 @@
 </template>
 
 <script setup>
+import { computed, defineProps, defineEmits, ref } from 'vue'
 import BaseIcon from '@/components/BaseIcon.vue'
 import { mdiAccountPlus, mdiFullscreen, mdiFullscreenExit } from '@mdi/js'
-import { computed, defineProps, defineEmits, ref } from 'vue'
 
 const props = defineProps({
   cart: Array,
@@ -302,7 +319,7 @@ const emit = defineEmits([
   'openSalesModal'
 ])
 
-// Two-way bindings for various fields
+// Two-way bindings for customer and discount fields
 const localCustomerName = computed({
   get: () => props.customerName,
   set: (val) => emit('update:customerName', val)
@@ -367,8 +384,7 @@ document.addEventListener('fullscreenchange', () => {
   isFullscreen.value = !!document.fullscreenElement
 })
 
-// ----- Quantity Stepper Functions -----
-// We'll track whether the stepper is visible per row (keyed by index)
+// ----- Quantity Stepper Functionality -----
 const stepperToggle = ref({})
 
 function toggleStepper(index) {
@@ -387,3 +403,7 @@ function decrementQuantity(index) {
   }
 }
 </script>
+
+<style scoped>
+/* You can further adjust these styles to fit your exact needs */
+</style>
