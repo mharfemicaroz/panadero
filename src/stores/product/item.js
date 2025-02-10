@@ -1,3 +1,4 @@
+// stores/itemStore.js
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import itemService from '../../services/product/itemService'
@@ -18,7 +19,7 @@ export const useItemStore = defineStore('item', () => {
 
   // --- ACTIONS ---
   /**
-   * Fetch paginated list of items with optional filters
+   * Fetch paginated list of items with optional filters.
    */
   const fetchItems = async (queryParams = {}, forceRefresh = false) => {
     error.value = null // Reset errors
@@ -47,7 +48,35 @@ export const useItemStore = defineStore('item', () => {
   }
 
   /**
-   * Fetch a single item by ID
+   * Fetch paginated list of items with their stock movement history.
+   */
+  const fetchItemsWithHistory = async (queryParams = {}, forceRefresh = false) => {
+    error.value = null
+
+    if (!forceRefresh && isLoaded.value) return
+
+    try {
+      isLoading.value = true
+      const response = await itemService.listWithHistory(queryParams)
+
+      Object.assign(items.value, {
+        total: response.total || 0,
+        totalPages: response.totalPages || 1,
+        currentPage: queryParams.page || 1,
+        pageSize: queryParams.limit || 10,
+        data: response.data || []
+      })
+
+      isLoaded.value = true
+    } catch (err) {
+      error.value = err?.response?.data?.message || 'Failed to fetch items with history'
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * Fetch a single item by ID.
    */
   const fetchItemById = async (itemId) => {
     error.value = null
@@ -64,7 +93,7 @@ export const useItemStore = defineStore('item', () => {
   }
 
   /**
-   * Create a new item
+   * Create a new item.
    */
   const createItem = async (itemData) => {
     error.value = null
@@ -83,7 +112,7 @@ export const useItemStore = defineStore('item', () => {
   }
 
   /**
-   * Update an existing item
+   * Update an existing item.
    */
   const updateItem = async (itemId, itemData) => {
     error.value = null
@@ -104,7 +133,7 @@ export const useItemStore = defineStore('item', () => {
   }
 
   /**
-   * Delete an item by ID
+   * Delete an item by ID.
    */
   const deleteItem = async (itemId) => {
     error.value = null
@@ -123,7 +152,7 @@ export const useItemStore = defineStore('item', () => {
   }
 
   /**
-   * Reset the store (useful e.g. on logout)
+   * Reset the store (useful e.g. on logout).
    */
   const resetStore = () => {
     items.value = {
@@ -147,6 +176,7 @@ export const useItemStore = defineStore('item', () => {
     error,
     isLoaded,
     fetchItems,
+    fetchItemsWithHistory, // New action for fetching items with history
     fetchItemById,
     createItem,
     updateItem,

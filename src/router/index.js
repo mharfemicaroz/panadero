@@ -153,6 +153,14 @@ const routes = [
   },
   {
     meta: {
+      title: 'Item Ledger'
+    },
+    path: '/item-ledger',
+    name: 'item-ledger',
+    component: () => import('@/views/ItemsLedger.vue')
+  },
+  {
+    meta: {
       title: 'Warehouses'
     },
     path: '/warehouses',
