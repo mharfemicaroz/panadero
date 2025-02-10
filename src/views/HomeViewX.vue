@@ -250,7 +250,7 @@ const applyFilters = async () => {
     queryParams.filters.warehouse_id = selectedWarehouse.value
   }
 
-  // Reset summary pagination when filters change.
+  // Reset summary paginations when filters change.
   summaryPage.value = 1
   categorySummaryPage.value = 1
 
@@ -634,12 +634,14 @@ onMounted(async () => {
       <!-- Line Chart (2/3 width on medium and larger screens) -->
       <div class="w-full md:w-2/3">
         <CardBox class="mb-6">
+          <!-- Pass loading prop to the chart component -->
           <line-chart :data="chartData" :loading="saleStore.isLoading" class="h-96" />
         </CardBox>
       </div>
       <!-- Doughnut Chart (1/3 width on medium and larger screens) -->
       <div class="w-full md:w-1/3">
         <CardBox class="mb-6">
+          <!-- Pass loading prop to the chart component -->
           <doughnut-chart :data="doughnutData" :loading="saleStore.isLoading" class="h-96" />
         </CardBox>
       </div>
