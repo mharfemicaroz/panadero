@@ -110,7 +110,7 @@ const fillDoughnutData = () => {
 }
 
 // ---------------------------------------------------------------------
-// FILTERS SETUP
+// FILTERS SETUP (unchanged)
 // ---------------------------------------------------------------------
 const selectedPeriod = ref('all_day')
 
@@ -244,6 +244,7 @@ const applyFilters = async () => {
   summaryPage.value = 1
   categorySummaryPage.value = 1
   inventoryPage.value = 1
+  breakdownPaymentPage.value = 1
 
   await saleStore.fetchItems(queryParams, true)
   fillChartData()
@@ -611,6 +612,69 @@ const handleInventoryQueryChange = async (query) => {
 }
 
 // ---------------------------------------------------------------------
+// NEW: BREAKDOWN PAYMENT SUMMARY TABLE SETUP
+// ---------------------------------------------------------------------
+const breakdownPaymentPage = ref(1)
+const breakdownPaymentPageSize = ref(10)
+
+const breakdownPaymentSummaryGroups = computed(() => {
+  const groups = {}
+  saleStore.items.data.forEach((sale) => {
+    const saleDate = sale.sale_date
+      ? sale.sale_date.substring(0, 10)
+      : sale.created_at.substring(0, 10)
+    const paymentType = sale.payment_type || 'Unknown'
+    const branch = sale.branch ? sale.branch.name : 'Unknown'
+    const key = saleDate + '|' + paymentType + '|' + branch
+    if (!groups[key]) {
+      groups[key] = {
+        date: saleDate,
+        payment_type: paymentType,
+        branch: branch,
+        quantity: 0,
+        total_sales: 0
+      }
+    }
+    // Sum up the quantity from saleItems
+    let saleQuantity = 0
+    if (sale.saleItems && Array.isArray(sale.saleItems)) {
+      sale.saleItems.forEach((saleItem) => {
+        saleQuantity += Number(saleItem.quantity) || 0
+      })
+    }
+    groups[key].quantity += saleQuantity
+    groups[key].total_sales += Number(sale.total_amount) || 0
+  })
+  const summaryArray = Object.values(groups)
+  summaryArray.sort((a, b) => a.date.localeCompare(b.date))
+  return summaryArray
+})
+
+const paginatedBreakdownPaymentData = computed(() => {
+  const allData = breakdownPaymentSummaryGroups.value
+  const total = allData.length
+  const pageSize = breakdownPaymentPageSize.value
+  const totalPages = Math.ceil(total / pageSize) || 1
+  const currentPage = breakdownPaymentPage.value
+  const start = (currentPage - 1) * pageSize
+  const paginatedData = allData.slice(start, start + pageSize)
+  return { total, totalPages, currentPage, pageSize, data: paginatedData }
+})
+
+const breakdownPaymentColumns = [
+  { key: 'date', label: 'Date' },
+  { key: 'payment_type', label: 'Payment Type' },
+  { key: 'branch', label: 'Branch' },
+  { key: 'quantity', label: 'Quantity', formatter: (value) => Number(value).toFixed(0) },
+  { key: 'total_sales', label: 'Total Sales', formatter: (value) => Number(value).toFixed(2) }
+]
+
+const handleBreakdownPaymentQueryChange = async (query) => {
+  breakdownPaymentPage.value = query.page
+  breakdownPaymentPageSize.value = query.limit
+}
+
+// ---------------------------------------------------------------------
 // EXPORT SUMMARY FUNCTION (unchanged)
 // ---------------------------------------------------------------------
 const exportSummary = () => {
@@ -766,6 +830,23 @@ const exportSummary = () => {
   const wsInventory = XLSX.utils.aoa_to_sheet(inventoryWorksheetData)
   XLSX.utils.book_append_sheet(wb, wsInventory, 'Sales Inventory Report')
 
+  // 7. Breakdown Payment Summary Worksheet.
+  const breakdownWorksheetData = []
+  breakdownWorksheetData.push(['Date', 'Payment Type', 'Branch', 'Quantity', 'Total Sales'])
+  if (breakdownPaymentSummaryGroups.value) {
+    breakdownPaymentSummaryGroups.value.forEach((row) => {
+      breakdownWorksheetData.push([
+        row.date,
+        row.payment_type,
+        row.branch,
+        row.quantity,
+        row.total_sales
+      ])
+    })
+  }
+  const wsBreakdown = XLSX.utils.aoa_to_sheet(breakdownWorksheetData)
+  XLSX.utils.book_append_sheet(wb, wsBreakdown, 'Breakdown Payment Summary')
+
   // Trigger file download.
   XLSX.writeFile(wb, 'Sales_Summary.xlsx')
 }
@@ -813,19 +894,18 @@ onMounted(async () => {
           </select>
         </div>
         <!-- For All Day, show the date range picker -->
-        <template v-if="selectedPeriod === 'all_day'">
-          <div class="md:col-span-2 lg:col-span-3">
-            <label class="block text-sm font-medium text-gray-700">Select Date Range</label>
-            <!-- Using the Vue3 Datepicker in range mode with multi-calendars -->
-            <Datepicker
-              v-model="allDayRange"
-              range
-              multi-calendars
-              format="yyyy-MM-dd"
-              input-class="mt-1 block w-full rounded border-gray-300 shadow-sm"
-            />
-          </div>
-        </template>
+        <div v-if="selectedPeriod === 'all_day'" class="md:col-span-2 lg:col-span-3">
+          <label class="block text-sm font-medium text-gray-700">Select Date Range</label>
+          <!-- Using the Vue3 Datepicker in range mode with multi-calendars -->
+          <Datepicker
+            v-model="allDayRange"
+            range
+            multi-calendars
+            format="yyyy-MM-dd"
+            input-class="mt-1 block w-full rounded border-gray-300 shadow-sm"
+          />
+        </div>
+
         <!-- For Monthly, show Year and Month selectors -->
         <template v-if="selectedPeriod === 'monthly'">
           <div>
@@ -928,22 +1008,6 @@ onMounted(async () => {
       </div>
     </div>
 
-    <!-- Sales Table Section with an optional search field -->
-    <section class="mb-8">
-      <h2 class="text-xl font-semibold mb-4">Sales Table</h2>
-
-      <CardBox class="shadow-lg">
-        <BaseTable
-          :columns="saleColumns"
-          :data="saleData"
-          :loading="saleStore.isLoading"
-          :show-action="false"
-          @query-change="handleSaleQueryChange"
-          table-class="min-w-full divide-y divide-gray-200"
-        />
-      </CardBox>
-    </section>
-
     <!-- Sales Report Summary Table -->
     <section class="mb-8">
       <h2 class="text-xl font-semibold mb-4">Sales Report Summary</h2>
@@ -984,6 +1048,21 @@ onMounted(async () => {
           :loading="saleStore.isLoading"
           :show-action="false"
           @query-change="handleInventoryQueryChange"
+          table-class="min-w-full divide-y divide-gray-200"
+        />
+      </CardBox>
+    </section>
+
+    <!-- Breakdown Payment Summary Table -->
+    <section class="mb-8">
+      <h2 class="text-xl font-semibold mb-4">Breakdown Payment Summary</h2>
+      <CardBox class="shadow-lg">
+        <BaseTable
+          :columns="breakdownPaymentColumns"
+          :data="paginatedBreakdownPaymentData"
+          :loading="saleStore.isLoading"
+          :show-action="false"
+          @query-change="handleBreakdownPaymentQueryChange"
           table-class="min-w-full divide-y divide-gray-200"
         />
       </CardBox>
