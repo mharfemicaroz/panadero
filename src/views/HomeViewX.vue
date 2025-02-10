@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import * as XLSX from 'xlsx'
-import { mdiTableBorder, mdiExport } from '@mdi/js'
+import { mdiTableBorder, mdiExport, mdiMagnify } from '@mdi/js'
 import { useProductSaleStore } from '@/stores/product/sale'
 import { useUserStore } from '@/stores/user'
 import { useBranchStore } from '@/stores/branch'
@@ -15,17 +15,13 @@ import SectionTitleLineWithButton from '@/components/SectionTitleLineWithButton.
 import BaseButton from '@/components/BaseButton.vue'
 
 // ---------------------------------------------------------------------
-// CHART SETUP
+// CHART SETUP (unchanged)
 // ---------------------------------------------------------------------
 const chartData = ref(null) // For the line chart (time-series)
 const doughnutData = ref(null) // For the doughnut chart (payment summary)
 const saleStore = useProductSaleStore()
 
-/**
- * Build data for the line chart.
- * - For "All Day": x-axis is 24 hourly labels (00:00–23:00) with amounts aggregated per hour.
- * - Otherwise, x-axis is dates.
- */
+// Build data for the line chart.
 const fillChartData = () => {
   if (selectedPeriod.value === 'all_day') {
     const labels = Array.from({ length: 24 }, (_, i) => (i < 10 ? '0' + i : i) + ':00')
@@ -88,9 +84,7 @@ const fillChartData = () => {
   }
 }
 
-/**
- * Build data for the doughnut chart by summarizing sales by payment type.
- */
+// Build data for the doughnut chart by summarizing sales by payment type.
 const fillDoughnutData = () => {
   const paymentSummary = {}
   saleStore.items.data.forEach((sale) => {
@@ -116,14 +110,14 @@ const fillDoughnutData = () => {
 }
 
 // ---------------------------------------------------------------------
-// FILTERS SETUP
+// FILTERS SETUP (unchanged logic, enhanced UI in template)
 // ---------------------------------------------------------------------
 const selectedPeriod = ref('all_day')
-const allDayDate = ref(new Date().toISOString().split('T')[0]) // defaults to today
+const allDayDate = ref(new Date().toISOString().split('T')[0])
 const allDayStartTime = ref('00:00')
 const allDayEndTime = ref('23:59')
 const monthlyYear = ref(new Date().getFullYear())
-const monthlyMonth = ref(new Date().getMonth() + 1) // 1-indexed
+const monthlyMonth = ref(new Date().getMonth() + 1)
 
 const currentYearVal = new Date().getFullYear()
 const yearsList = []
@@ -182,10 +176,6 @@ const getLastWeekRange = () => {
   return { start: formatDate(lastMonday), end: formatDate(lastSunday) }
 }
 
-/**
- * Applies all selected filters by computing the start/end date (or datetime)
- * and adding any additional filter options. Then fetches sales and updates charts.
- */
 const applyFilters = async () => {
   let start_date, end_date
   const today = new Date()
@@ -250,7 +240,7 @@ const applyFilters = async () => {
 }
 
 // ---------------------------------------------------------------------
-// SALES TABLE SETUP (View Only)
+// SALES TABLE SETUP (unchanged data logic)
 // ---------------------------------------------------------------------
 const saleData = computed(() => ({
   total: saleStore.items.total || 0,
@@ -293,7 +283,7 @@ const handleSaleQueryChange = async (query) => {
 }
 
 // ---------------------------------------------------------------------
-// SALES REPORT SUMMARY TABLE SETUP (Paginated)
+// SALES REPORT SUMMARY TABLE SETUP (unchanged grouping logic)
 // ---------------------------------------------------------------------
 const summaryPage = ref(1)
 const summaryPageSize = ref(10)
@@ -391,7 +381,7 @@ const handleSummaryQueryChange = async (query) => {
 }
 
 // ---------------------------------------------------------------------
-// CATEGORY SALES SUMMARY TABLE SETUP (Paginated)
+// CATEGORY SALES SUMMARY TABLE SETUP (unchanged grouping logic)
 // ---------------------------------------------------------------------
 const categorySummaryPage = ref(1)
 const categorySummaryPageSize = ref(10)
@@ -481,24 +471,11 @@ const handleCategorySummaryQueryChange = async (query) => {
 }
 
 // ---------------------------------------------------------------------
-// SALES INVENTORY REPORT TABLE SETUP (Paginated)
+// SALES INVENTORY REPORT TABLE SETUP (unchanged grouping logic)
 // ---------------------------------------------------------------------
 const inventoryPage = ref(1)
 const inventoryPageSize = ref(10)
 
-/**
- * Computes Sales Inventory Report data by grouping sale items by:
- * - Date (using sale.sale_date or sale.created_at substring(0,10))
- * - Item Name, Warehouse, Category, Subcategory
- *
- * For each group, calculates:
- * - Total Qty (Sold): Sum of sale item quantities.
- * - Total Amount (Sold): Sum of sale item totals.
- * - Total Amount (Cost): Sum of (sale item quantity × item cost).
- * - Total Discount: Sum of sale item discounts.
- * - Total Qty (Current): Sum of current quantities from the item's inventories.
- * - Total Amount (Current): Sum of (current quantity × item cost).
- */
 const salesInventoryGroups = computed(() => {
   const groups = {}
   saleStore.items.data.forEach((sale) => {
@@ -508,7 +485,6 @@ const salesInventoryGroups = computed(() => {
     if (sale.saleItems && Array.isArray(sale.saleItems)) {
       sale.saleItems.forEach((saleItem) => {
         const itemName = saleItem.item ? saleItem.item.name : 'Unknown'
-        // Use sale.warehouse if available; otherwise, fallback to saleItem.item.warehouse.
         const warehouse = sale.warehouse
           ? sale.warehouse.name
           : saleItem.item && saleItem.item.warehouse
@@ -541,7 +517,6 @@ const salesInventoryGroups = computed(() => {
           Number(saleItem.quantity) *
             (saleItem.item && saleItem.item.cost ? Number(saleItem.item.cost) : 0) || 0
         groups[groupKey].total_discount += Number(saleItem.discount) || 0
-        // For current inventory, if available, sum the current_quantity from all inventories.
         let currentQty = 0
         if (
           saleItem.item &&
@@ -562,7 +537,6 @@ const salesInventoryGroups = computed(() => {
   for (const key in groups) {
     result.push(groups[key])
   }
-  // Sort by Date, then Item Name.
   result.sort((a, b) => {
     const dateComp = a.date.localeCompare(b.date)
     if (dateComp !== 0) return dateComp
@@ -626,7 +600,7 @@ const handleInventoryQueryChange = async (query) => {
 }
 
 // ---------------------------------------------------------------------
-// EXPORT SUMMARY FUNCTION (Excel workbook with separate worksheets)
+// EXPORT SUMMARY FUNCTION (unchanged)
 // ---------------------------------------------------------------------
 const exportSummary = () => {
   const wb = XLSX.utils.book_new()
@@ -781,7 +755,6 @@ const exportSummary = () => {
   const wsInventory = XLSX.utils.aoa_to_sheet(inventoryWorksheetData)
   XLSX.utils.book_append_sheet(wb, wsInventory, 'Sales Inventory Report')
 
-  // Write the workbook and trigger download.
   XLSX.writeFile(wb, 'Sales_Summary.xlsx')
 }
 
@@ -810,135 +783,243 @@ onMounted(async () => {
       </div>
     </SectionTitleLineWithButton>
 
-    <!-- Filter Controls (Responsive, with Advanced Filters Toggle) -->
-    <div class="mb-4 p-4 border rounded bg-gray-100 flex flex-wrap items-center gap-4">
-      <label class="font-medium">Select Period:</label>
-      <select v-model="selectedPeriod" class="p-2 border rounded">
-        <option value="all_day">All Day</option>
-        <option value="this_week">This Week</option>
-        <option value="last_week">Last Week</option>
-        <option value="last_7_days">Last 7 Days</option>
-        <option value="last_30_days">Last 30 Days</option>
-        <option value="monthly">Monthly</option>
-      </select>
-      <template v-if="selectedPeriod === 'all_day'">
-        <label>Date:</label>
-        <input type="date" v-model="allDayDate" class="p-2 border rounded" />
-        <label>Start Time:</label>
-        <input type="time" v-model="allDayStartTime" class="p-2 border rounded" />
-        <label>End Time:</label>
-        <input type="time" v-model="allDayEndTime" class="p-2 border rounded" />
-      </template>
-      <template v-if="selectedPeriod === 'monthly'">
-        <label>Year:</label>
-        <select v-model="monthlyYear" class="p-2 border rounded">
-          <option v-for="year in yearsList" :key="year" :value="year">{{ year }}</option>
-        </select>
-        <label>Month:</label>
-        <select v-model="monthlyMonth" class="p-2 border rounded">
-          <option v-for="(monthName, index) in monthsList" :key="index" :value="index + 1">
-            {{ monthName }}
-          </option>
-        </select>
-      </template>
-      <button
-        @click="showAdvancedFilters = !showAdvancedFilters"
-        class="p-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
-      >
-        {{ showAdvancedFilters ? 'Hide Advanced Filters' : 'Show Advanced Filters' }}
-      </button>
-      <template v-if="showAdvancedFilters">
-        <label>Cashier:</label>
-        <select v-model="selectedCashier" class="p-2 border rounded">
-          <option value="">All</option>
-          <option v-for="user in userStore.users" :key="user.id" :value="user.id">
-            {{ user.first_name }} {{ user.last_name }}
-          </option>
-        </select>
-        <label>Branch:</label>
-        <select v-model="selectedBranch" class="p-2 border rounded">
-          <option value="">All</option>
-          <option v-for="branch in branchStore.branches" :key="branch.id" :value="branch.id">
-            {{ branch.name }}
-          </option>
-        </select>
-        <label>Warehouse:</label>
-        <select v-model="selectedWarehouse" class="p-2 border rounded">
-          <option value="">All</option>
-          <option
-            v-for="warehouse in warehouseStore.warehouses"
-            :key="warehouse.id"
-            :value="warehouse.id"
+    <!-- Filter Controls -->
+    <div class="mb-6 p-4 bg-gray-50 border border-gray-200 rounded shadow-sm">
+      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Period</label>
+          <select
+            v-model="selectedPeriod"
+            class="mt-1 block w-full rounded border-gray-300 shadow-sm"
           >
-            {{ warehouse.name }}
-          </option>
-        </select>
-      </template>
-      <button @click="applyFilters" class="p-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-        Apply Filters
-      </button>
+            <option value="all_day">All Day</option>
+            <option value="this_week">This Week</option>
+            <option value="last_week">Last Week</option>
+            <option value="last_7_days">Last 7 Days</option>
+            <option value="last_30_days">Last 30 Days</option>
+            <option value="monthly">Monthly</option>
+          </select>
+        </div>
+        <template v-if="selectedPeriod === 'all_day'">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Date</label>
+            <input
+              type="date"
+              v-model="allDayDate"
+              class="mt-1 block w-full rounded border-gray-300 shadow-sm"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Start Time</label>
+            <input
+              type="time"
+              v-model="allDayStartTime"
+              class="mt-1 block w-full rounded border-gray-300 shadow-sm"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">End Time</label>
+            <input
+              type="time"
+              v-model="allDayEndTime"
+              class="mt-1 block w-full rounded border-gray-300 shadow-sm"
+            />
+          </div>
+        </template>
+        <template v-if="selectedPeriod === 'monthly'">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Year</label>
+            <select
+              v-model="monthlyYear"
+              class="mt-1 block w-full rounded border-gray-300 shadow-sm"
+            >
+              <option v-for="year in yearsList" :key="year" :value="year">{{ year }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Month</label>
+            <select
+              v-model="monthlyMonth"
+              class="mt-1 block w-full rounded border-gray-300 shadow-sm"
+            >
+              <option v-for="(monthName, index) in monthsList" :key="index" :value="index + 1">
+                {{ monthName }}
+              </option>
+            </select>
+          </div>
+        </template>
+      </div>
+
+      <!-- Advanced Filters Toggle -->
+      <div class="mt-4">
+        <button
+          @click="showAdvancedFilters = !showAdvancedFilters"
+          class="inline-flex items-center px-3 py-1 border border-gray-300 rounded shadow-sm text-sm text-gray-700 hover:bg-gray-100"
+        >
+          {{ showAdvancedFilters ? 'Hide Advanced Filters' : 'Show Advanced Filters' }}
+        </button>
+      </div>
+
+      <!-- Advanced Filters -->
+      <div
+        v-if="showAdvancedFilters"
+        class="mt-4 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4"
+      >
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Cashier</label>
+          <select
+            v-model="selectedCashier"
+            class="mt-1 block w-full rounded border-gray-300 shadow-sm"
+          >
+            <option value="">All</option>
+            <option v-for="user in userStore.users" :key="user.id" :value="user.id">
+              {{ user.first_name }} {{ user.last_name }}
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Branch</label>
+          <select
+            v-model="selectedBranch"
+            class="mt-1 block w-full rounded border-gray-300 shadow-sm"
+          >
+            <option value="">All</option>
+            <option v-for="branch in branchStore.branches.data" :key="branch.id" :value="branch.id">
+              {{ branch.name }}
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Warehouse</label>
+          <select
+            v-model="selectedWarehouse"
+            class="mt-1 block w-full rounded border-gray-300 shadow-sm"
+          >
+            <option value="">All</option>
+            <option
+              v-for="warehouse in warehouseStore.warehouses"
+              :key="warehouse.id"
+              :value="warehouse.id"
+            >
+              {{ warehouse.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Filter Action Button -->
+      <div class="mt-4 flex justify-end">
+        <BaseButton label="Filter" color="blue" class="px-4 py-2" @click="applyFilters" />
+      </div>
     </div>
 
-    <!-- Charts Section: Responsive Layout -->
-    <div class="flex flex-col md:flex-row gap-4">
+    <!-- Charts Section -->
+    <div class="flex flex-col md:flex-row gap-4 mb-6">
       <div class="w-full md:w-2/3">
-        <CardBox class="mb-6">
+        <CardBox class="p-4 shadow-lg">
           <line-chart :data="chartData" :loading="saleStore.isLoading" class="h-96" />
         </CardBox>
       </div>
       <div class="w-full md:w-1/3">
-        <CardBox class="mb-6">
+        <CardBox class="p-4 shadow-lg">
           <doughnut-chart :data="doughnutData" :loading="saleStore.isLoading" class="h-96" />
         </CardBox>
       </div>
     </div>
 
-    <!-- Sales Table Section (Read-Only) -->
-    <h2 class="text-xl font-semibold mb-4">Sales Table</h2>
-    <CardBox class="mb-6">
-      <BaseTable
-        :columns="saleColumns"
-        :show-action="false"
-        :data="saleData"
-        :loading="saleStore.isLoading"
-        @query-change="handleSaleQueryChange"
-      />
-    </CardBox>
+    <!-- Sales Table Section with an optional search field -->
+    <section class="mb-8">
+      <h2 class="text-xl font-semibold mb-4">Sales Table</h2>
 
-    <!-- Sales Report Summary Table (Paginated) -->
-    <h2 class="text-xl font-semibold mb-4">Sales Report Summary</h2>
-    <CardBox class="mb-6">
-      <BaseTable
-        :columns="summaryColumns"
-        :show-action="false"
-        :data="paginatedSummaryData"
-        :loading="saleStore.isLoading"
-        @query-change="handleSummaryQueryChange"
-      />
-    </CardBox>
+      <CardBox class="shadow-lg">
+        <BaseTable
+          :columns="saleColumns"
+          :data="saleData"
+          :loading="saleStore.isLoading"
+          @query-change="handleSaleQueryChange"
+          table-class="min-w-full divide-y divide-gray-200"
+        />
+      </CardBox>
+    </section>
 
-    <!-- Category Sales Summary Table (Paginated) -->
-    <h2 class="text-xl font-semibold mb-4">Category Sales Summary</h2>
-    <CardBox class="mb-6">
-      <BaseTable
-        :columns="categorySummaryColumns"
-        :show-action="false"
-        :data="paginatedCategorySummaryData"
-        :loading="saleStore.isLoading"
-        @query-change="handleCategorySummaryQueryChange"
-      />
-    </CardBox>
+    <!-- Sales Report Summary Table -->
+    <section class="mb-8">
+      <h2 class="text-xl font-semibold mb-4">Sales Report Summary</h2>
+      <CardBox class="shadow-lg">
+        <BaseTable
+          :columns="summaryColumns"
+          :data="paginatedSummaryData"
+          :loading="saleStore.isLoading"
+          @query-change="handleSummaryQueryChange"
+          table-class="min-w-full divide-y divide-gray-200"
+        />
+      </CardBox>
+    </section>
 
-    <!-- Sales Inventory Report Table (Paginated) -->
-    <h2 class="text-xl font-semibold mb-4">Sales Inventory Report</h2>
-    <CardBox class="mb-6">
-      <BaseTable
-        :columns="inventoryColumns"
-        :show-action="false"
-        :data="paginatedInventoryData"
-        :loading="saleStore.isLoading"
-        @query-change="handleInventoryQueryChange"
-      />
-    </CardBox>
+    <!-- Category Sales Summary Table -->
+    <section class="mb-8">
+      <h2 class="text-xl font-semibold mb-4">Category Sales Summary</h2>
+      <CardBox class="shadow-lg">
+        <BaseTable
+          :columns="categorySummaryColumns"
+          :data="paginatedCategorySummaryData"
+          :loading="saleStore.isLoading"
+          @query-change="handleCategorySummaryQueryChange"
+          table-class="min-w-full divide-y divide-gray-200"
+        />
+      </CardBox>
+    </section>
+
+    <!-- Sales Inventory Report Table -->
+    <section class="mb-8">
+      <h2 class="text-xl font-semibold mb-4">Sales Inventory Report</h2>
+      <CardBox class="shadow-lg">
+        <BaseTable
+          :columns="inventoryColumns"
+          :data="paginatedInventoryData"
+          :loading="saleStore.isLoading"
+          @query-change="handleInventoryQueryChange"
+          table-class="min-w-full divide-y divide-gray-200"
+        />
+      </CardBox>
+    </section>
   </LayoutAuthenticated>
 </template>
+
+<!-- Optional additional styling -->
+<style scoped>
+/* Example styles for sticky table headers and hover effects.
+   (You can also incorporate these inside your BaseTable component.) */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  background-color: #f9fafb;
+  padding: 0.75rem;
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+tbody tr:nth-child(odd) {
+  background-color: #fff;
+}
+
+tbody tr:nth-child(even) {
+  background-color: #f3f4f6;
+}
+
+tbody tr:hover {
+  background-color: #e5e7eb;
+}
+
+td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+</style>
