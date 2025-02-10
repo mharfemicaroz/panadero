@@ -13,15 +13,16 @@ import CardBox from '@/components/CardBox.vue'
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticatedX.vue'
 import SectionTitleLineWithButton from '@/components/SectionTitleLineWithButton.vue'
 import BaseButton from '@/components/BaseButton.vue'
+import Datepicker from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
 
 // ---------------------------------------------------------------------
 // CHART SETUP (unchanged)
 // ---------------------------------------------------------------------
-const chartData = ref(null) // For the line chart (time-series)
-const doughnutData = ref(null) // For the doughnut chart (payment summary)
+const chartData = ref(null)
+const doughnutData = ref(null)
 const saleStore = useProductSaleStore()
 
-// Build data for the line chart.
 const fillChartData = () => {
   if (selectedPeriod.value === 'all_day') {
     const labels = Array.from({ length: 24 }, (_, i) => (i < 10 ? '0' + i : i) + ':00')
@@ -84,7 +85,6 @@ const fillChartData = () => {
   }
 }
 
-// Build data for the doughnut chart by summarizing sales by payment type.
 const fillDoughnutData = () => {
   const paymentSummary = {}
   saleStore.items.data.forEach((sale) => {
@@ -110,14 +110,16 @@ const fillDoughnutData = () => {
 }
 
 // ---------------------------------------------------------------------
-// FILTERS SETUP (unchanged logic, enhanced UI in template)
+// FILTERS SETUP
 // ---------------------------------------------------------------------
 const selectedPeriod = ref('all_day')
-const allDayDate = ref(new Date().toISOString().split('T')[0])
-const allDayStartTime = ref('00:00')
-const allDayEndTime = ref('23:59')
+
+// Use a date range (array of two dates) for the "All Day" option.
+// The default value is set to today's date for both start and end.
+const allDayRange = ref([new Date(), new Date()])
+
 const monthlyYear = ref(new Date().getFullYear())
-const monthlyMonth = ref(new Date().getMonth() + 1)
+const monthlyMonth = ref(new Date().getMonth() + 1) // 1-indexed
 
 const currentYearVal = new Date().getFullYear()
 const yearsList = []
@@ -148,6 +150,7 @@ const userStore = useUserStore()
 const branchStore = useBranchStore()
 const warehouseStore = useWarehouseStore()
 
+// Helper to format a Date object as YYYY-MM-DD
 const formatDate = (date) => {
   const d = new Date(date)
   const month = '' + (d.getMonth() + 1)
@@ -176,13 +179,21 @@ const getLastWeekRange = () => {
   return { start: formatDate(lastMonday), end: formatDate(lastSunday) }
 }
 
+/**
+ * Applies all selected filters by computing the start/end date (or datetime)
+ * and adding any additional filter options. Then fetches sales and updates charts.
+ */
 const applyFilters = async () => {
   let start_date, end_date
   const today = new Date()
 
   if (selectedPeriod.value === 'all_day') {
-    start_date = `${allDayDate.value}T${allDayStartTime.value}:00`
-    end_date = `${allDayDate.value}T${allDayEndTime.value}:00`
+    // Use the date range selected in the datepicker.
+    if (allDayRange.value && allDayRange.value.length === 2) {
+      // Append default times to cover the full days.
+      start_date = formatDate(allDayRange.value[0]) + 'T00:00:00'
+      end_date = formatDate(allDayRange.value[1]) + 'T23:59:59'
+    }
   } else if (selectedPeriod.value === 'monthly') {
     const year = parseInt(monthlyYear.value)
     const month = parseInt(monthlyMonth.value)
@@ -755,6 +766,7 @@ const exportSummary = () => {
   const wsInventory = XLSX.utils.aoa_to_sheet(inventoryWorksheetData)
   XLSX.utils.book_append_sheet(wb, wsInventory, 'Sales Inventory Report')
 
+  // Trigger file download.
   XLSX.writeFile(wb, 'Sales_Summary.xlsx')
 }
 
@@ -800,32 +812,21 @@ onMounted(async () => {
             <option value="monthly">Monthly</option>
           </select>
         </div>
+        <!-- For All Day, show the date range picker -->
         <template v-if="selectedPeriod === 'all_day'">
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Date</label>
-            <input
-              type="date"
-              v-model="allDayDate"
-              class="mt-1 block w-full rounded border-gray-300 shadow-sm"
-            />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Start Time</label>
-            <input
-              type="time"
-              v-model="allDayStartTime"
-              class="mt-1 block w-full rounded border-gray-300 shadow-sm"
-            />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">End Time</label>
-            <input
-              type="time"
-              v-model="allDayEndTime"
-              class="mt-1 block w-full rounded border-gray-300 shadow-sm"
+          <div class="md:col-span-2 lg:col-span-3">
+            <label class="block text-sm font-medium text-gray-700">Select Date Range</label>
+            <!-- Using the Vue3 Datepicker in range mode with multi-calendars -->
+            <Datepicker
+              v-model="allDayRange"
+              range
+              multi-calendars
+              format="yyyy-MM-dd"
+              input-class="mt-1 block w-full rounded border-gray-300 shadow-sm"
             />
           </div>
         </template>
+        <!-- For Monthly, show Year and Month selectors -->
         <template v-if="selectedPeriod === 'monthly'">
           <div>
             <label class="block text-sm font-medium text-gray-700">Year</label>
@@ -884,7 +885,7 @@ onMounted(async () => {
             class="mt-1 block w-full rounded border-gray-300 shadow-sm"
           >
             <option value="">All</option>
-            <option v-for="branch in branchStore.branches.data" :key="branch.id" :value="branch.id">
+            <option v-for="branch in branchStore.branches" :key="branch.id" :value="branch.id">
               {{ branch.name }}
             </option>
           </select>
@@ -936,6 +937,7 @@ onMounted(async () => {
           :columns="saleColumns"
           :data="saleData"
           :loading="saleStore.isLoading"
+          :show-action="false"
           @query-change="handleSaleQueryChange"
           table-class="min-w-full divide-y divide-gray-200"
         />
@@ -950,6 +952,7 @@ onMounted(async () => {
           :columns="summaryColumns"
           :data="paginatedSummaryData"
           :loading="saleStore.isLoading"
+          :show-action="false"
           @query-change="handleSummaryQueryChange"
           table-class="min-w-full divide-y divide-gray-200"
         />
@@ -964,6 +967,7 @@ onMounted(async () => {
           :columns="categorySummaryColumns"
           :data="paginatedCategorySummaryData"
           :loading="saleStore.isLoading"
+          :show-action="false"
           @query-change="handleCategorySummaryQueryChange"
           table-class="min-w-full divide-y divide-gray-200"
         />
@@ -978,6 +982,7 @@ onMounted(async () => {
           :columns="inventoryColumns"
           :data="paginatedInventoryData"
           :loading="saleStore.isLoading"
+          :show-action="false"
           @query-change="handleInventoryQueryChange"
           table-class="min-w-full divide-y divide-gray-200"
         />
@@ -986,10 +991,8 @@ onMounted(async () => {
   </LayoutAuthenticated>
 </template>
 
-<!-- Optional additional styling -->
 <style scoped>
-/* Example styles for sticky table headers and hover effects.
-   (You can also incorporate these inside your BaseTable component.) */
+/* Optional additional styling for sticky table headers and hover effects */
 table {
   width: 100%;
   border-collapse: collapse;
