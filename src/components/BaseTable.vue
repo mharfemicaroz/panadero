@@ -49,8 +49,8 @@
             </transition>
           </th>
 
-          <!-- Action column -->
-          <th class="px-4 py-2 whitespace-nowrap">Action</th>
+          <!-- Action column (conditionally shown) -->
+          <th v-if="showAction" class="px-4 py-2 whitespace-nowrap">Action</th>
         </tr>
       </thead>
 
@@ -79,8 +79,8 @@
             </span>
           </td>
 
-          <!-- Action cell with slot integration -->
-          <td class="px-4 py-2 whitespace-nowrap" data-label="Action">
+          <!-- Action cell with slot integration (conditionally shown) -->
+          <td v-if="showAction" class="px-4 py-2 whitespace-nowrap" data-label="Action">
             <slot name="cell-actions" :row="item">
               <BaseButtons>
                 <BaseButton :icon="mdiPencil" small @click="editRow(item)" />
@@ -171,6 +171,10 @@ const props = defineProps({
   loading: {
     type: Boolean,
     default: false
+  },
+  showAction: {
+    type: Boolean,
+    default: true
   }
 })
 

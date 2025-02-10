@@ -2,6 +2,8 @@
 import { ref, computed, onMounted } from 'vue'
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticatedX.vue'
 import SectionMain from '@/components/SectionMain.vue'
+import SectionTitleLineWithButton from '@/components/SectionTitleLineWithButton.vue'
+import BaseButton from '@/components/BaseButton.vue'
 import BaseTable from '@/components/BaseTable.vue'
 import NotificationBar from '@/components/NotificationBar.vue'
 import { useItemStore } from '@/stores/product/item'
@@ -144,7 +146,11 @@ const handleLocalPageChange = (page) => {
       <NotificationBar v-if="itemStore.error" :icon="mdiAlertCircle" color="danger">
         {{ itemStore.error }}
       </NotificationBar>
-      <h1 class="text-2xl font-bold mb-4">Item Ledger</h1>
+      <SectionTitleLineWithButton :icon="mdiTableBorder" title="Item Ledger" main>
+        <div class="flex items-center gap-2">
+          <BaseButton :icon="mdiExport" color="warning" label="Export Ledger" />
+        </div>
+      </SectionTitleLineWithButton>
       <!-- Main Items Table using BaseTable -->
       <BaseTable
         :columns="mainColumns"

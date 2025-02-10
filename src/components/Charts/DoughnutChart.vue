@@ -1,14 +1,6 @@
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue'
-import {
-  Chart,
-  LineElement,
-  PointElement,
-  LineController,
-  LinearScale,
-  CategoryScale,
-  Tooltip
-} from 'chart.js'
+import { Chart, DoughnutController, ArcElement, Tooltip, Legend } from 'chart.js'
 
 const props = defineProps({
   data: {
@@ -20,34 +12,23 @@ const props = defineProps({
 const root = ref(null)
 let chart
 
-Chart.register(LineElement, PointElement, LineController, LinearScale, CategoryScale, Tooltip)
+// Register the required Chart.js components for the doughnut chart.
+Chart.register(DoughnutController, ArcElement, Tooltip, Legend)
 
 onMounted(() => {
   chart = new Chart(root.value, {
-    type: 'line',
+    type: 'doughnut',
     data: props.data,
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      scales: {
-        y: {
-          display: true,
-          title: {
-            display: true,
-            text: ''
-          }
-        },
-        x: {
-          display: true,
-          title: {
-            display: true,
-            text: ''
-          }
-        }
-      },
       plugins: {
         legend: {
-          display: false
+          display: true,
+          position: 'bottom'
+        },
+        tooltip: {
+          enabled: true
         }
       }
     }
