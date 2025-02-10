@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import * as XLSX from 'xlsx'
 import { mdiTableBorder, mdiExport } from '@mdi/js'
 import { useProductSaleStore } from '@/stores/product/sale'
 import { useUserStore } from '@/stores/user'
@@ -23,7 +24,7 @@ const saleStore = useProductSaleStore()
 /**
  * Build data for the line chart.
  * - For "All Day": x-axis is 24 hourly labels (00:00–23:00) with amounts aggregated per hour.
- * - For other periods: x-axis is dates.
+ * - Otherwise, x-axis is dates.
  */
 const fillChartData = () => {
   if (selectedPeriod.value === 'all_day') {
@@ -118,17 +119,12 @@ const fillDoughnutData = () => {
 // FILTERS SETUP
 // ---------------------------------------------------------------------
 const selectedPeriod = ref('all_day')
-
-// For "All Day": choose a specific date and time range.
 const allDayDate = ref(new Date().toISOString().split('T')[0]) // defaults to today
 const allDayStartTime = ref('00:00')
 const allDayEndTime = ref('23:59')
-
-// For "Monthly": choose a specific year and month.
 const monthlyYear = ref(new Date().getFullYear())
 const monthlyMonth = ref(new Date().getMonth() + 1) // 1-indexed
 
-// Build a list of years (current year down to 10 years ago).
 const currentYearVal = new Date().getFullYear()
 const yearsList = []
 for (let y = currentYearVal; y >= currentYearVal - 10; y--) {
@@ -149,18 +145,15 @@ const monthsList = [
   'December'
 ]
 
-// Additional (advanced) filters (hidden by default).
 const selectedCashier = ref('')
 const selectedBranch = ref('')
 const selectedWarehouse = ref('')
 const showAdvancedFilters = ref(false)
 
-// Import additional stores.
 const userStore = useUserStore()
 const branchStore = useBranchStore()
 const warehouseStore = useWarehouseStore()
 
-// Helper: Format a Date object as YYYY-MM-DD.
 const formatDate = (date) => {
   const d = new Date(date)
   const month = '' + (d.getMonth() + 1)
@@ -169,7 +162,6 @@ const formatDate = (date) => {
   return [year, month.padStart(2, '0'), day.padStart(2, '0')].join('-')
 }
 
-// Helper: Get this week’s range (Monday to Sunday).
 const getThisWeekRange = () => {
   const now = new Date()
   const dayOfWeek = now.getDay() === 0 ? 7 : now.getDay()
@@ -180,7 +172,6 @@ const getThisWeekRange = () => {
   return { start: formatDate(monday), end: formatDate(sunday) }
 }
 
-// Helper: Get last week’s range.
 const getLastWeekRange = () => {
   const now = new Date()
   const dayOfWeek = now.getDay() === 0 ? 7 : now.getDay()
@@ -229,14 +220,12 @@ const applyFilters = async () => {
     end_date = formatDate(today)
   }
 
-  // Build query parameters.
   let queryParams = { page: 1, limit: 10 }
   if (start_date || end_date) {
     queryParams.filters = {}
     if (start_date) queryParams.filters.start_date = start_date
     if (end_date) queryParams.filters.end_date = end_date
   }
-  // Add additional filters if set.
   if (selectedCashier.value) {
     queryParams.filters = queryParams.filters || {}
     queryParams.filters.user_id = selectedCashier.value
@@ -250,9 +239,10 @@ const applyFilters = async () => {
     queryParams.filters.warehouse_id = selectedWarehouse.value
   }
 
-  // Reset summary paginations when filters change.
+  // Reset paginations when filters change.
   summaryPage.value = 1
   categorySummaryPage.value = 1
+  inventoryPage.value = 1
 
   await saleStore.fetchItems(queryParams, true)
   fillChartData()
@@ -307,18 +297,6 @@ const handleSaleQueryChange = async (query) => {
 // ---------------------------------------------------------------------
 const summaryPage = ref(1)
 const summaryPageSize = ref(10)
-
-/**
- * Compute summary data by grouping sales.
- * - If "All Day" is selected, groups by hour (formatted as "HH:00").
- * - Otherwise, groups by date (YYYY-MM-DD).
- * For each group, calculates:
- *   • Gross Sales: Sum of sale total amounts.
- *   • Item Cost: Sum over sale items (quantity × item cost).
- *   • Gross Profit: Gross Sales - Item Cost.
- *   • Discounts: Sum of sale discount_total.
- *   • Net Sales: Gross Sales - Discounts.
- */
 const summaryGroups = computed(() => {
   const groups = {}
   saleStore.items.data.forEach((sale) => {
@@ -370,13 +348,7 @@ const paginatedSummaryData = computed(() => {
   const currentPage = summaryPage.value
   const start = (currentPage - 1) * pageSize
   const paginatedData = allData.slice(start, start + pageSize)
-  return {
-    total,
-    totalPages,
-    currentPage,
-    pageSize,
-    data: paginatedData
-  }
+  return { total, totalPages, currentPage, pageSize, data: paginatedData }
 })
 
 const summaryColumns = computed(() => [
@@ -423,18 +395,6 @@ const handleSummaryQueryChange = async (query) => {
 // ---------------------------------------------------------------------
 const categorySummaryPage = ref(1)
 const categorySummaryPageSize = ref(10)
-
-/**
- * Computes Category Sales Summary data by grouping sale items by:
- * - Created At (date, using sale.created_at substring(0,10))
- * - Category and Subcategory (from saleItem.item)
- *
- * For each group, calculates:
- * - Sales Quantity: Sum of sale item quantities.
- * - Gross Sales: Sum of sale item totals.
- * - Item Discounts: Sum of sale item discounts.
- * - Net Sales: Gross Sales - Item Discounts.
- */
 const categorySummaryGroups = computed(() => {
   const groups = {}
   saleStore.items.data.forEach((sale) => {
@@ -468,7 +428,6 @@ const categorySummaryGroups = computed(() => {
     group.net_sales = group.gross_sales - group.item_discounts
     summaryArray.push(group)
   }
-  // Sort by Created At, then Category, then Subcategory.
   summaryArray.sort((a, b) => {
     const dateComp = a.createdAt.localeCompare(b.createdAt)
     if (dateComp !== 0) return dateComp
@@ -487,13 +446,7 @@ const paginatedCategorySummaryData = computed(() => {
   const currentPage = categorySummaryPage.value
   const start = (currentPage - 1) * pageSize
   const paginatedData = allData.slice(start, start + pageSize)
-  return {
-    total,
-    totalPages,
-    currentPage,
-    pageSize,
-    data: paginatedData
-  }
+  return { total, totalPages, currentPage, pageSize, data: paginatedData }
 })
 
 const categorySummaryColumns = [
@@ -528,10 +481,314 @@ const handleCategorySummaryQueryChange = async (query) => {
 }
 
 // ---------------------------------------------------------------------
+// SALES INVENTORY REPORT TABLE SETUP (Paginated)
+// ---------------------------------------------------------------------
+const inventoryPage = ref(1)
+const inventoryPageSize = ref(10)
+
+/**
+ * Computes Sales Inventory Report data by grouping sale items by:
+ * - Date (using sale.sale_date or sale.created_at substring(0,10))
+ * - Item Name, Warehouse, Category, Subcategory
+ *
+ * For each group, calculates:
+ * - Total Qty (Sold): Sum of sale item quantities.
+ * - Total Amount (Sold): Sum of sale item totals.
+ * - Total Amount (Cost): Sum of (sale item quantity × item cost).
+ * - Total Discount: Sum of sale item discounts.
+ * - Total Qty (Current): Sum of current quantities from the item's inventories.
+ * - Total Amount (Current): Sum of (current quantity × item cost).
+ */
+const salesInventoryGroups = computed(() => {
+  const groups = {}
+  saleStore.items.data.forEach((sale) => {
+    const saleDate = sale.sale_date
+      ? sale.sale_date.substring(0, 10)
+      : sale.created_at.substring(0, 10)
+    if (sale.saleItems && Array.isArray(sale.saleItems)) {
+      sale.saleItems.forEach((saleItem) => {
+        const itemName = saleItem.item ? saleItem.item.name : 'Unknown'
+        // Use sale.warehouse if available; otherwise, fallback to saleItem.item.warehouse.
+        const warehouse = sale.warehouse
+          ? sale.warehouse.name
+          : saleItem.item && saleItem.item.warehouse
+          ? saleItem.item.warehouse.name
+          : 'Unknown'
+        const category =
+          saleItem.item && saleItem.item.category ? saleItem.item.category.name : 'Unknown'
+        const subcategory =
+          saleItem.item && saleItem.item.subcategory ? saleItem.item.subcategory.name : ''
+        const groupKey =
+          saleDate + '|' + itemName + '|' + warehouse + '|' + category + '|' + subcategory
+        if (!groups[groupKey]) {
+          groups[groupKey] = {
+            date: saleDate,
+            item_name: itemName,
+            warehouse: warehouse,
+            category: category,
+            subcategory: subcategory,
+            total_qty_sold: 0,
+            total_amount_sold: 0,
+            total_amount_cost: 0,
+            total_discount: 0,
+            total_qty_current: 0,
+            total_amount_current: 0
+          }
+        }
+        groups[groupKey].total_qty_sold += Number(saleItem.quantity) || 0
+        groups[groupKey].total_amount_sold += Number(saleItem.total) || 0
+        groups[groupKey].total_amount_cost +=
+          Number(saleItem.quantity) *
+            (saleItem.item && saleItem.item.cost ? Number(saleItem.item.cost) : 0) || 0
+        groups[groupKey].total_discount += Number(saleItem.discount) || 0
+        // For current inventory, if available, sum the current_quantity from all inventories.
+        let currentQty = 0
+        if (
+          saleItem.item &&
+          saleItem.item.inventories &&
+          Array.isArray(saleItem.item.inventories)
+        ) {
+          saleItem.item.inventories.forEach((inv) => {
+            currentQty += Number(inv.current_quantity) || 0
+          })
+        }
+        groups[groupKey].total_qty_current += currentQty
+        groups[groupKey].total_amount_current +=
+          currentQty * (saleItem.item && saleItem.item.cost ? Number(saleItem.item.cost) : 0)
+      })
+    }
+  })
+  const result = []
+  for (const key in groups) {
+    result.push(groups[key])
+  }
+  // Sort by Date, then Item Name.
+  result.sort((a, b) => {
+    const dateComp = a.date.localeCompare(b.date)
+    if (dateComp !== 0) return dateComp
+    return a.item_name.localeCompare(b.item_name)
+  })
+  return result
+})
+
+const paginatedInventoryData = computed(() => {
+  const allData = salesInventoryGroups.value
+  const total = allData.length
+  const pageSize = inventoryPageSize.value
+  const totalPages = Math.ceil(total / pageSize) || 1
+  const currentPage = inventoryPage.value
+  const start = (currentPage - 1) * pageSize
+  const paginatedData = allData.slice(start, start + pageSize)
+  return { total, totalPages, currentPage, pageSize, data: paginatedData }
+})
+
+const inventoryColumns = [
+  { key: 'date', label: 'Date' },
+  { key: 'item_name', label: 'Item Name' },
+  { key: 'warehouse', label: 'Warehouse' },
+  { key: 'category', label: 'Category' },
+  { key: 'subcategory', label: 'Subcategory' },
+  {
+    key: 'total_qty_sold',
+    label: 'Total Qty (Sold)',
+    formatter: (value) => Number(value).toFixed(0)
+  },
+  {
+    key: 'total_amount_sold',
+    label: 'Total Amount (Sold)',
+    formatter: (value) => Number(value).toFixed(2)
+  },
+  {
+    key: 'total_amount_cost',
+    label: 'Total Amount (Cost)',
+    formatter: (value) => Number(value).toFixed(2)
+  },
+  {
+    key: 'total_qty_current',
+    label: 'Total Qty (Current)',
+    formatter: (value) => Number(value).toFixed(0)
+  },
+  {
+    key: 'total_amount_current',
+    label: 'Total Amount (Current)',
+    formatter: (value) => Number(value).toFixed(2)
+  },
+  {
+    key: 'total_discount',
+    label: 'Total Discount',
+    formatter: (value) => Number(value).toFixed(2)
+  }
+]
+
+const handleInventoryQueryChange = async (query) => {
+  inventoryPage.value = query.page
+  inventoryPageSize.value = query.limit
+}
+
+// ---------------------------------------------------------------------
+// EXPORT SUMMARY FUNCTION (Excel workbook with separate worksheets)
+// ---------------------------------------------------------------------
+const exportSummary = () => {
+  const wb = XLSX.utils.book_new()
+
+  // 1. Line Chart Worksheet.
+  const lineWorksheetData = []
+  lineWorksheetData.push(['Time/Date', 'Total Amount'])
+  if (
+    chartData.value &&
+    chartData.value.labels &&
+    chartData.value.datasets &&
+    chartData.value.datasets.length > 0
+  ) {
+    chartData.value.labels.forEach((label, index) => {
+      lineWorksheetData.push([label, chartData.value.datasets[0].data[index]])
+    })
+  }
+  const wsLine = XLSX.utils.aoa_to_sheet(lineWorksheetData)
+  XLSX.utils.book_append_sheet(wb, wsLine, 'Line Chart')
+
+  // 2. Doughnut Chart Worksheet.
+  const doughnutWorksheetData = []
+  doughnutWorksheetData.push(['Payment Type', 'Total Amount'])
+  if (
+    doughnutData.value &&
+    doughnutData.value.labels &&
+    doughnutData.value.datasets &&
+    doughnutData.value.datasets.length > 0
+  ) {
+    doughnutData.value.labels.forEach((label, index) => {
+      doughnutWorksheetData.push([label, doughnutData.value.datasets[0].data[index]])
+    })
+  }
+  const wsDoughnut = XLSX.utils.aoa_to_sheet(doughnutWorksheetData)
+  XLSX.utils.book_append_sheet(wb, wsDoughnut, 'Doughnut Chart')
+
+  // 3. Sales Table Worksheet.
+  const salesTableWorksheetData = []
+  salesTableWorksheetData.push([
+    'Sale Date',
+    'Cashier',
+    'Branch',
+    'Warehouse',
+    'Payment Type',
+    'Total Amount'
+  ])
+  if (saleData.value && saleData.value.data) {
+    saleData.value.data.forEach((sale) => {
+      const saleDate = sale.sale_date ? sale.sale_date.substring(0, 10) : ''
+      const cashier = sale.user ? sale.user.first_name + ' ' + sale.user.last_name : ''
+      const branch = sale.branch ? sale.branch.name : ''
+      const warehouse = sale.warehouse ? sale.warehouse.name : ''
+      const payment_type = sale.payment_type || ''
+      const total_amount = sale.total_amount || ''
+      salesTableWorksheetData.push([
+        saleDate,
+        cashier,
+        branch,
+        warehouse,
+        payment_type,
+        total_amount
+      ])
+    })
+  }
+  const wsSalesTable = XLSX.utils.aoa_to_sheet(salesTableWorksheetData)
+  XLSX.utils.book_append_sheet(wb, wsSalesTable, 'Sales Table')
+
+  // 4. Sales Report Summary Worksheet.
+  const summaryWorksheetData = []
+  summaryWorksheetData.push([
+    'Time/Date',
+    'Gross Sales',
+    'Item Cost',
+    'Gross Profit',
+    'Discounts',
+    'Net Sales'
+  ])
+  if (summaryGroups.value) {
+    summaryGroups.value.forEach((row) => {
+      summaryWorksheetData.push([
+        row.time,
+        row.gross_sales,
+        row.item_cost,
+        row.gross_profit,
+        row.discounts,
+        row.net_sales
+      ])
+    })
+  }
+  const wsSummary = XLSX.utils.aoa_to_sheet(summaryWorksheetData)
+  XLSX.utils.book_append_sheet(wb, wsSummary, 'Sales Report Summary')
+
+  // 5. Category Sales Summary Worksheet.
+  const categoryWorksheetData = []
+  categoryWorksheetData.push([
+    'Created At',
+    'Category',
+    'SubCategory',
+    'Sales Quantity',
+    'Gross Sales',
+    'Item Discounts',
+    'Net Sales'
+  ])
+  if (categorySummaryGroups.value) {
+    categorySummaryGroups.value.forEach((row) => {
+      categoryWorksheetData.push([
+        row.createdAt,
+        row.category,
+        row.subcategory,
+        row.sales_quantity,
+        row.gross_sales,
+        row.item_discounts,
+        row.net_sales
+      ])
+    })
+  }
+  const wsCategory = XLSX.utils.aoa_to_sheet(categoryWorksheetData)
+  XLSX.utils.book_append_sheet(wb, wsCategory, 'Category Sales Summary')
+
+  // 6. Sales Inventory Report Worksheet.
+  const inventoryWorksheetData = []
+  inventoryWorksheetData.push([
+    'Date',
+    'Item Name',
+    'Warehouse',
+    'Category',
+    'Subcategory',
+    'Total Qty (Sold)',
+    'Total Amount (Sold)',
+    'Total Amount (Cost)',
+    'Total Qty (Current)',
+    'Total Amount (Current)',
+    'Total Discount'
+  ])
+  if (salesInventoryGroups.value) {
+    salesInventoryGroups.value.forEach((row) => {
+      inventoryWorksheetData.push([
+        row.date,
+        row.item_name,
+        row.warehouse,
+        row.category,
+        row.subcategory,
+        row.total_qty_sold,
+        row.total_amount_sold,
+        row.total_amount_cost,
+        row.total_qty_current,
+        row.total_amount_current,
+        row.total_discount
+      ])
+    })
+  }
+  const wsInventory = XLSX.utils.aoa_to_sheet(inventoryWorksheetData)
+  XLSX.utils.book_append_sheet(wb, wsInventory, 'Sales Inventory Report')
+
+  // Write the workbook and trigger download.
+  XLSX.writeFile(wb, 'Sales_Summary.xlsx')
+}
+
+// ---------------------------------------------------------------------
 // ON MOUNT
 // ---------------------------------------------------------------------
 onMounted(async () => {
-  // Load options for advanced filters.
   await userStore.fetchAll()
   await branchStore.fetchAll()
   await warehouseStore.fetchAll()
@@ -544,13 +801,17 @@ onMounted(async () => {
     <!-- Top Section: Title and Export Button -->
     <SectionTitleLineWithButton :icon="mdiTableBorder" title="Sales Summary" main>
       <div class="flex items-center gap-2">
-        <BaseButton :icon="mdiExport" color="warning" label="Export Summary" />
+        <BaseButton
+          :icon="mdiExport"
+          color="warning"
+          label="Export Summary"
+          @click="exportSummary"
+        />
       </div>
     </SectionTitleLineWithButton>
 
     <!-- Filter Controls (Responsive, with Advanced Filters Toggle) -->
     <div class="mb-4 p-4 border rounded bg-gray-100 flex flex-wrap items-center gap-4">
-      <!-- Period Selection -->
       <label class="font-medium">Select Period:</label>
       <select v-model="selectedPeriod" class="p-2 border rounded">
         <option value="all_day">All Day</option>
@@ -560,8 +821,6 @@ onMounted(async () => {
         <option value="last_30_days">Last 30 Days</option>
         <option value="monthly">Monthly</option>
       </select>
-
-      <!-- Inline controls for "All Day" -->
       <template v-if="selectedPeriod === 'all_day'">
         <label>Date:</label>
         <input type="date" v-model="allDayDate" class="p-2 border rounded" />
@@ -570,8 +829,6 @@ onMounted(async () => {
         <label>End Time:</label>
         <input type="time" v-model="allDayEndTime" class="p-2 border rounded" />
       </template>
-
-      <!-- Inline controls for "Monthly" -->
       <template v-if="selectedPeriod === 'monthly'">
         <label>Year:</label>
         <select v-model="monthlyYear" class="p-2 border rounded">
@@ -584,16 +841,12 @@ onMounted(async () => {
           </option>
         </select>
       </template>
-
-      <!-- Advanced Filters Toggle -->
       <button
         @click="showAdvancedFilters = !showAdvancedFilters"
         class="p-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
       >
         {{ showAdvancedFilters ? 'Hide Advanced Filters' : 'Show Advanced Filters' }}
       </button>
-
-      <!-- Additional Filters (Visible when Advanced Filters are toggled) -->
       <template v-if="showAdvancedFilters">
         <label>Cashier:</label>
         <select v-model="selectedCashier" class="p-2 border rounded">
@@ -602,7 +855,6 @@ onMounted(async () => {
             {{ user.first_name }} {{ user.last_name }}
           </option>
         </select>
-
         <label>Branch:</label>
         <select v-model="selectedBranch" class="p-2 border rounded">
           <option value="">All</option>
@@ -610,7 +862,6 @@ onMounted(async () => {
             {{ branch.name }}
           </option>
         </select>
-
         <label>Warehouse:</label>
         <select v-model="selectedWarehouse" class="p-2 border rounded">
           <option value="">All</option>
@@ -623,7 +874,6 @@ onMounted(async () => {
           </option>
         </select>
       </template>
-
       <button @click="applyFilters" class="p-2 bg-blue-500 text-white rounded hover:bg-blue-600">
         Apply Filters
       </button>
@@ -631,17 +881,13 @@ onMounted(async () => {
 
     <!-- Charts Section: Responsive Layout -->
     <div class="flex flex-col md:flex-row gap-4">
-      <!-- Line Chart (2/3 width on medium and larger screens) -->
       <div class="w-full md:w-2/3">
         <CardBox class="mb-6">
-          <!-- Pass loading prop to the chart component -->
           <line-chart :data="chartData" :loading="saleStore.isLoading" class="h-96" />
         </CardBox>
       </div>
-      <!-- Doughnut Chart (1/3 width on medium and larger screens) -->
       <div class="w-full md:w-1/3">
         <CardBox class="mb-6">
-          <!-- Pass loading prop to the chart component -->
           <doughnut-chart :data="doughnutData" :loading="saleStore.isLoading" class="h-96" />
         </CardBox>
       </div>
@@ -680,6 +926,18 @@ onMounted(async () => {
         :data="paginatedCategorySummaryData"
         :loading="saleStore.isLoading"
         @query-change="handleCategorySummaryQueryChange"
+      />
+    </CardBox>
+
+    <!-- Sales Inventory Report Table (Paginated) -->
+    <h2 class="text-xl font-semibold mb-4">Sales Inventory Report</h2>
+    <CardBox class="mb-6">
+      <BaseTable
+        :columns="inventoryColumns"
+        :show-action="false"
+        :data="paginatedInventoryData"
+        :loading="saleStore.isLoading"
+        @query-change="handleInventoryQueryChange"
       />
     </CardBox>
   </LayoutAuthenticated>
