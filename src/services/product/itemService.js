@@ -22,7 +22,9 @@ export default {
   },
 
   async list(queryParams) {
-    const response = await axiosInstance.get(`${API_URL}/items`, { params: queryParams })
+    const response = await axiosInstance.get(`${API_URL}/items?warehouse_id=1`, {
+      params: queryParams
+    })
     return response.data
   }
 }
