@@ -329,6 +329,22 @@ const routes = [
     path: '/templates',
     name: 'templates',
     component: () => import('@/views/TemplatesView.vue')
+  }, 
+  {
+    meta: {
+      title: 'Inspections'
+    },
+    path: '/inspections',
+    name: 'inspections',
+    component: () => import('@/views/InspectionsView.vue')
+  },
+  {
+    meta: {
+      title: 'Schedule'
+    },
+    path: '/schedule',
+    name: 'schedule',
+    component: () => import('@/views/ScheduleView.vue')
   },
   // Accounting
   {
