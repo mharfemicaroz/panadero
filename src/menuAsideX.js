@@ -23,9 +23,10 @@ export default [
     label: 'Dashboard'
   },
   {
-    to: '/pos',
+    to: '',
     icon: mdiCalculator,
-    label: 'POS'
+    label: 'POS',
+    isPOS: true
   },
   {
     label: 'Reports',
@@ -167,7 +168,7 @@ export default [
       },
       {
         label: 'Item Stocks',
-        to: '/item-stocks'
+        to: '/inventory'
       },
       {
         label: 'Item Transfer',

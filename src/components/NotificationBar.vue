@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, useSlots } from 'vue'
+import { ref, computed, useSlots, onMounted, onBeforeUnmount } from 'vue'
 import { mdiClose } from '@mdi/js'
 import { colorsBgLight, colorsOutline } from '@/colors.js'
 import BaseLevel from '@/components/BaseLevel.vue'
@@ -15,6 +15,14 @@ const props = defineProps({
   color: {
     type: String,
     required: true
+  },
+  /**
+   * Auto-close the notification (in seconds).
+   * If set to -1, it never closes automatically.
+   */
+  autoClose: {
+    type: Number,
+    default: 5
   }
 })
 
@@ -24,13 +32,37 @@ const componentClass = computed(() =>
 
 const isDismissed = ref(false)
 
+// Track any running timeout so we can clear it if the user manually dismisses
+let autoCloseTimeout = null
+
 const dismiss = () => {
+  // Clear any scheduled auto-close
+  if (autoCloseTimeout) {
+    clearTimeout(autoCloseTimeout)
+    autoCloseTimeout = null
+  }
   isDismissed.value = true
 }
 
 const slots = useSlots()
-
 const hasRightSlot = computed(() => slots.right)
+
+// Setup auto-close if needed
+onMounted(() => {
+  if (props.autoClose > 0) {
+    autoCloseTimeout = setTimeout(() => {
+      dismiss()
+    }, props.autoClose * 1000)
+  }
+})
+
+// Clear the timeout on unmount
+onBeforeUnmount(() => {
+  if (autoCloseTimeout) {
+    clearTimeout(autoCloseTimeout)
+    autoCloseTimeout = null
+  }
+})
 </script>
 
 <template>
@@ -49,9 +81,12 @@ const hasRightSlot = computed(() => slots.right)
           size="24"
           class="md:mr-2"
         />
-        <span class="text-center md:text-left md:py-2"><slot /></span>
+        <span class="text-center md:text-left md:py-2">
+          <slot />
+        </span>
       </div>
       <slot v-if="hasRightSlot" name="right" />
+      <!-- Default close button if there's no "right" slot -->
       <BaseButton v-else :icon="mdiClose" small rounded-full color="white" @click="dismiss" />
     </BaseLevel>
   </div>

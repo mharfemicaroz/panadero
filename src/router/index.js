@@ -153,6 +153,30 @@ const routes = [
   },
   {
     meta: {
+      title: 'Item Ledger'
+    },
+    path: '/item-ledger',
+    name: 'item-ledger',
+    component: () => import('@/views/ItemsLedger.vue')
+  },
+  {
+    meta: {
+      title: 'Warehouses'
+    },
+    path: '/warehouses',
+    name: 'warehouses',
+    component: () => import('@/views/WarehousesView.vue')
+  },
+  {
+    meta: {
+      title: 'Subcategory'
+    },
+    path: '/subcategory',
+    name: 'subcategory',
+    component: () => import('@/views/SubCategoryView.vue')
+  },
+  {
+    meta: {
       title: 'Items Modifier'
     },
     path: '/items_modifier',
@@ -165,16 +189,16 @@ const routes = [
     },
     path: '/category',
     name: 'category',
-    component: () => import('@/views/CategoryView.vue')
+    component: () => import('@/views/CategoryMainView.vue')
   },
-  {
-    meta: {
-      title: 'Category Group'
-    },
-    path: '/category_group',
-    name: 'category_group',
-    component: () => import('@/views/CategoryGroupView.vue')
-  },
+  // {
+  //   meta: {
+  //     title: 'Category Group'
+  //   },
+  //   path: '/category_group',
+  //   name: 'category_group',
+  //   component: () => import('@/views/CategoryGroupView.vue')
+  // },
   {
     meta: {
       title: 'Discounts'
@@ -191,6 +215,14 @@ const routes = [
     path: '/customers',
     name: 'customers',
     component: () => import('@/views/CustomersView.vue')
+  },
+  {
+    meta: {
+      title: 'Inventory'
+    },
+    path: '/inventory',
+    name: 'inventory',
+    component: () => import('@/views/InventoryView.vue')
   },
   {
     meta: {
