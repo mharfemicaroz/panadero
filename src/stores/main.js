@@ -50,6 +50,7 @@ export const useMainStore = defineStore('main', () => {
   const holidays = ref([])
   const bookmarked_templates = ref([])
   const templates = ref([])
+  const inspections = ref([])
 
 
   function setUser(payload) {
@@ -452,6 +453,17 @@ export const useMainStore = defineStore('main', () => {
         alert(error.message)
       })
   }
+  
+  function fetchInspections() {
+    axios
+      .get(`data-sources/inspections.json`)
+      .then((result) => {
+        inspections.value = result?.data?.data
+      })
+      .catch((error) => {
+        alert(error.message)
+      })
+  }
   watch(authStore, (authStore) => {
     if (authStore.user) {
       userName.value = authStore.user.name
@@ -504,6 +516,7 @@ export const useMainStore = defineStore('main', () => {
     holidays,
     bookmarked_templates,
     templates,
+    inspections,
     setUser,
     fetchUser,
     fetchSampleClients,
@@ -541,6 +554,7 @@ export const useMainStore = defineStore('main', () => {
     fetchAttendance,
     fetchHolidays,
     fetchBookmarkedTemplates,
-    fetchTemplates
+    fetchTemplates,
+    fetchInspections
   }
 })
