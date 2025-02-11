@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import * as XLSX from 'xlsx'
-import { mdiTableBorder, mdiExport, mdiMagnify } from '@mdi/js'
+import { mdiTableBorder, mdiExport, mdiEye } from '@mdi/js'
 import { useProductSaleStore } from '@/stores/product/sale'
 import { useUserStore } from '@/stores/user'
 import { useBranchStore } from '@/stores/branch'
@@ -688,27 +688,31 @@ const shiftSummaryGroups = computed(() => {
     const salesForShift = saleStore.items.data.filter((sale) => sale.shift_id === shift.id)
 
     // Expected Cash: Sum (price × quantity) from each saleItem across all sales for this shift.
-    const expectedCash = salesForShift.reduce((sum, sale) => {
-      let saleExpected = 0
-      if (sale.saleItems && Array.isArray(sale.saleItems)) {
-        sale.saleItems.forEach((saleItem) => {
-          saleExpected += Number(saleItem.price) * Number(saleItem.quantity)
-        })
-      }
-      return sum + saleExpected
-    }, 0)
+    const expectedCash =
+      salesForShift
+        .filter((sale) => String(sale.payment_type).toLowerCase() === 'cash')
+        .reduce((sum, sale) => {
+          let saleExpected = 0
+          if (sale.saleItems && Array.isArray(sale.saleItems)) {
+            sale.saleItems.forEach((saleItem) => {
+              saleExpected += Number(saleItem.price) * Number(saleItem.quantity)
+            })
+          }
+          return sum + saleExpected
+        }, 0) + Number(shift.opening_cash_amount)
 
-    // Actual Cash: Sum of sale.total_amount for each sale (this value already has discounts applied).
-    const actualCash = salesForShift.reduce((sum, sale) => {
-      return sum + Number(sale.total_amount)
-    }, 0)
+    // Actual Cash: If the shift record has a cash_sales_total, use it.
+    // Otherwise, fall back to summing the sale.total_amount from saleStore.
+    const actualCash = shift.closing_cash_amount
 
     // Difference Amount: Expected Cash - Actual Cash.
     const difference = actualCash - expectedCash
 
     return {
+      id: shift.id,
       cashier: cashierName,
       branch: branchName,
+      opening_cash_amount: shift.opening_cash_amount,
       start_shift: shift.start_time,
       end_shift: shift.end_time,
       expected_cash: expectedCash,
@@ -762,6 +766,55 @@ const shiftSummaryColumns = [
 const handleShiftSummaryQueryChange = async (query) => {
   shiftSummaryPage.value = query.page
   shiftSummaryPageSize.value = query.limit
+}
+
+// ---------------------------------------------------------------------
+// SHIFT REPORT MODAL
+// ---------------------------------------------------------------------
+const showShiftModal = ref(false)
+const selectedShift = ref(null)
+
+// Compute additional shift report details when a shift is selected.
+const shiftReportDetails = computed(() => {
+  if (!selectedShift.value) return null
+  const shiftId = selectedShift.value.id
+  const salesForShift = saleStore.items.data.filter((sale) => sale.shift_id === shiftId)
+  const totalTransactions = salesForShift.length
+  const totalTendered = salesForShift.reduce((sum, sale) => sum + Number(sale.total_amount), 0)
+
+  const expectedCash = parseFloat(selectedShift.value.expected_cash)
+  const actualCash = parseFloat(selectedShift.value.actual_cash)
+  const difference = actualCash - expectedCash
+  const discounts = salesForShift.reduce((sum, sale) => sum + Number(sale.discount_total), 0)
+  const grossSales = totalTendered
+  const netSales = grossSales - discounts
+  // Payment breakdown
+  const paymentBreakdown = {}
+  salesForShift.forEach((sale) => {
+    const type = sale.payment_type || 'Unknown'
+    if (!paymentBreakdown[type]) paymentBreakdown[type] = 0
+    paymentBreakdown[type] += Number(sale.total_amount)
+  })
+  return {
+    totalTransactions,
+    totalTendered,
+    expectedCash,
+    actualCash,
+    difference,
+    openingCash: selectedShift.value.opening_cash_amount,
+    closingCash: selectedShift.value.closing_cash_amount,
+    analytics: {
+      grossSales,
+      discounts,
+      netSales
+    },
+    paymentBreakdown
+  }
+})
+
+const viewShiftReport = (row) => {
+  selectedShift.value = row
+  showShiftModal.value = true
 }
 
 // ---------------------------------------------------------------------
@@ -1193,12 +1246,151 @@ onMounted(async () => {
           :columns="shiftSummaryColumns"
           :data="paginatedShiftSummaryData"
           :loading="shiftStore.isLoading"
-          :show-action="false"
+          :show-action="true"
           @query-change="handleShiftSummaryQueryChange"
           table-class="min-w-full divide-y divide-gray-200"
-        />
+        >
+          <!-- Scoped slot for custom actions -->
+          <template #cell-actions="{ row }">
+            <button
+              class="text-blue-600 underline"
+              @click="viewShiftReport(row)"
+              title="View Shift Report"
+            >
+              <svg style="width: 18px; height: 18px" viewBox="0 0 24 24">
+                <path :d="mdiEye" />
+              </svg>
+            </button>
+          </template>
+        </BaseTable>
       </CardBox>
     </section>
+
+    <!-- Shift Report Modal -->
+    <transition name="modal">
+      <div v-if="showShiftModal" class="fixed inset-0 z-50 flex items-center justify-end">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black opacity-50" @click="showShiftModal = false"></div>
+        <!-- Modal Content -->
+        <div
+          class="relative bg-white w-full max-w-md h-full sm:h-auto sm:rounded-l-none sm:rounded-r-lg overflow-y-auto p-6 shadow-2xl"
+        >
+          <!-- Modal Header -->
+          <div class="flex items-center justify-between">
+            <h2 class="text-2xl font-bold text-gray-800">Shift Report</h2>
+            <button
+              @click="showShiftModal = false"
+              class="text-gray-600 hover:text-gray-800 focus:outline-none"
+              title="Close"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Modal Body -->
+          <div class="mt-4 space-y-4">
+            <!-- Basic Info -->
+            <div class="border-b pb-4">
+              <p class="text-gray-700">
+                <span class="font-semibold">Branch:</span>
+                {{ selectedShift.branch }}
+              </p>
+              <p class="text-gray-700">
+                <span class="font-semibold">Cashier:</span>
+                {{ selectedShift.cashier }}
+              </p>
+              <p class="text-gray-700">
+                <span class="font-semibold">Start Shift:</span>
+                {{ formatShiftDate(selectedShift.start_shift) }}
+              </p>
+              <p class="text-gray-700">
+                <span class="font-semibold">End Shift:</span>
+                {{ formatShiftDate(selectedShift.end_shift) }}
+              </p>
+              <p class="text-gray-700">
+                <span class="font-semibold">Total Transactions:</span>
+                {{ shiftReportDetails.totalTransactions }}
+              </p>
+              <p class="text-gray-700">
+                <span class="font-semibold">Total Tendered:</span>
+                {{ shiftReportDetails.totalTendered.toFixed(2) }}
+              </p>
+            </div>
+
+            <!-- Cash Drawer -->
+            <div class="border-b pb-4">
+              <h3 class="text-lg font-semibold text-gray-800 mb-2">Cash Drawer</h3>
+              <p class="text-gray-700">
+                <span class="font-semibold">Opening Amount:</span>
+                {{ selectedShift.opening_cash_amount }}
+              </p>
+              <p class="text-gray-700">
+                <span class="font-semibold">Expected Cash Amount:</span>
+                {{ shiftReportDetails.expectedCash.toFixed(2) }}
+              </p>
+              <p class="text-gray-700">
+                <span class="font-semibold">Actual Cash Amount:</span>
+                {{ shiftReportDetails.actualCash.toFixed(2) }}
+              </p>
+              <p class="text-gray-700">
+                <span class="font-semibold">Difference Amount:</span>
+                {{ shiftReportDetails.difference.toFixed(2) }}
+              </p>
+            </div>
+
+            <!-- Analytics Summary -->
+            <div class="border-b pb-4">
+              <h3 class="text-lg font-semibold text-gray-800 mb-2">Analytics Summary</h3>
+              <p class="text-gray-700">
+                <span class="font-semibold">Gross Sales:</span>
+                {{ shiftReportDetails.analytics.grossSales.toFixed(2) }}
+              </p>
+              <p class="text-gray-700">
+                <span class="font-semibold">Discounts:</span>
+                {{ shiftReportDetails.analytics.discounts.toFixed(2) }}
+              </p>
+              <p class="text-gray-700">
+                <span class="font-semibold">Net Sales:</span>
+                {{ shiftReportDetails.analytics.netSales.toFixed(2) }}
+              </p>
+            </div>
+
+            <!-- Sales Summary -->
+            <div>
+              <h3 class="text-lg font-semibold text-gray-800 mb-2">Sales Summary</h3>
+              <div
+                v-for="(amount, paymentType) in shiftReportDetails.paymentBreakdown"
+                :key="paymentType"
+                class="text-gray-700"
+              >
+                <p>
+                  <span class="font-semibold">{{ paymentType }}:</span>
+                  {{ amount.toFixed(2) }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal Footer -->
+          <div class="mt-6 flex justify-end">
+            <BaseButton label="Close" color="red" @click="showShiftModal = false" />
+          </div>
+        </div>
+      </div>
+    </transition>
   </LayoutAuthenticated>
 </template>
 

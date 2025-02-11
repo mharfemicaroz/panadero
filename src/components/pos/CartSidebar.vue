@@ -4,13 +4,6 @@
     <!-- Buttons Row -->
     <div class="mb-4 flex flex-wrap gap-2">
       <button
-        @click="toggleFullscreen"
-        class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg"
-      >
-        <BaseIcon v-if="!isFullscreen" :path="mdiFullscreen" size="18" />
-        <BaseIcon v-else :path="mdiFullscreenExit" size="18" />
-      </button>
-      <button
         @click="$emit('openSalesModal')"
         class="py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold"
       >
@@ -60,7 +53,7 @@
         </div>
         <button
           @click="$emit('openCustomerModal')"
-          class="py-2 px-4 bg-[#b51919] text-white rounded-lg hover:bg-[#a31818]"
+          class="py-2 px-4 text-white rounded-lg hover:bg-red-700 bg-red-600"
         >
           <BaseIcon :path="mdiAccountPlus" size="18" />
         </button>
@@ -270,7 +263,7 @@
 
       <button
         @click="$emit('checkout')"
-        class="w-full mt-4 py-3 px-6 bg-[#b51919] text-white rounded-lg text-lg hover:bg-[#a31818] font-bold"
+        class="w-full mt-4 py-3 px-6 bg-red-600 text-white rounded-lg text-lg hover:bg-red-700 font-bold"
       >
         Checkout
       </button>
@@ -281,7 +274,7 @@
 <script setup>
 import { computed, defineProps, defineEmits, ref, watch, nextTick } from 'vue'
 import BaseIcon from '@/components/BaseIcon.vue'
-import { mdiAccountPlus, mdiFullscreen, mdiFullscreenExit } from '@mdi/js'
+import { mdiAccountPlus } from '@mdi/js'
 
 const props = defineProps({
   cart: Array,
@@ -374,33 +367,6 @@ const localCardAuthCode = computed({
 const localBankReference = computed({
   get: () => props.bankReference,
   set: (val) => emit('update:bankReference', val)
-})
-
-// ----- Fullscreen Functionality -----
-const isFullscreen = ref(false)
-function toggleFullscreen() {
-  if (!document.fullscreenElement) {
-    document.documentElement
-      .requestFullscreen()
-      .then(() => {
-        isFullscreen.value = true
-      })
-      .catch((err) => {
-        console.error('Error attempting to enable full-screen mode:', err)
-      })
-  } else {
-    document
-      .exitFullscreen()
-      .then(() => {
-        isFullscreen.value = false
-      })
-      .catch((err) => {
-        console.error('Error attempting to exit full-screen mode:', err)
-      })
-  }
-}
-document.addEventListener('fullscreenchange', () => {
-  isFullscreen.value = !!document.fullscreenElement
 })
 
 // ----- Quantity Stepper Functionality -----

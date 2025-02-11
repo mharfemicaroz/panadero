@@ -33,12 +33,21 @@
             Started at: {{ formatDateTime(activeShift.start_time) }}
           </p>
         </div>
-        <button
-          @click="endTransaction"
-          class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-        >
-          End Transaction
-        </button>
+        <div class="mb-4 flex flex-wrap gap-2">
+          <button
+            @click="toggleFullscreen"
+            class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg"
+          >
+            <BaseIcon v-if="!isFullscreen" :path="mdiFullscreen" size="18" />
+            <BaseIcon v-else :path="mdiFullscreenExit" size="18" />
+          </button>
+          <button
+            @click="endTransaction"
+            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded"
+          >
+            <BaseIcon :path="mdiLogout" size="18" />
+          </button>
+        </div>
       </header>
 
       <!-- Main Content -->
@@ -176,6 +185,7 @@ import EditItemModal from '@/components/pos/EditItemModal.vue'
 import SalesModal from '@/components/pos/SalesModal.vue'
 import ReceiptModal from '@/components/pos/ReceiptModal.vue'
 import BaseIcon from '@/components/BaseIcon.vue'
+import { mdiFullscreen, mdiFullscreenExit, mdiLogout } from '@mdi/js'
 
 // Import and set up loading overlay
 import { useLoading } from 'vue-loading-overlay'
@@ -491,6 +501,33 @@ function resetCategories() {
   currentCategory.value = null
 }
 
+// ----- Fullscreen Functionality -----
+const isFullscreen = ref(false)
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement
+      .requestFullscreen()
+      .then(() => {
+        isFullscreen.value = true
+      })
+      .catch((err) => {
+        console.error('Error attempting to enable full-screen mode:', err)
+      })
+  } else {
+    document
+      .exitFullscreen()
+      .then(() => {
+        isFullscreen.value = false
+      })
+      .catch((err) => {
+        console.error('Error attempting to exit full-screen mode:', err)
+      })
+  }
+}
+document.addEventListener('fullscreenchange', () => {
+  isFullscreen.value = !!document.fullscreenElement
+})
+
 // ----- Cart Operations -----
 function isInCart(product) {
   return cart.value.some((i) => i.id === product.id)
@@ -520,7 +557,6 @@ async function checkout() {
     return
   }
   const loaderInstance = $loading.show({
-    container: document.body,
     isFullPage: true,
     canCancel: false,
     color: '#3b82f6',
