@@ -6,6 +6,7 @@ import { useProductSaleStore } from '@/stores/product/sale'
 import { useUserStore } from '@/stores/user'
 import { useBranchStore } from '@/stores/branch'
 import { useWarehouseStore } from '@/stores/warehouse'
+import { useShiftStore } from '@/stores/product/shift'
 import LineChart from '@/components/Charts/LineChart.vue'
 import DoughnutChart from '@/components/Charts/DoughnutChart.vue'
 import BaseTable from '@/components/BaseTable.vue'
@@ -113,9 +114,7 @@ const fillDoughnutData = () => {
 // FILTERS SETUP (unchanged)
 // ---------------------------------------------------------------------
 const selectedPeriod = ref('all_day')
-
 // Use a date range (array of two dates) for the "All Day" option.
-// The default value is set to today's date for both start and end.
 const allDayRange = ref([new Date(), new Date()])
 
 const monthlyYear = ref(new Date().getFullYear())
@@ -150,6 +149,11 @@ const userStore = useUserStore()
 const branchStore = useBranchStore()
 const warehouseStore = useWarehouseStore()
 
+// ---------------------------------------------------------------------
+// NEW: SHIFT STORE SETUP
+// ---------------------------------------------------------------------
+const shiftStore = useShiftStore()
+
 // Helper to format a Date object as YYYY-MM-DD
 const formatDate = (date) => {
   const d = new Date(date)
@@ -179,6 +183,23 @@ const getLastWeekRange = () => {
   return { start: formatDate(lastMonday), end: formatDate(lastSunday) }
 }
 
+// Helper function to format a date string as "February 11, 2025 at 4:02 AM"
+const formatShiftDate = (dateStr) => {
+  if (!dateStr) return ''
+  const date = new Date(dateStr)
+  const datePart = date.toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  })
+  const timePart = date.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: 'numeric',
+    hour12: true
+  })
+  return `${datePart} at ${timePart}`
+}
+
 /**
  * Applies all selected filters by computing the start/end date (or datetime)
  * and adding any additional filter options. Then fetches sales and updates charts.
@@ -188,9 +209,7 @@ const applyFilters = async () => {
   const today = new Date()
 
   if (selectedPeriod.value === 'all_day') {
-    // Use the date range selected in the datepicker.
     if (allDayRange.value && allDayRange.value.length === 2) {
-      // Append default times to cover the full days.
       start_date = formatDate(allDayRange.value[0]) + 'T00:00:00'
       end_date = formatDate(allDayRange.value[1]) + 'T23:59:59'
     }
@@ -612,7 +631,7 @@ const handleInventoryQueryChange = async (query) => {
 }
 
 // ---------------------------------------------------------------------
-// NEW: BREAKDOWN PAYMENT SUMMARY TABLE SETUP
+// BREAKDOWN PAYMENT SUMMARY TABLE SETUP (unchanged grouping logic)
 // ---------------------------------------------------------------------
 const breakdownPaymentPage = ref(1)
 const breakdownPaymentPageSize = ref(10)
@@ -635,7 +654,6 @@ const breakdownPaymentSummaryGroups = computed(() => {
         total_sales: 0
       }
     }
-    // Sum up the quantity from saleItems
     let saleQuantity = 0
     if (sale.saleItems && Array.isArray(sale.saleItems)) {
       sale.saleItems.forEach((saleItem) => {
@@ -672,6 +690,105 @@ const breakdownPaymentColumns = [
 const handleBreakdownPaymentQueryChange = async (query) => {
   breakdownPaymentPage.value = query.page
   breakdownPaymentPageSize.value = query.limit
+}
+
+// ---------------------------------------------------------------------
+// NEW: SHIFTS SUMMARY TABLE SETUP
+// ---------------------------------------------------------------------
+const shiftSummaryPage = ref(1)
+const shiftSummaryPageSize = ref(10)
+const shiftSummaryGroups = computed(() => {
+  // Filter the shift store data: only include shifts with status 'closed' and non-null end_time.
+  const closedShifts = shiftStore.items.data.filter(
+    (shift) => shift.status === 'closed' && shift.end_time
+  )
+  return closedShifts.map((shift) => {
+    // Look up the cashier name from userStore.
+    const cashier = userStore.users.find((user) => user.id === shift.userId)
+    const cashierName = cashier ? `${cashier.first_name} ${cashier.last_name}` : 'Unknown'
+
+    // Look up the branch name from branchStore.
+    const branch = branchStore.branches.data.find((b) => b.id === shift.branchId)
+    const branchName = branch ? branch.name : 'Unknown'
+
+    // Filter sales from saleStore that have the same shift id.
+    const salesForShift = saleStore.items.data.filter((sale) => sale.shift_id === shift.id)
+
+    // Expected Cash: Sum (price × quantity) from each saleItem across all sales for this shift.
+    const expectedCash = salesForShift.reduce((sum, sale) => {
+      let saleExpected = 0
+      if (sale.saleItems && Array.isArray(sale.saleItems)) {
+        sale.saleItems.forEach((saleItem) => {
+          saleExpected += Number(saleItem.price) * Number(saleItem.quantity)
+        })
+      }
+      return sum + saleExpected
+    }, 0)
+
+    // Actual Cash: Sum of sale.total_amount for each sale (this value already has discounts applied).
+    const actualCash = salesForShift.reduce((sum, sale) => {
+      return sum + Number(sale.total_amount)
+    }, 0)
+
+    // Difference Amount: Expected Cash - Actual Cash.
+    const difference = actualCash - expectedCash
+
+    return {
+      cashier: cashierName,
+      branch: branchName,
+      start_shift: shift.start_time,
+      end_shift: shift.end_time,
+      expected_cash: expectedCash,
+      actual_cash: actualCash,
+      difference: difference
+    }
+  })
+})
+
+const paginatedShiftSummaryData = computed(() => {
+  const allData = shiftSummaryGroups.value
+  const total = allData.length
+  const pageSize = shiftSummaryPageSize.value
+  const totalPages = Math.ceil(total / pageSize) || 1
+  const currentPage = shiftSummaryPage.value
+  const start = (currentPage - 1) * pageSize
+  const paginatedData = allData.slice(start, start + pageSize)
+  return { total, totalPages, currentPage, pageSize, data: paginatedData }
+})
+
+const shiftSummaryColumns = [
+  { key: 'cashier', label: 'User/Cashier' },
+  { key: 'branch', label: 'Branch' },
+  {
+    key: 'start_shift',
+    label: 'Start Shift',
+    formatter: (value) => (value ? formatShiftDate(value) : '')
+  },
+  {
+    key: 'end_shift',
+    label: 'End Shift',
+    formatter: (value) => (value ? formatShiftDate(value) : '')
+  },
+  {
+    key: 'expected_cash',
+    label: 'Expected Cash Amount',
+    formatter: (value) => Number(value).toFixed(2)
+  },
+  {
+    key: 'actual_cash',
+    label: 'Actual Cash Amount',
+    formatter: (value) => Number(value).toFixed(2)
+  },
+  {
+    key: 'difference',
+    label: 'Difference Amount',
+    formatter: (value) => Number(value).toFixed(2)
+  }
+]
+
+const handleShiftSummaryQueryChange = async (query) => {
+  shiftSummaryPage.value = query.page
+  shiftSummaryPageSize.value = query.limit
 }
 
 // ---------------------------------------------------------------------
@@ -847,6 +964,33 @@ const exportSummary = () => {
   const wsBreakdown = XLSX.utils.aoa_to_sheet(breakdownWorksheetData)
   XLSX.utils.book_append_sheet(wb, wsBreakdown, 'Breakdown Payment Summary')
 
+  // 8. Shifts Summary Worksheet.
+  const shiftWorksheetData = []
+  shiftWorksheetData.push([
+    'User/Cashier',
+    'Branch',
+    'Start Shift',
+    'End Shift',
+    'Expected Cash Amount',
+    'Actual Cash Amount',
+    'Difference Amount'
+  ])
+  if (shiftSummaryGroups.value) {
+    shiftSummaryGroups.value.forEach((row) => {
+      shiftWorksheetData.push([
+        row.cashier,
+        row.branch,
+        row.start_shift,
+        row.end_shift,
+        row.expected_cash,
+        row.actual_cash,
+        row.difference
+      ])
+    })
+  }
+  const wsShift = XLSX.utils.aoa_to_sheet(shiftWorksheetData)
+  XLSX.utils.book_append_sheet(wb, wsShift, 'Shifts Summary')
+
   // Trigger file download.
   XLSX.writeFile(wb, 'Sales_Summary.xlsx')
 }
@@ -859,6 +1003,8 @@ onMounted(async () => {
   await branchStore.fetchAll()
   await warehouseStore.fetchAll()
   await applyFilters()
+  // Fetch shift data (you may adjust query params as needed)
+  await shiftStore.fetchItems({ filters: { status: 'closed' } }, true)
 })
 </script>
 
@@ -896,7 +1042,6 @@ onMounted(async () => {
         <!-- For All Day, show the date range picker -->
         <div v-if="selectedPeriod === 'all_day'" class="md:col-span-2 lg:col-span-3">
           <label class="block text-sm font-medium text-gray-700">Select Date Range</label>
-          <!-- Using the Vue3 Datepicker in range mode with multi-calendars -->
           <Datepicker
             v-model="allDayRange"
             range
@@ -905,7 +1050,6 @@ onMounted(async () => {
             input-class="mt-1 block w-full rounded border-gray-300 shadow-sm"
           />
         </div>
-
         <!-- For Monthly, show Year and Month selectors -->
         <template v-if="selectedPeriod === 'monthly'">
           <div>
@@ -965,7 +1109,7 @@ onMounted(async () => {
             class="mt-1 block w-full rounded border-gray-300 shadow-sm"
           >
             <option value="">All</option>
-            <option v-for="branch in branchStore.branches" :key="branch.id" :value="branch.id">
+            <option v-for="branch in branchStore.branches.data" :key="branch.id" :value="branch.id">
               {{ branch.name }}
             </option>
           </select>
@@ -1067,10 +1211,25 @@ onMounted(async () => {
         />
       </CardBox>
     </section>
+
+    <!-- Shifts Summary Table -->
+    <section class="mb-8">
+      <h2 class="text-xl font-semibold mb-4">Shifts Summary</h2>
+      <CardBox class="shadow-lg">
+        <BaseTable
+          :columns="shiftSummaryColumns"
+          :data="paginatedShiftSummaryData"
+          :loading="shiftStore.isLoading"
+          :show-action="false"
+          @query-change="handleShiftSummaryQueryChange"
+          table-class="min-w-full divide-y divide-gray-200"
+        />
+      </CardBox>
+    </section>
   </LayoutAuthenticated>
 </template>
 
-<style scoped>
+<style>
 /* Optional additional styling for sticky table headers and hover effects */
 table {
   width: 100%;
@@ -1103,5 +1262,11 @@ tbody tr:hover {
 td {
   padding: 0.75rem;
   border-bottom: 1px solid #e5e7eb;
+}
+
+/* Adjust the Datepicker input styling if needed */
+.dp__input {
+  margin-top: 4px;
+  height: 2.5em !important;
 }
 </style>

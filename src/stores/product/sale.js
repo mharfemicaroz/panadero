@@ -1,4 +1,3 @@
-// src/stores/product/sale.js
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import saleService from '../../services/product/saleService'
@@ -21,20 +20,14 @@ export const useProductSaleStore = defineStore('sale', () => {
 
   /**
    * Fetch paginated list of sales with optional filters.
-   *
-   * @param {Object} queryParams - parameters such as page, limit, filters, etc.
-   * @param {Boolean} forceRefresh - if true, forces a re-fetch even if already loaded
    */
   const fetchItems = async (queryParams = {}, forceRefresh = false) => {
     error.value = null // Reset any previous error
-
-    // Skip API call if already loaded and not forcing refresh
     if (!forceRefresh && isLoaded.value) return
 
     try {
       isLoading.value = true
       const response = await saleService.list(queryParams)
-      // Assuming your API returns an object with total, totalPages, and a data array
       Object.assign(items.value, {
         total: response.total || 0,
         totalPages: response.totalPages || 1,
@@ -52,8 +45,6 @@ export const useProductSaleStore = defineStore('sale', () => {
 
   /**
    * Fetch a single sale by ID.
-   *
-   * @param {Number|String} saleId - the ID of the sale to fetch
    */
   const fetchItemById = async (saleId) => {
     error.value = null
@@ -70,9 +61,6 @@ export const useProductSaleStore = defineStore('sale', () => {
 
   /**
    * Create a new sale.
-   *
-   * @param {Object} saleData - the data for the new sale
-   * @returns {Object} the newly created sale (if successful)
    */
   const createItem = async (saleData) => {
     error.value = null
@@ -92,9 +80,6 @@ export const useProductSaleStore = defineStore('sale', () => {
 
   /**
    * Update an existing sale.
-   *
-   * @param {Number|String} saleId - the ID of the sale to update
-   * @param {Object} saleData - the updated sale data
    */
   const updateItem = async (saleId, saleData) => {
     error.value = null
@@ -114,8 +99,6 @@ export const useProductSaleStore = defineStore('sale', () => {
 
   /**
    * Delete a sale by ID.
-   *
-   * @param {Number|String} saleId - the ID of the sale to delete
    */
   const deleteItem = async (saleId) => {
     error.value = null
@@ -133,8 +116,6 @@ export const useProductSaleStore = defineStore('sale', () => {
 
   /**
    * Mark a sale as complete.
-   *
-   * @param {Number|String} saleId - the ID of the sale to complete
    */
   const completeItem = async (saleId) => {
     error.value = null
@@ -147,6 +128,27 @@ export const useProductSaleStore = defineStore('sale', () => {
       }
     } catch (err) {
       error.value = err?.response?.data?.message || 'Failed to complete sale'
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
+   * Get total sales for a specific shift.
+   *
+   * @param {Number|String} shiftId - the ID of the shift
+   * @returns {Number} the total sales amount for that shift
+   */
+  const getTotalForShift = async (shiftId) => {
+    error.value = null
+    try {
+      isLoading.value = true
+      const response = await saleService.getTotalForShift(shiftId)
+      // Assuming response is an object like { totalSales: 123.45 }
+      return response.totalSales
+    } catch (err) {
+      error.value = err?.response?.data?.message || 'Failed to fetch total sales for shift'
+      return 0
     } finally {
       isLoading.value = false
     }
@@ -182,6 +184,7 @@ export const useProductSaleStore = defineStore('sale', () => {
     updateItem,
     deleteItem,
     completeItem,
+    getTotalForShift, // Export the new action
     resetStore
   }
 })

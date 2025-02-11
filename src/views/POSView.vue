@@ -1,126 +1,169 @@
 <!-- src/views/POSPage.vue -->
 <template>
-  <div class="pos-page bg-[#f8f8f8] min-h-screen flex flex-col md:flex-row p-4 md:p-8">
-    <!-- Main Content -->
-    <div class="container mx-auto py-8 flex-1">
-      <BreadcrumbNavigation
-        :breadcrumbs="breadcrumbs"
-        @reset="resetCategories"
-        @navigate="navigateToBreadcrumb"
-      />
-
-      <div v-if="currentCategory" class="mb-4">
-        <h2
-          class="text-lg font-bold text-[#b51919] cursor-pointer hover:underline flex items-center gap-2"
-          @click="goBack"
-        >
-          ← Back to Categories
-        </h2>
+  <div class="pos-page bg-[#f8f8f8] min-h-screen flex flex-col">
+    <!-- Start Menu: shown if no active shift -->
+    <div v-if="!activeShift" class="start-menu flex flex-col items-center justify-center h-screen">
+      <div class="mb-8 text-center">
+        <h1 class="text-4xl font-bold">Welcome to the POS System</h1>
+        <p class="text-xl mt-2">{{ currentDateTime }}</p>
       </div>
+      <div class="flex space-x-4">
+        <button
+          @click="startNewTransaction"
+          class="px-6 py-3 bg-green-600 text-white rounded shadow hover:bg-green-700"
+        >
+          Start New Transaction
+        </button>
+        <button
+          @click="closePOS"
+          class="px-6 py-3 bg-red-600 text-white rounded shadow hover:bg-red-700"
+        >
+          Close POS
+        </button>
+      </div>
+    </div>
 
-      <h1 class="text-2xl font-bold mb-4">
-        {{ currentCategory ? currentCategory : 'All Categories' }}
-      </h1>
+    <!-- Main POS UI: shown once an active shift is present -->
+    <div v-else class="pos-ui flex flex-col">
+      <!-- Header with active shift details and End Transaction button -->
+      <header class="bg-white shadow p-4 flex items-center justify-between">
+        <div>
+          <h2 class="text-xl font-bold">Transaction In Progress</h2>
+          <p class="text-sm text-gray-600">
+            Started at: {{ formatDateTime(activeShift.start_time) }}
+          </p>
+        </div>
+        <button
+          @click="endTransaction"
+          class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+        >
+          End Transaction
+        </button>
+      </header>
 
-      <div class="mb-6">
-        <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="Search categories or products..."
-          class="w-full p-2 border rounded"
+      <!-- Main Content -->
+      <div class="w-full mx-auto py-8 flex-1 flex flex-col md:flex-row p-4 md:p-8">
+        <!-- Left: Categories & Products -->
+        <div class="flex-1">
+          <BreadcrumbNavigation
+            :breadcrumbs="breadcrumbs"
+            @reset="resetCategories"
+            @navigate="navigateToBreadcrumb"
+          />
+
+          <div v-if="currentCategory" class="mb-4">
+            <h2
+              class="text-lg font-bold text-[#b51919] cursor-pointer hover:underline flex items-center gap-2"
+              @click="goBack"
+            >
+              ← Back to Categories
+            </h2>
+          </div>
+
+          <h1 class="text-2xl font-bold mb-4">
+            {{ currentCategory ? currentCategory : 'All Categories' }}
+          </h1>
+
+          <div class="mb-6">
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search categories or products..."
+              class="w-full p-2 border rounded"
+            />
+          </div>
+
+          <!-- Product Grid Component -->
+          <ProductGrid
+            :searchQuery="searchQuery"
+            :categories="categories"
+            :currentCategory="currentCategory"
+            :breadcrumbs="breadcrumbs"
+            :singleGlobalSingleMatch="singleGlobalSingleMatch"
+            :filteredCategories="filteredCategories"
+            :filteredProducts="filteredProducts"
+            :visibleSubcategories="visibleSubcategories"
+            :isInCart="isInCart"
+            @selectCategory="selectCategory"
+            @toggleProduct="toggleProductSelection"
+          />
+        </div>
+
+        <!-- Right: Cart Sidebar -->
+        <CartSidebar
+          :cart="cart"
+          v-model:customerName="customerName"
+          v-model:discountAllItemsPercent="discountAllItemsPercent"
+          v-model:discountEntireSale="discountEntireSale"
+          :totalCartAmount="totalCartAmount"
+          :paymentTypes="paymentTypes"
+          v-model:selectedPaymentType="selectedPaymentType"
+          :amountDue="amountDue"
+          v-model:checkNumber="checkNumber"
+          v-model:bankName="bankName"
+          v-model:walletReference="walletReference"
+          v-model:cardAuthCode="cardAuthCode"
+          v-model:bankReference="bankReference"
+          :subTotalBeforeGlobalDiscount="subTotalBeforeGlobalDiscount"
+          :filteredCustomers="filteredCustomers"
+          @filterCustomers="filterCustomers"
+          @selectCustomer="selectCustomer"
+          @openCustomerModal="openCustomerModal"
+          @openItemPriceModal="openItemPriceModal"
+          @openItemDiscountModal="openItemDiscountModal"
+          @removeFromCart="removeFromCart"
+          @checkout="checkout"
+          @suspendSale="suspendSale"
+          @cancelSale="cancelSale"
+          @openSalesModal="openSalesModal"
         />
       </div>
 
-      <!-- Product Grid Component -->
-      <ProductGrid
-        :searchQuery="searchQuery"
-        :categories="categories"
-        :currentCategory="currentCategory"
-        :breadcrumbs="breadcrumbs"
-        :singleGlobalSingleMatch="singleGlobalSingleMatch"
-        :filteredCategories="filteredCategories"
-        :filteredProducts="filteredProducts"
-        :visibleSubcategories="visibleSubcategories"
-        :isInCart="isInCart"
-        @selectCategory="selectCategory"
-        @toggleProduct="toggleProductSelection"
+      <!-- Modals -->
+      <CustomerModal
+        v-if="isCustomerModalOpen"
+        @saveCustomer="saveCustomer"
+        @close="closeCustomerModal"
+      />
+
+      <EditItemModal
+        v-if="isItemDiscountModalOpen"
+        type="discount"
+        :value="itemDiscountModalValue"
+        @save="saveItemDiscount"
+        @close="closeItemDiscountModal"
+      />
+
+      <EditItemModal
+        v-if="isItemPriceModalOpen"
+        type="price"
+        :value="itemPriceModalValue"
+        @save="saveItemPrice"
+        @close="closeItemPriceModal"
+      />
+
+      <SalesModal
+        v-if="isSalesModalOpen"
+        @close="closeSalesModal"
+        @unsuspendSale="unsuspendSale"
+        @voidSale="voidSale"
+        @printSale="printExistingSale"
+        @edit="handleEditSale"
+      />
+
+      <ReceiptModal
+        v-if="isReceiptModalOpen"
+        :transactionId="transactionId"
+        :receiptData="receiptData"
+        :printOptions="printOptions"
+        @close="closeReceiptModal"
       />
     </div>
-
-    <!-- Cart Sidebar Component -->
-    <CartSidebar
-      :cart="cart"
-      v-model:customerName="customerName"
-      v-model:discountAllItemsPercent="discountAllItemsPercent"
-      v-model:discountEntireSale="discountEntireSale"
-      :totalCartAmount="totalCartAmount"
-      :paymentTypes="paymentTypes"
-      v-model:selectedPaymentType="selectedPaymentType"
-      :amountDue="amountDue"
-      v-model:checkNumber="checkNumber"
-      v-model:bankName="bankName"
-      v-model:walletReference="walletReference"
-      v-model:cardAuthCode="cardAuthCode"
-      v-model:bankReference="bankReference"
-      :subTotalBeforeGlobalDiscount="subTotalBeforeGlobalDiscount"
-      :filteredCustomers="filteredCustomers"
-      @filterCustomers="filterCustomers"
-      @selectCustomer="selectCustomer"
-      @openCustomerModal="openCustomerModal"
-      @openItemPriceModal="openItemPriceModal"
-      @openItemDiscountModal="openItemDiscountModal"
-      @removeFromCart="removeFromCart"
-      @checkout="checkout"
-      @suspendSale="suspendSale"
-      @cancelSale="cancelSale"
-      @openSalesModal="openSalesModal"
-    />
-
-    <!-- Modals -->
-    <CustomerModal
-      v-if="isCustomerModalOpen"
-      @saveCustomer="saveCustomer"
-      @close="closeCustomerModal"
-    />
-
-    <EditItemModal
-      v-if="isItemDiscountModalOpen"
-      type="discount"
-      :value="itemDiscountModalValue"
-      @save="saveItemDiscount"
-      @close="closeItemDiscountModal"
-    />
-
-    <EditItemModal
-      v-if="isItemPriceModalOpen"
-      type="price"
-      :value="itemPriceModalValue"
-      @save="saveItemPrice"
-      @close="closeItemPriceModal"
-    />
-
-    <!-- Sales Modal now no longer requires passing sales or filter props -->
-    <SalesModal
-      v-if="isSalesModalOpen"
-      @close="closeSalesModal"
-      @unsuspendSale="unsuspendSale"
-      @voidSale="voidSale"
-      @printSale="printExistingSale"
-      @edit="handleEditSale"
-    />
-
-    <ReceiptModal
-      v-if="isReceiptModalOpen"
-      :transactionId="transactionId"
-      :receiptData="receiptData"
-      :printOptions="printOptions"
-      @close="closeReceiptModal"
-    />
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, nextTick, watch } from 'vue'
+import { ref, reactive, computed, nextTick, watch, onMounted, onUnmounted } from 'vue'
 import JsBarcode from 'jsbarcode'
 import Swal from 'sweetalert2'
 
@@ -132,7 +175,6 @@ import CustomerModal from '@/components/pos/CustomerModal.vue'
 import EditItemModal from '@/components/pos/EditItemModal.vue'
 import SalesModal from '@/components/pos/SalesModal.vue'
 import ReceiptModal from '@/components/pos/ReceiptModal.vue'
-
 import BaseIcon from '@/components/BaseIcon.vue'
 
 // Import and set up loading overlay
@@ -144,17 +186,143 @@ const $loading = useLoading()
 import { useProductCategoryStore } from '@/stores/product/category'
 import { useCustomerStore } from '@/stores/customer'
 import { useProductSaleStore } from '@/stores/product/sale'
-import { mdiFullscreen } from '@mdi/js'
+import { useShiftStore } from '@/stores/product/shift'
 const productCategoryStore = useProductCategoryStore()
 const customerStore = useCustomerStore()
 const productSaleStore = useProductSaleStore()
-// (The sale store is used inside SalesModal, so we don’t use it here)
+const shiftStore = useShiftStore()
 
 // Fetch initial data for categories and customers
 productCategoryStore.showAllItems()
 customerStore.fetchItems()
 
-// ----- State & Data -----
+// ----- Shift Management -----
+const activeShift = ref(null)
+
+const startNewTransaction = async () => {
+  try {
+    // Prompt user for the opening cash amount
+    const { value: openingCash } = await Swal.fire({
+      title: 'Enter Opening Cash Amount',
+      input: 'number',
+      inputLabel: 'Opening Cash Amount',
+      inputPlaceholder: 'Enter amount (e.g., 100.00)',
+      inputAttributes: { min: 0, step: '0.01' },
+      showCancelButton: true,
+      confirmButtonText: 'Start Transaction',
+      cancelButtonText: 'Cancel'
+    })
+    if (openingCash === undefined || openingCash === '') return // abort if cancelled
+
+    // Create a new shift including the opening_cash_amount
+    const shiftData = {
+      userId: 1,
+      branchId: 1,
+      start_time: new Date(),
+      status: 'open',
+      opening_cash_amount: openingCash // set opening cash
+    }
+    const newShift = await shiftStore.createItem(shiftData)
+    activeShift.value = newShift
+    Swal.fire({
+      title: 'Transaction Started',
+      text: 'New transaction has been started.',
+      icon: 'success',
+      confirmButtonColor: '#3085d6'
+    })
+  } catch (error) {
+    Swal.fire({
+      title: 'Error',
+      text: error?.message || 'Failed to start transaction.',
+      icon: 'error',
+      confirmButtonColor: '#b51919'
+    })
+  }
+}
+
+const endTransaction = async () => {
+  if (!activeShift.value) return
+  try {
+    // Prompt user for the closing cash amount
+    const { value: closingCash } = await Swal.fire({
+      title: 'Enter Closing Cash Amount',
+      input: 'number',
+      inputLabel: 'Closing Cash Amount',
+      inputPlaceholder: 'Enter amount (e.g., 150.00)',
+      inputAttributes: { min: 0, step: '0.01' },
+      showCancelButton: true,
+      confirmButtonText: 'End Transaction',
+      cancelButtonText: 'Cancel'
+    })
+    if (closingCash === undefined || closingCash === '') return // abort if cancelled
+
+    const salesTotal = await productSaleStore.getTotalForShift(activeShift.value.id)
+    await shiftStore.updateItem(activeShift.value.id, {
+      end_time: new Date(),
+      status: 'closed',
+      closing_cash_amount: closingCash,
+      cash_sales_total: salesTotal
+    })
+
+    activeShift.value = null
+    Swal.fire({
+      title: 'Transaction Ended',
+      text: 'The current transaction has been ended.',
+      icon: 'success',
+      confirmButtonColor: '#3085d6'
+    })
+    clearPos()
+  } catch (error) {
+    Swal.fire({
+      title: 'Error',
+      text: error?.message || 'Failed to end transaction.',
+      icon: 'error',
+      confirmButtonColor: '#b51919'
+    })
+  }
+}
+
+const closePOS = () => {
+  Swal.fire({
+    title: 'Close POS',
+    text: 'Are you sure you want to close the POS?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Yes, close it!'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      window.close() // Note: window.close() may not work in all browsers.
+    }
+  })
+}
+
+// ----- Current DateTime for Start Menu -----
+const currentDateTime = ref(new Date().toLocaleString())
+let timer = null
+
+onMounted(async () => {
+  timer = setInterval(() => {
+    currentDateTime.value = new Date().toLocaleString()
+  }, 1000)
+
+  try {
+    // Check if the current user (assumed userId = 1) already has an active shift.
+    await shiftStore.fetchItems({ filters: { userId: 1, status: 'open' } })
+    if (shiftStore.items.data.length > 0) {
+      activeShift.value = shiftStore.items.data[0]
+    }
+  } catch (err) {
+    console.error('Error checking existing shift:', err)
+  }
+})
+
+onUnmounted(() => {
+  if (timer) clearInterval(timer)
+})
+
+// ----- POS State & Data (unchanged) -----
 const breadcrumbs = ref([])
 const currentCategory = ref(null)
 const searchQuery = ref('')
@@ -163,7 +331,6 @@ const cart = ref([])
 const categories = ref([])
 const customers = ref([])
 
-// Watch for changes in categories and customers from their respective stores
 watch(
   () => productCategoryStore.items?.data?.categories,
   (newVal) => {
@@ -279,10 +446,6 @@ const totalCartAmount = computed(() => {
   return total < 0 ? 0 : total
 })
 
-document.addEventListener('fullscreenchange', () => {
-  isFullscreen.value = !!document.fullscreenElement
-})
-
 // ----- Helper Functions -----
 function catOrSubcatNameMatches(query) {
   const checkCat = (cat) => {
@@ -335,7 +498,6 @@ function isInCart(product) {
 function toggleProductSelection(product) {
   const found = cart.value.find((i) => i.id === product.id)
   if (found) {
-    // Increase the quantity instead of removing the product
     found.quantity += 1
   } else {
     cart.value.push({ ...product, quantity: 1, discount: 0 })
@@ -369,6 +531,7 @@ async function checkout() {
     user_id: 1,
     branch_id: 1,
     warehouse_id: 1,
+    shift_id: activeShift.value.id, // Associate sale with active shift
     customer_id: customerId.value || null,
     customer_name: customerName.value,
     status: 'completed',
@@ -533,10 +696,13 @@ function voidSale(sale) {
 function printExistingSale(sale) {
   openReceiptModal(sale)
 }
-
-// Optionally, handle edit sale events from the SalesModal if needed
 function handleEditSale(sale) {
   // Implement editing logic if required
+}
+
+// ----- Utility: Format DateTime -----
+function formatDateTime(date) {
+  return new Date(date).toLocaleString()
 }
 </script>
 
@@ -554,6 +720,9 @@ function handleEditSale(sale) {
 }
 .sticky {
   align-self: flex-start;
+}
+.start-menu {
+  text-align: center;
 }
 @media print {
   :deep(.no-print) {

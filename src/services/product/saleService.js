@@ -29,5 +29,10 @@ export default {
   async complete(id) {
     const response = await axiosInstance.put(`${API_URL}/sales/${id}/complete`)
     return response.data
+  },
+
+  async getTotalForShift(shiftId) {
+    const response = await axiosInstance.get(`${API_URL}/sales/${shiftId}/total`)
+    return response.data
   }
 }
