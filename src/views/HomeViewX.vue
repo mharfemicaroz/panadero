@@ -266,6 +266,10 @@ const applyFilters = async () => {
   breakdownPaymentPage.value = 1
 
   await saleStore.fetchItems(queryParams, true)
+  await shiftStore.fetchItems(
+    { ...queryParams, filters: { ...queryParams.filters, status: 'closed' } },
+    true
+  )
   fillChartData()
   fillDoughnutData()
 }
@@ -450,22 +454,26 @@ const categorySummaryColumns = [
   {
     key: 'sales_quantity',
     label: 'Sales Quantity',
-    formatter: (value) => Number(value).toFixed(0)
+    formatter: (value) => Number(value).toFixed(0),
+    aggregate: true
   },
   {
     key: 'gross_sales',
     label: 'Gross Sales',
-    formatter: (value) => Number(value).toFixed(2)
+    formatter: (value) => Number(value).toFixed(2),
+    aggregate: true
   },
   {
     key: 'item_discounts',
     label: 'Item Discounts',
-    formatter: (value) => Number(value).toFixed(2)
+    formatter: (value) => Number(value).toFixed(2),
+    aggregate: true
   },
   {
     key: 'net_sales',
     label: 'Net Sales',
-    formatter: (value) => Number(value).toFixed(2)
+    formatter: (value) => Number(value).toFixed(2),
+    aggregate: true
   }
 ]
 
@@ -569,32 +577,38 @@ const inventoryColumns = [
   {
     key: 'total_qty_sold',
     label: 'Total Qty (Sold)',
-    formatter: (value) => Number(value).toFixed(0)
+    formatter: (value) => Number(value).toFixed(0),
+    aggregate: true
   },
   {
     key: 'total_amount_sold',
     label: 'Total Amount (Sold)',
-    formatter: (value) => Number(value).toFixed(2)
+    formatter: (value) => Number(value).toFixed(2),
+    aggregate: true
   },
   {
     key: 'total_amount_cost',
     label: 'Total Amount (Cost)',
-    formatter: (value) => Number(value).toFixed(2)
+    formatter: (value) => Number(value).toFixed(2),
+    aggregate: true
   },
   {
     key: 'total_qty_current',
     label: 'Total Qty (Current)',
-    formatter: (value) => Number(value).toFixed(0)
+    formatter: (value) => Number(value).toFixed(0),
+    aggregate: true
   },
   {
     key: 'total_amount_current',
     label: 'Total Amount (Current)',
-    formatter: (value) => Number(value).toFixed(2)
+    formatter: (value) => Number(value).toFixed(2),
+    aggregate: true
   },
   {
     key: 'total_discount',
     label: 'Total Discount',
-    formatter: (value) => Number(value).toFixed(2)
+    formatter: (value) => Number(value).toFixed(2),
+    aggregate: true
   }
 ]
 
@@ -656,8 +670,18 @@ const breakdownPaymentColumns = [
   { key: 'date', label: 'Date' },
   { key: 'payment_type', label: 'Payment Type' },
   { key: 'branch', label: 'Branch' },
-  { key: 'quantity', label: 'Quantity', formatter: (value) => Number(value).toFixed(0) },
-  { key: 'total_sales', label: 'Total Sales', formatter: (value) => Number(value).toFixed(2) }
+  {
+    key: 'quantity',
+    label: 'Quantity',
+    formatter: (value) => Number(value).toFixed(0),
+    aggregate: true
+  },
+  {
+    key: 'total_sales',
+    label: 'Total Sales',
+    formatter: (value) => Number(value).toFixed(2),
+    aggregate: true
+  }
 ]
 
 const handleBreakdownPaymentQueryChange = async (query) => {
@@ -749,17 +773,20 @@ const shiftSummaryColumns = [
   {
     key: 'expected_cash',
     label: 'Expected Cash Amount',
-    formatter: (value) => Number(value).toFixed(2)
+    formatter: (value) => Number(value).toFixed(2),
+    aggregate: true
   },
   {
     key: 'actual_cash',
     label: 'Actual Cash Amount',
-    formatter: (value) => Number(value).toFixed(2)
+    formatter: (value) => Number(value).toFixed(2),
+    aggregate: true
   },
   {
     key: 'difference',
     label: 'Difference Amount',
-    formatter: (value) => Number(value).toFixed(2)
+    formatter: (value) => Number(value).toFixed(2),
+    aggregate: true
   }
 ]
 
@@ -1029,8 +1056,7 @@ onMounted(async () => {
   await branchStore.fetchAll()
   await warehouseStore.fetchAll()
   await applyFilters()
-  // Fetch shift data (you may adjust query params as needed)
-  await shiftStore.fetchItems({ filters: { status: 'closed' } }, true)
+  await shiftStore.fetchItems()
 })
 </script>
 
