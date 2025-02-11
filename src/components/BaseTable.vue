@@ -55,6 +55,7 @@
       </thead>
 
       <tbody>
+        <!-- Data rows -->
         <tr v-for="item in safeData.data" :key="item.id" class="border-t text-sm hover:bg-gray-50">
           <!-- Checkbox cell -->
           <td v-if="checkable" class="p-2 w-10 text-center" data-label="Select">
@@ -87,6 +88,25 @@
               </BaseButtons>
             </slot>
           </td>
+        </tr>
+
+        <!-- Aggregate Totals Row (only rendered if at least one column is set with aggregate: true) -->
+        <tr v-if="hasAggregates" class="border-t text-sm font-semibold bg-gray-50">
+          <!-- If checkable, insert an empty cell for the checkbox column -->
+          <td v-if="checkable" class="p-2 w-10"></td>
+
+          <!-- For each column, show the aggregated value if enabled; otherwise empty -->
+          <td
+            v-for="col in columns"
+            :key="col.key"
+            class="px-4 py-2 whitespace-nowrap"
+            :data-label="col.label"
+          >
+            <span v-if="col.aggregate">{{ aggregates[col.key] }}</span>
+          </td>
+
+          <!-- Empty cell for action column -->
+          <td v-if="showAction" class="px-4 py-2"></td>
         </tr>
       </tbody>
     </table>
@@ -254,6 +274,10 @@ const safeData = computed(
     }
 )
 
+// If you plan to support client-side filtering in addition to server-side,
+// you may use the following computed property. (Note that the table rows
+// still use safeData.data, so if filtering is server-side then safeData.data
+// is already filtered.)
 const filteredItems = computed(() => {
   return safeData.value.data.filter((item) => {
     return Object.keys(internalFilters.value).every((key) => {
@@ -364,6 +388,31 @@ const toggleSelectRow = (checked, row) => {
 const editRow = (item) => {
   emit('edit', item)
 }
+
+// --- Aggregation Logic ---
+// Compute the aggregates based on the currently displayed data (safeData.data).
+const aggregates = computed(() => {
+  const agg = {}
+  // Loop through each column that has aggregate set to true
+  props.columns.forEach((col) => {
+    if (col.aggregate) {
+      let sum = 0
+      safeData.value.data.forEach((item) => {
+        const value = parseFloat(item[col.key])
+        if (!isNaN(value)) {
+          sum += value
+        }
+      })
+      agg[col.key] = sum
+    }
+  })
+  return agg
+})
+
+// Determine if at least one column has aggregation enabled.
+const hasAggregates = computed(() => {
+  return props.columns.some((col) => col.aggregate)
+})
 </script>
 
 <style scoped>

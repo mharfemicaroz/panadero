@@ -33,23 +33,29 @@ axiosInstance.interceptors.response.use(
     const authStore = useAuthStore()
     const originalRequest = error.config
 
-    // 🔥 If 401 (Unauthorized), attempt to refresh token
+    // If 401 (Unauthorized), attempt to refresh token
     if (error.response && error.response.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true // Prevent infinite loops
 
       try {
         const refreshResponse = await axios.post(`${API_BASE_URL}/auth/refresh`, {
-          refreshToken: authStore.refreshToken // Send refresh token
+          refreshToken: authStore.refreshToken // Send current refresh token
         })
 
-        // ✅ Update token and retry failed request
+        // Update both the access token and refresh token in the auth store
         authStore.token = refreshResponse.data.accessToken
-        localStorage.setItem('authToken', authStore.token)
-        originalRequest.headers.Authorization = `Bearer ${authStore.token}`
+        authStore.refreshToken = refreshResponse.data.refreshToken // <-- Update refresh token
 
-        return axiosInstance(originalRequest) // 🔄 Retry failed request
+        // Optionally update localStorage if you're persisting tokens there
+        localStorage.setItem('authToken', authStore.token)
+        localStorage.setItem('refreshToken', authStore.refreshToken)
+
+        // Update the authorization header and retry the failed request
+        originalRequest.headers.Authorization = `Bearer ${authStore.token}`
+        return axiosInstance(originalRequest)
       } catch (refreshError) {
-        authStore.logout()
+        console.error('Refresh token expired or invalid:', refreshError)
+        authStore.logout() // Log the user out if refresh fails
       }
     }
 

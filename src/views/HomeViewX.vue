@@ -281,38 +281,6 @@ const saleData = computed(() => ({
   data: saleStore.items.data || []
 }))
 
-const saleColumns = [
-  {
-    key: 'sale_date',
-    label: 'Sale Date',
-    sortable: true,
-    formatter: (value, row) => (row.sale_date ? row.sale_date.substring(0, 10) : '')
-  },
-  {
-    key: 'cashier',
-    label: 'Cashier',
-    formatter: (value, row) => (row.user ? row.user.first_name + ' ' + row.user.last_name : '')
-  },
-  {
-    key: 'branch',
-    label: 'Branch',
-    formatter: (value, row) => (row.branch ? row.branch.name : '')
-  },
-  {
-    key: 'warehouse',
-    label: 'Warehouse',
-    formatter: (value, row) => (row.warehouse ? row.warehouse.name : '')
-  },
-  { key: 'payment_type', label: 'Payment Type', sortable: true },
-  { key: 'total_amount', label: 'Total Amount', sortable: true }
-]
-
-const handleSaleQueryChange = async (query) => {
-  await saleStore.fetchItems(query, true)
-  fillChartData()
-  fillDoughnutData()
-}
-
 // ---------------------------------------------------------------------
 // SALES REPORT SUMMARY TABLE SETUP (unchanged grouping logic)
 // ---------------------------------------------------------------------
@@ -378,31 +346,36 @@ const summaryColumns = computed(() => [
     key: 'gross_sales',
     label: 'Gross Sales',
     sortable: true,
-    formatter: (value) => Number(value).toFixed(2)
+    formatter: (value) => Number(value).toFixed(2),
+    aggregate: true
   },
   {
     key: 'item_cost',
     label: 'Item Cost',
     sortable: true,
-    formatter: (value) => Number(value).toFixed(2)
+    formatter: (value) => Number(value).toFixed(2),
+    aggregate: true
   },
   {
     key: 'gross_profit',
     label: 'Gross Profit',
     sortable: true,
-    formatter: (value) => Number(value).toFixed(2)
+    formatter: (value) => Number(value).toFixed(2),
+    aggregate: true
   },
   {
     key: 'discounts',
     label: 'Discounts',
     sortable: true,
-    formatter: (value) => Number(value).toFixed(2)
+    formatter: (value) => Number(value).toFixed(2),
+    aggregate: true
   },
   {
     key: 'net_sales',
     label: 'Net Sales',
     sortable: true,
-    formatter: (value) => Number(value).toFixed(2)
+    formatter: (value) => Number(value).toFixed(2),
+    aggregate: true
   }
 ])
 

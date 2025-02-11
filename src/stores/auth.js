@@ -9,13 +9,14 @@ export const useAuthStore = defineStore('auth', () => {
   const refreshToken = ref(localStorage.getItem('refreshToken') || null)
   const requires2FA = ref(false)
   const tempToken = ref(null)
+  const isLoading = ref(false)
 
   const login = async (email, password) => {
     try {
+      isLoading.value = true
       const response = await axios.post('/auth/login', { email, password })
 
       if (response.data.requires2FA) {
-        console.log('✅ 2FA Required: Redirecting to OTP Page') // Debugging
         requires2FA.value = true
         tempToken.value = response.data.tempToken
         localStorage.setItem('requires2FA', 'true')
@@ -38,14 +39,16 @@ export const useAuthStore = defineStore('auth', () => {
       router.push('/dashboard')
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Login failed'
-      console.error('Login Error:', errorMessage) // Debugging
-
+      console.error('Login Error:', errorMessage)
       throw new Error(errorMessage)
+    } finally {
+      isLoading.value = false
     }
   }
 
   const verify2FA = async (otp) => {
     try {
+      isLoading.value = true
       const response = await axios.post('/auth/verify-2fa', {
         otp,
         tempToken: localStorage.getItem('tempToken')
@@ -70,26 +73,33 @@ export const useAuthStore = defineStore('auth', () => {
 
       router.push('/dashboard')
     } catch (error) {
-      console.error('❌ 2FA Verification Error:', error.response?.data) // Debugging
+      console.error('2FA Verification Error:', error.response?.data)
       throw new Error('Invalid OTP')
+    } finally {
+      isLoading.value = false
     }
   }
 
   const enable2FA = async (id) => {
     try {
+      isLoading.value = true
       const response = await axios.post('/auth/enable-2fa', { userId: id })
-      console.log(response)
       return response.data
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to enable 2FA')
+    } finally {
+      isLoading.value = false
     }
   }
 
   const disable2FA = async (id) => {
     try {
+      isLoading.value = true
       await axios.post('/auth/disable-2fa', { userId: id })
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to disable 2FA')
+    } finally {
+      isLoading.value = false
     }
   }
 
@@ -109,14 +119,18 @@ export const useAuthStore = defineStore('auth', () => {
 
   const verifyToken = async () => {
     try {
+      isLoading.value = true
       await axios.get('/auth/verify') // Ensure the token is valid
     } catch (error) {
       throw new Error('Invalid token')
+    } finally {
+      isLoading.value = false
     }
   }
 
   const refreshAccessToken = async () => {
     try {
+      isLoading.value = true
       const response = await axios.post('/auth/refresh', {
         refreshToken: refreshToken.value
       })
@@ -125,10 +139,12 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.setItem('authToken', token.value)
     } catch (error) {
       throw new Error('Refresh token expired')
+    } finally {
+      isLoading.value = false
     }
   }
 
-  // 🔹 Listen for logout event across tabs
+  // Listen for logout event across tabs
   window.addEventListener('storage', (event) => {
     if (event.key === 'logout') {
       logout()
@@ -138,14 +154,17 @@ export const useAuthStore = defineStore('auth', () => {
   return {
     user,
     token,
-    refreshAccessToken,
+    refreshToken,
     requires2FA,
-    enable2FA,
-    disable2FA,
     tempToken,
+    isLoading,
     login,
     logout,
     verify2FA,
+    enable2FA,
+    disable2FA,
+    verifyToken,
+    refreshAccessToken,
     isAuthenticated: () => !!token.value
   }
 })

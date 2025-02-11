@@ -1,6 +1,5 @@
 <script setup>
-import { reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { reactive, ref, watch, onBeforeUnmount } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { mdiAccount, mdiAsterisk } from '@mdi/js'
 import SectionFullScreen from '@/components/SectionFullScreen.vue'
@@ -11,15 +10,55 @@ import BaseButton from '@/components/BaseButton.vue'
 import BaseButtons from '@/components/BaseButtons.vue'
 import LayoutGuest from '@/layouts/LayoutGuest.vue'
 
+// Import vue-loading-overlay
+import { useLoading } from 'vue-loading-overlay'
+import 'vue-loading-overlay/dist/css/index.css'
+
+// Reactive form object
 const form = reactive({
   login: '',
   pass: ''
 })
 
-const router = useRouter()
 const authStore = useAuthStore()
 const loading = ref(false)
 
+// Create loader instance refs
+const loaderInstance = ref(null)
+const $loading = useLoading()
+
+// Watch the "loading" ref to show/hide the loader overlay
+watch(
+  () => loading.value,
+  (newVal) => {
+    if (newVal) {
+      if (!loaderInstance.value) {
+        loaderInstance.value = $loading.show({
+          canCancel: false,
+          isFullPage: true,
+          color: '#3b82f6',
+          opacity: 0.8
+        })
+      }
+    } else {
+      if (loaderInstance.value) {
+        loaderInstance.value.hide()
+        loaderInstance.value = null
+      }
+    }
+  },
+  { immediate: true }
+)
+
+// Clean up the loader when the component is unmounted
+onBeforeUnmount(() => {
+  if (loaderInstance.value) {
+    loaderInstance.value.hide()
+    loaderInstance.value = null
+  }
+})
+
+// Submit handler for login
 const submit = async () => {
   try {
     loading.value = true
