@@ -183,8 +183,12 @@ export default [
         to: '/item-bundle'
       },
       {
-        label: 'Supplier',
-        to: '/supplier'
+        label: 'Suppliers',
+        to: '/suppliers'
+      },
+      {
+        label: 'Procurement',
+        to: '/procurement'
       },
       {
         label: 'Purchase Order',

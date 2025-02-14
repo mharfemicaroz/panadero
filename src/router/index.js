@@ -169,6 +169,22 @@ const routes = [
   },
   {
     meta: {
+      title: 'Suppliers'
+    },
+    path: '/suppliers',
+    name: 'suppliers',
+    component: () => import('@/views/SuppliersView.vue')
+  },
+  {
+    meta: {
+      title: 'Procurement'
+    },
+    path: '/procurement',
+    name: 'procurement',
+    component: () => import('@/views/ProcurementView.vue')
+  },
+  {
+    meta: {
       title: 'Subcategory'
     },
     path: '/subcategory',
@@ -329,7 +345,7 @@ const routes = [
     path: '/templates',
     name: 'templates',
     component: () => import('@/views/TemplatesView.vue')
-  }, 
+  },
   {
     meta: {
       title: 'Inspections'
