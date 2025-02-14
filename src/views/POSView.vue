@@ -42,6 +42,18 @@
             <BaseIcon v-else :path="mdiFullscreenExit" size="18" />
           </button>
           <button
+            @click="addCash"
+            class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+          >
+            Add Cash
+          </button>
+          <button
+            @click="removeCash"
+            class="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700"
+          >
+            Remove Cash
+          </button>
+          <button
             @click="endTransaction"
             class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded"
           >
@@ -197,10 +209,13 @@ import { useProductCategoryStore } from '@/stores/product/category'
 import { useCustomerStore } from '@/stores/customer'
 import { useProductSaleStore } from '@/stores/product/sale'
 import { useShiftStore } from '@/stores/product/shift'
+import { useCashRegisterStore } from '@/stores/product/cashRegister'
+
 const productCategoryStore = useProductCategoryStore()
 const customerStore = useCustomerStore()
 const productSaleStore = useProductSaleStore()
 const shiftStore = useShiftStore()
+const cashRegisterStore = useCashRegisterStore()
 
 // Fetch initial data for categories and customers
 productCategoryStore.showAllItems()
@@ -230,7 +245,7 @@ const startNewTransaction = async () => {
       branchId: 1,
       start_time: new Date(),
       status: 'open',
-      opening_cash_amount: openingCash // set opening cash
+      opening_cash_amount: openingCash
     }
     const newShift = await shiftStore.createItem(shiftData)
     activeShift.value = newShift
@@ -308,6 +323,97 @@ const closePOS = () => {
   })
 }
 
+// ----- Cash Register Operations -----
+// Function to add cash to the register
+const addCash = async () => {
+  if (!activeShift.value) {
+    Swal.fire({
+      title: 'Error',
+      text: 'No active shift found.',
+      icon: 'error',
+      confirmButtonColor: '#b51919'
+    })
+    return
+  }
+  const { value: cashAmount } = await Swal.fire({
+    title: 'Add Cash',
+    input: 'number',
+    inputLabel: 'Enter cash amount to add',
+    inputPlaceholder: 'e.g., 50.00',
+    inputAttributes: { min: 0, step: '0.01' },
+    showCancelButton: true,
+    confirmButtonText: 'Add',
+    cancelButtonText: 'Cancel'
+  })
+  if (cashAmount === undefined || cashAmount === '') return
+  try {
+    await cashRegisterStore.createItem({
+      shift_id: activeShift.value.id,
+      cash: Number(cashAmount),
+      type: 'in',
+      remarks: 'Cash added manually'
+    })
+    Swal.fire({
+      title: 'Cash Added',
+      text: `Successfully added ₱${Number(cashAmount).toFixed(2)} to the register.`,
+      icon: 'success',
+      confirmButtonColor: '#3085d6'
+    })
+  } catch (error) {
+    Swal.fire({
+      title: 'Error',
+      text: error?.message || 'Failed to add cash.',
+      icon: 'error',
+      confirmButtonColor: '#b51919'
+    })
+  }
+}
+
+// Function to remove cash from the register
+const removeCash = async () => {
+  if (!activeShift.value) {
+    Swal.fire({
+      title: 'Error',
+      text: 'No active shift found.',
+      icon: 'error',
+      confirmButtonColor: '#b51919'
+    })
+    return
+  }
+  const { value: cashAmount } = await Swal.fire({
+    title: 'Remove Cash',
+    input: 'number',
+    inputLabel: 'Enter cash amount to remove',
+    inputPlaceholder: 'e.g., 50.00',
+    inputAttributes: { min: 0, step: '0.01' },
+    showCancelButton: true,
+    confirmButtonText: 'Remove',
+    cancelButtonText: 'Cancel'
+  })
+  if (cashAmount === undefined || cashAmount === '') return
+  try {
+    await cashRegisterStore.createItem({
+      shift_id: activeShift.value.id,
+      cash: Number(cashAmount),
+      type: 'out',
+      remarks: 'Cash removed manually'
+    })
+    Swal.fire({
+      title: 'Cash Removed',
+      text: `Successfully removed ₱${Number(cashAmount).toFixed(2)} from the register.`,
+      icon: 'success',
+      confirmButtonColor: '#3085d6'
+    })
+  } catch (error) {
+    Swal.fire({
+      title: 'Error',
+      text: error?.message || 'Failed to remove cash.',
+      icon: 'error',
+      confirmButtonColor: '#b51919'
+    })
+  }
+}
+
 // ----- Current DateTime for Start Menu -----
 const currentDateTime = ref(new Date().toLocaleString())
 let timer = null
@@ -332,7 +438,7 @@ onUnmounted(() => {
   if (timer) clearInterval(timer)
 })
 
-// ----- POS State & Data (unchanged) -----
+// ----- POS State & Data -----
 const breadcrumbs = ref([])
 const currentCategory = ref(null)
 const searchQuery = ref('')
@@ -540,7 +646,6 @@ function toggleProductSelection(product) {
     cart.value.push({ ...product, quantity: 1, discount: 0 })
   }
 }
-
 function removeFromCart(index) {
   cart.value.splice(index, 1)
 }
