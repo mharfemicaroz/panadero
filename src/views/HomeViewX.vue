@@ -7,6 +7,7 @@ import { useUserStore } from '@/stores/user'
 import { useBranchStore } from '@/stores/branch'
 import { useWarehouseStore } from '@/stores/warehouse'
 import { useShiftStore } from '@/stores/product/shift'
+import { useCashRegisterStore } from '@/stores/product/cashRegister'
 import LineChart from '@/components/Charts/LineChart.vue'
 import DoughnutChart from '@/components/Charts/DoughnutChart.vue'
 import BaseTable from '@/components/BaseTable.vue'
@@ -148,6 +149,7 @@ const showAdvancedFilters = ref(false)
 const userStore = useUserStore()
 const branchStore = useBranchStore()
 const warehouseStore = useWarehouseStore()
+const cashRegisterStore = useCashRegisterStore()
 
 // ---------------------------------------------------------------------
 // NEW: SHIFT STORE SETUP
@@ -270,6 +272,7 @@ const applyFilters = async () => {
     { ...queryParams, filters: { ...queryParams.filters, status: 'closed' } },
     true
   )
+
   fillChartData()
   fillDoughnutData()
 }
@@ -815,6 +818,17 @@ const shiftReportDetails = computed(() => {
   const discounts = salesForShift.reduce((sum, sale) => sum + Number(sale.discount_total), 0)
   const grossSales = totalTendered
   const netSales = grossSales - discounts
+
+  cashRegisterStore.fetchItems({ filters: { shift_id: shiftId } }, true)
+
+  const paidIn = cashRegisterStore.items.data
+    .filter((register) => register.type === 'in' && register.remarks.includes('manually'))
+    .reduce((sum, register) => sum + Number(register.cash), 0)
+
+  const paidOut = cashRegisterStore.items.data
+    .filter((register) => register.type === 'out' && register.remarks.includes('manually'))
+    .reduce((sum, register) => sum + Number(register.cash), 0)
+
   // Payment breakdown
   const paymentBreakdown = {}
   salesForShift.forEach((sale) => {
@@ -822,6 +836,9 @@ const shiftReportDetails = computed(() => {
     if (!paymentBreakdown[type]) paymentBreakdown[type] = 0
     paymentBreakdown[type] += Number(sale.total_amount)
   })
+
+  console.log()
+
   return {
     totalTransactions,
     totalTendered,
@@ -835,6 +852,8 @@ const shiftReportDetails = computed(() => {
       discounts,
       netSales
     },
+    paidIn,
+    paidOut,
     paymentBreakdown
   }
 })
@@ -1395,7 +1414,7 @@ onMounted(async () => {
             </div>
 
             <!-- Sales Summary -->
-            <div>
+            <div class="border-b pb-4">
               <h3 class="text-lg font-semibold text-gray-800 mb-2">Sales Summary</h3>
               <div
                 v-for="(amount, paymentType) in shiftReportDetails.paymentBreakdown"
@@ -1407,6 +1426,19 @@ onMounted(async () => {
                   {{ amount.toFixed(2) }}
                 </p>
               </div>
+            </div>
+
+            <!-- Register Summary -->
+            <div class="border-b pb-4">
+              <h3 class="text-lg font-semibold text-gray-800 mb-2"></h3>
+              <p class="text-gray-700">
+                <span class="font-semibold">Paid in:</span>
+                {{ shiftReportDetails.paidIn }}
+              </p>
+              <p class="text-gray-700">
+                <span class="font-semibold">Pain out:</span>
+                {{ shiftReportDetails.paidOut }}
+              </p>
             </div>
           </div>
 

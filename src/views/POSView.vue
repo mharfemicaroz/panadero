@@ -25,7 +25,7 @@
 
     <!-- Main POS UI: shown once an active shift is present -->
     <div v-else class="pos-ui flex flex-col">
-      <!-- Header with active shift details and End Transaction button -->
+      <!-- Header with active shift details and control buttons -->
       <header class="bg-white shadow p-4 flex items-center justify-between">
         <div>
           <h2 class="text-xl font-bold">Transaction In Progress</h2>
@@ -52,6 +52,13 @@
             class="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700"
           >
             Remove Cash
+          </button>
+          <!-- New Open Cash Drawer Button -->
+          <button
+            @click="openCashDrawer"
+            class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+          >
+            Open Cash Drawer
           </button>
           <button
             @click="endTransaction"
@@ -237,9 +244,8 @@ const startNewTransaction = async () => {
       confirmButtonText: 'Start Transaction',
       cancelButtonText: 'Cancel'
     })
-    if (openingCash === undefined || openingCash === '') return // abort if cancelled
+    if (openingCash === undefined || openingCash === '') return
 
-    // Create a new shift including the opening_cash_amount
     const shiftData = {
       userId: 1,
       branchId: 1,
@@ -268,7 +274,6 @@ const startNewTransaction = async () => {
 const endTransaction = async () => {
   if (!activeShift.value) return
   try {
-    // Prompt user for the closing cash amount
     const { value: closingCash } = await Swal.fire({
       title: 'Enter Closing Cash Amount',
       input: 'number',
@@ -279,7 +284,7 @@ const endTransaction = async () => {
       confirmButtonText: 'End Transaction',
       cancelButtonText: 'Cancel'
     })
-    if (closingCash === undefined || closingCash === '') return // abort if cancelled
+    if (closingCash === undefined || closingCash === '') return
 
     const salesTotal = await productSaleStore.getTotalForShift(activeShift.value.id)
     await shiftStore.updateItem(activeShift.value.id, {
@@ -318,13 +323,12 @@ const closePOS = () => {
     confirmButtonText: 'Yes, close it!'
   }).then((result) => {
     if (result.isConfirmed) {
-      window.close() // Note: window.close() may not work in all browsers.
+      window.close()
     }
   })
 }
 
 // ----- Cash Register Operations -----
-// Function to add cash to the register
 const addCash = async () => {
   if (!activeShift.value) {
     Swal.fire({
@@ -369,7 +373,6 @@ const addCash = async () => {
   }
 }
 
-// Function to remove cash from the register
 const removeCash = async () => {
   if (!activeShift.value) {
     Swal.fire({
@@ -414,6 +417,22 @@ const removeCash = async () => {
   }
 }
 
+// New: Open Cash Drawer function
+const openCashDrawer = () => {
+  // In many POS systems, sending a print command to the receipt printer
+  // will also trigger the cash drawer to open.
+  Swal.fire({
+    title: 'Cash Drawer Command Sent',
+    text: 'The cash drawer has been opened.',
+    icon: 'success',
+    confirmButtonColor: '#3085d6'
+  }).then(() => {
+    // Simulate the cash drawer opening by invoking the browser's print dialog.
+    // (Replace with actual hardware integration if available.)
+    window.print()
+  })
+}
+
 // ----- Current DateTime for Start Menu -----
 const currentDateTime = ref(new Date().toLocaleString())
 let timer = null
@@ -424,7 +443,6 @@ onMounted(async () => {
   }, 1000)
 
   try {
-    // Check if the current user (assumed userId = 1) already has an active shift.
     await shiftStore.fetchItems({ filters: { userId: 1, status: 'open' } })
     if (shiftStore.items.data.length > 0) {
       activeShift.value = shiftStore.items.data[0]
@@ -672,7 +690,7 @@ async function checkout() {
     user_id: 1,
     branch_id: 1,
     warehouse_id: 1,
-    shift_id: activeShift.value.id, // Associate sale with active shift
+    shift_id: activeShift.value.id,
     customer_id: customerId.value || null,
     customer_name: customerName.value,
     status: 'completed',
