@@ -37,8 +37,8 @@
         </button>
       </div>
 
-      <!-- Letter Filter Row for Product View -->
-      <template v-if="openBy === 'product' && !itemStore.isLoading">
+      <!-- Letter Filter Row for Product View (only if grid is shown and openBy is product) -->
+      <template v-if="openBy === 'product' && showGrid && !itemStore.isLoading">
         <div class="mb-2 text-center overflow-x-auto whitespace-nowrap">
           <button
             v-for="letter in availableLetters"
@@ -56,11 +56,10 @@
       </template>
     </div>
 
-    <!-- Product Grid Content -->
+    <!-- If grid is visible, show the usual grid -->
     <div v-if="showGrid">
       <!-- Category View -->
       <template v-if="openBy === 'category'">
-        <!-- If exactly one product matches -->
         <div v-if="singleGlobalSingleMatch" class="grid grid-cols-2 md:grid-cols-3 gap-2">
           <div
             class="p-4 bg-white rounded shadow cursor-pointer hover:shadow-lg flex flex-col items-center"
@@ -81,7 +80,6 @@
           </div>
         </div>
 
-        <!-- Otherwise show subcategories, products, or top-level categories -->
         <transition-group
           v-else
           name="fade"
@@ -186,11 +184,34 @@
         </div>
       </template>
     </div>
+
+    <!-- When grid is hidden, show the barcode/item entry field -->
+    <div v-else class="relative p-4">
+      <input
+        type="text"
+        v-model="barcodeInput"
+        placeholder="Enter item name or scan barcode..."
+        class="w-full p-2 border rounded"
+      />
+      <div
+        v-if="barcodeSuggestions.length"
+        class="absolute bg-white border rounded mt-1 w-full z-10"
+      >
+        <div
+          v-for="product in barcodeSuggestions"
+          :key="product.id"
+          class="p-2 hover:bg-gray-100 cursor-pointer"
+          @click="handleBarcodeSuggestion(product)"
+        >
+          {{ product.name }}
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, defineProps } from 'vue'
+import { ref, computed, onMounted, defineProps, watch, defineEmits } from 'vue'
 import { useItemStore } from '@/stores/product/item'
 
 const props = defineProps({
@@ -205,31 +226,30 @@ const props = defineProps({
   isInCart: Function
 })
 
-// Toggle to show/hide the entire product grid
+const emit = defineEmits(['selectCategory', 'toggleProduct'])
+
+// Toggle to show/hide the grid
 const showGrid = ref(true)
 function toggleGrid() {
   showGrid.value = !showGrid.value
 }
 
-// New toggle for view mode: 'category' (default) or 'product'
+// For "open by product" mode
 const openBy = ref('category')
 function setOpenBy(mode) {
   openBy.value = mode
-  if (mode === 'product') {
-    // Fetch products from the product store if not already loaded
-    if (!itemStore.isLoaded) {
-      itemStore.fetchItems()
-    }
+
+  if (!itemStore.isLoaded) {
+    itemStore.fetchItems()
   }
 }
 
-// Import the product store for "open by product" mode
 const itemStore = useItemStore()
 const productItems = computed(() =>
   itemStore.items.data.slice().sort((a, b) => a.name.localeCompare(b.name))
 )
 
-// --- Letter Filter for Product Store View ---
+// Existing letter filter and filteredProductItems computed
 const selectedLetter = ref('All')
 const uniqueLetters = computed(() => {
   const letters = new Set()
@@ -251,6 +271,39 @@ const filteredProductItems = computed(() => {
     items = items.filter((product) => product.name.toLowerCase().includes(q))
   }
   return items
+})
+
+// --- New Barcode/Item Entry Functionality ---
+// Local state for barcode or item search when grid is hidden
+const barcodeInput = ref('')
+const barcodeSuggestions = computed(() => {
+  const input = barcodeInput.value.trim().toLowerCase()
+  if (!input) return []
+  return productItems.value.filter((product) => {
+    const nameMatch = product.name.toLowerCase().includes(input)
+    const barcodeMatch = product.barcode ? product.barcode.toLowerCase().includes(input) : false
+    return nameMatch || barcodeMatch
+  })
+})
+
+// Watch the barcodeInput: if exactly one suggestion exists, auto-add it.
+watch(barcodeInput, (newVal) => {
+  if (newVal && barcodeSuggestions.value.length === 1) {
+    // Auto-add the unique match
+    const product = barcodeSuggestions.value[0]
+    emit('toggleProduct', product)
+    barcodeInput.value = ''
+  }
+})
+
+// Also allow manual selection from suggestions
+function handleBarcodeSuggestion(product) {
+  emit('toggleProduct', product)
+  barcodeInput.value = ''
+}
+
+onMounted(async () => {
+  itemStore.fetchItems()
 })
 </script>
 

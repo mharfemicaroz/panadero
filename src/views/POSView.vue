@@ -1,191 +1,202 @@
 <!-- src/views/POSPage.vue -->
 <template>
   <div class="pos-page bg-[#f8f8f8] min-h-screen flex flex-col">
-    <!-- Start Menu: shown if no active shift -->
-    <div v-if="!activeShift" class="start-menu flex flex-col items-center justify-center h-screen">
-      <div class="mb-8 text-center">
-        <h1 class="text-4xl font-bold">Welcome to the POS System</h1>
-        <p class="text-xl mt-2">{{ currentDateTime }}</p>
-      </div>
-      <div class="flex space-x-4">
-        <button
-          @click="startNewTransaction"
-          class="px-6 py-3 bg-green-600 text-white rounded shadow hover:bg-green-700"
-        >
-          Start New Transaction
-        </button>
-        <button
-          @click="closePOS"
-          class="px-6 py-3 bg-red-600 text-white rounded shadow hover:bg-red-700"
-        >
-          Close POS
-        </button>
-      </div>
+    <!-- Loading Overlay -->
+    <div v-if="isLoading" class="loading-screen flex flex-col items-center justify-center h-screen">
+      <h1 class="text-3xl font-bold">Loading...</h1>
     </div>
 
-    <!-- Main POS UI: shown once an active shift is present -->
-    <div v-else class="pos-ui flex flex-col">
-      <!-- Header with active shift details and control buttons -->
-      <header class="bg-white shadow p-4 flex items-center justify-between">
-        <div>
-          <h2 class="text-xl font-bold">Transaction In Progress</h2>
-          <p class="text-sm text-gray-600">
-            Started at: {{ formatDateTime(activeShift.start_time) }}
-          </p>
+    <!-- Main Content -->
+    <div v-else>
+      <!-- Start Menu: shown if no active shift -->
+      <div
+        v-if="!activeShift"
+        class="start-menu flex flex-col items-center justify-center h-screen"
+      >
+        <div class="mb-8 text-center">
+          <h1 class="text-4xl font-bold">Welcome to the POS System</h1>
+          <p class="text-xl mt-2">{{ currentDateTime }}</p>
         </div>
-        <div class="mb-4 flex flex-wrap gap-2">
+        <div class="flex space-x-4">
           <button
-            @click="toggleFullscreen"
-            class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg"
+            @click="startNewTransaction"
+            class="px-6 py-3 bg-green-600 text-white rounded shadow hover:bg-green-700"
           >
-            <BaseIcon v-if="!isFullscreen" :path="mdiFullscreen" size="18" />
-            <BaseIcon v-else :path="mdiFullscreenExit" size="18" />
+            Start New Transaction
           </button>
           <button
-            @click="addCash"
-            class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            @click="closePOS"
+            class="px-6 py-3 bg-red-600 text-white rounded shadow hover:bg-red-700"
           >
-            Add Cash
-          </button>
-          <button
-            @click="removeCash"
-            class="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700"
-          >
-            Remove Cash
-          </button>
-          <!-- New Open Cash Drawer Button -->
-          <button
-            @click="openCashDrawer"
-            class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
-          >
-            Open Cash Drawer
-          </button>
-          <button
-            @click="endTransaction"
-            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded"
-          >
-            <BaseIcon :path="mdiLogout" size="18" />
+            Close POS
           </button>
         </div>
-      </header>
+      </div>
 
-      <!-- Main Content -->
-      <div class="w-full mx-auto py-8 flex-1 flex flex-col md:flex-row p-4 md:p-8">
-        <!-- Left: Categories & Products -->
-        <div class="flex-1">
-          <BreadcrumbNavigation
-            :breadcrumbs="breadcrumbs"
-            @reset="resetCategories"
-            @navigate="navigateToBreadcrumb"
-          />
-
-          <div v-if="currentCategory" class="mb-4">
-            <h2
-              class="text-lg font-bold text-[#b51919] cursor-pointer hover:underline flex items-center gap-2"
-              @click="goBack"
-            >
-              ← Back to Categories
-            </h2>
+      <!-- Main POS UI: shown once an active shift is present -->
+      <div v-else class="pos-ui flex flex-col">
+        <!-- Header with active shift details and control buttons -->
+        <header class="bg-white shadow p-4 flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-bold">Transaction In Progress</h2>
+            <p class="text-sm text-gray-600">
+              Started at: {{ formatDateTime(activeShift.start_time) }}
+            </p>
           </div>
+          <div class="mb-4 flex flex-wrap gap-2">
+            <button
+              @click="toggleFullscreen"
+              class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg"
+            >
+              <BaseIcon v-if="!isFullscreen" :path="mdiFullscreen" size="18" />
+              <BaseIcon v-else :path="mdiFullscreenExit" size="18" />
+            </button>
+            <button
+              @click="addCash"
+              class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            >
+              Add Cash
+            </button>
+            <button
+              @click="removeCash"
+              class="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700"
+            >
+              Remove Cash
+            </button>
+            <!-- New Open Cash Drawer Button -->
+            <button
+              @click="openCashDrawer"
+              class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+            >
+              Open Cash Drawer
+            </button>
+            <button
+              @click="endTransaction"
+              class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded"
+            >
+              <BaseIcon :path="mdiLogout" size="18" />
+            </button>
+          </div>
+        </header>
 
-          <h1 class="text-2xl font-bold mb-4">
-            {{ currentCategory ? currentCategory : 'All Categories' }}
-          </h1>
+        <!-- Main Content -->
+        <div class="w-full mx-auto py-8 flex-1 flex flex-col md:flex-row p-4 md:p-8">
+          <!-- Left: Categories & Products -->
+          <div class="flex-1">
+            <BreadcrumbNavigation
+              :breadcrumbs="breadcrumbs"
+              @reset="resetCategories"
+              @navigate="navigateToBreadcrumb"
+            />
 
-          <div class="mb-6">
-            <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="Search categories or products..."
-              class="w-full p-2 border rounded"
+            <div v-if="currentCategory" class="mb-4">
+              <h2
+                class="text-lg font-bold text-[#b51919] cursor-pointer hover:underline flex items-center gap-2"
+                @click="goBack"
+              >
+                ← Back to Categories
+              </h2>
+            </div>
+
+            <h1 class="text-2xl font-bold mb-4">
+              {{ currentCategory ? currentCategory : 'All Categories' }}
+            </h1>
+
+            <div class="mb-6">
+              <input
+                v-model="searchQuery"
+                type="text"
+                placeholder="Search categories or products..."
+                class="w-full p-2 border rounded"
+              />
+            </div>
+
+            <!-- Product Grid Component -->
+            <ProductGrid
+              :searchQuery="searchQuery"
+              :categories="categories"
+              :currentCategory="currentCategory"
+              :breadcrumbs="breadcrumbs"
+              :singleGlobalSingleMatch="singleGlobalSingleMatch"
+              :filteredCategories="filteredCategories"
+              :filteredProducts="filteredProducts"
+              :visibleSubcategories="visibleSubcategories"
+              :isInCart="isInCart"
+              @selectCategory="selectCategory"
+              @toggleProduct="toggleProductSelection"
             />
           </div>
 
-          <!-- Product Grid Component -->
-          <ProductGrid
-            :searchQuery="searchQuery"
-            :categories="categories"
-            :currentCategory="currentCategory"
-            :breadcrumbs="breadcrumbs"
-            :singleGlobalSingleMatch="singleGlobalSingleMatch"
-            :filteredCategories="filteredCategories"
-            :filteredProducts="filteredProducts"
-            :visibleSubcategories="visibleSubcategories"
-            :isInCart="isInCart"
-            @selectCategory="selectCategory"
-            @toggleProduct="toggleProductSelection"
+          <!-- Right: Cart Sidebar -->
+          <CartSidebar
+            :cart="cart"
+            v-model:customerName="customerName"
+            v-model:discountAllItemsPercent="discountAllItemsPercent"
+            v-model:discountEntireSale="discountEntireSale"
+            :totalCartAmount="totalCartAmount"
+            :paymentTypes="paymentTypes"
+            v-model:selectedPaymentType="selectedPaymentType"
+            :amountDue="amountDue"
+            v-model:checkNumber="checkNumber"
+            v-model:bankName="bankName"
+            v-model:walletReference="walletReference"
+            v-model:cardAuthCode="cardAuthCode"
+            v-model:bankReference="bankReference"
+            :subTotalBeforeGlobalDiscount="subTotalBeforeGlobalDiscount"
+            :filteredCustomers="filteredCustomers"
+            @filterCustomers="filterCustomers"
+            @selectCustomer="selectCustomer"
+            @openCustomerModal="openCustomerModal"
+            @openItemPriceModal="openItemPriceModal"
+            @openItemDiscountModal="openItemDiscountModal"
+            @removeFromCart="removeFromCart"
+            @checkout="checkout"
+            @suspendSale="suspendSale"
+            @cancelSale="cancelSale"
+            @openSalesModal="openSalesModal"
           />
         </div>
 
-        <!-- Right: Cart Sidebar -->
-        <CartSidebar
-          :cart="cart"
-          v-model:customerName="customerName"
-          v-model:discountAllItemsPercent="discountAllItemsPercent"
-          v-model:discountEntireSale="discountEntireSale"
-          :totalCartAmount="totalCartAmount"
-          :paymentTypes="paymentTypes"
-          v-model:selectedPaymentType="selectedPaymentType"
-          :amountDue="amountDue"
-          v-model:checkNumber="checkNumber"
-          v-model:bankName="bankName"
-          v-model:walletReference="walletReference"
-          v-model:cardAuthCode="cardAuthCode"
-          v-model:bankReference="bankReference"
-          :subTotalBeforeGlobalDiscount="subTotalBeforeGlobalDiscount"
-          :filteredCustomers="filteredCustomers"
-          @filterCustomers="filterCustomers"
-          @selectCustomer="selectCustomer"
-          @openCustomerModal="openCustomerModal"
-          @openItemPriceModal="openItemPriceModal"
-          @openItemDiscountModal="openItemDiscountModal"
-          @removeFromCart="removeFromCart"
-          @checkout="checkout"
-          @suspendSale="suspendSale"
-          @cancelSale="cancelSale"
-          @openSalesModal="openSalesModal"
+        <!-- Modals -->
+        <CustomerModal
+          v-if="isCustomerModalOpen"
+          @saveCustomer="saveCustomer"
+          @close="closeCustomerModal"
+        />
+
+        <EditItemModal
+          v-if="isItemDiscountModalOpen"
+          type="discount"
+          :value="itemDiscountModalValue"
+          @save="saveItemDiscount"
+          @close="closeItemDiscountModal"
+        />
+
+        <EditItemModal
+          v-if="isItemPriceModalOpen"
+          type="price"
+          :value="itemPriceModalValue"
+          @save="saveItemPrice"
+          @close="closeItemPriceModal"
+        />
+
+        <SalesModal
+          v-if="isSalesModalOpen"
+          @close="closeSalesModal"
+          @unsuspendSale="unsuspendSale"
+          @voidSale="voidSale"
+          @printSale="printExistingSale"
+          @edit="handleEditSale"
+        />
+
+        <ReceiptModal
+          v-if="isReceiptModalOpen"
+          :transactionId="transactionId"
+          :receiptData="receiptData"
+          :printOptions="printOptions"
+          @close="closeReceiptModal"
         />
       </div>
-
-      <!-- Modals -->
-      <CustomerModal
-        v-if="isCustomerModalOpen"
-        @saveCustomer="saveCustomer"
-        @close="closeCustomerModal"
-      />
-
-      <EditItemModal
-        v-if="isItemDiscountModalOpen"
-        type="discount"
-        :value="itemDiscountModalValue"
-        @save="saveItemDiscount"
-        @close="closeItemDiscountModal"
-      />
-
-      <EditItemModal
-        v-if="isItemPriceModalOpen"
-        type="price"
-        :value="itemPriceModalValue"
-        @save="saveItemPrice"
-        @close="closeItemPriceModal"
-      />
-
-      <SalesModal
-        v-if="isSalesModalOpen"
-        @close="closeSalesModal"
-        @unsuspendSale="unsuspendSale"
-        @voidSale="voidSale"
-        @printSale="printExistingSale"
-        @edit="handleEditSale"
-      />
-
-      <ReceiptModal
-        v-if="isReceiptModalOpen"
-        :transactionId="transactionId"
-        :receiptData="receiptData"
-        :printOptions="printOptions"
-        @close="closeReceiptModal"
-      />
     </div>
   </div>
 </template>
@@ -228,12 +239,15 @@ const cashRegisterStore = useCashRegisterStore()
 productCategoryStore.showAllItems()
 customerStore.fetchItems()
 
+// ----- Loading State -----
+const isLoading = ref(false)
+
 // ----- Shift Management -----
 const activeShift = ref(null)
 
 const startNewTransaction = async () => {
+  isLoading.value = true
   try {
-    // Prompt user for the opening cash amount
     const { value: openingCash } = await Swal.fire({
       title: 'Enter Opening Cash Amount',
       input: 'number',
@@ -244,7 +258,10 @@ const startNewTransaction = async () => {
       confirmButtonText: 'Start Transaction',
       cancelButtonText: 'Cancel'
     })
-    if (openingCash === undefined || openingCash === '') return
+    if (openingCash === undefined || openingCash === '') {
+      isLoading.value = false
+      return
+    }
 
     const shiftData = {
       userId: 1,
@@ -268,11 +285,14 @@ const startNewTransaction = async () => {
       icon: 'error',
       confirmButtonColor: '#b51919'
     })
+  } finally {
+    isLoading.value = false
   }
 }
 
 const endTransaction = async () => {
   if (!activeShift.value) return
+  isLoading.value = true
   try {
     const { value: closingCash } = await Swal.fire({
       title: 'Enter Closing Cash Amount',
@@ -284,7 +304,10 @@ const endTransaction = async () => {
       confirmButtonText: 'End Transaction',
       cancelButtonText: 'Cancel'
     })
-    if (closingCash === undefined || closingCash === '') return
+    if (closingCash === undefined || closingCash === '') {
+      isLoading.value = false
+      return
+    }
 
     const salesTotal = await productSaleStore.getTotalForShift(activeShift.value.id)
     await shiftStore.updateItem(activeShift.value.id, {
@@ -309,6 +332,8 @@ const endTransaction = async () => {
       icon: 'error',
       confirmButtonColor: '#b51919'
     })
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -419,16 +444,12 @@ const removeCash = async () => {
 
 // New: Open Cash Drawer function
 const openCashDrawer = () => {
-  // In many POS systems, sending a print command to the receipt printer
-  // will also trigger the cash drawer to open.
   Swal.fire({
     title: 'Cash Drawer Command Sent',
     text: 'The cash drawer has been opened.',
     icon: 'success',
     confirmButtonColor: '#3085d6'
   }).then(() => {
-    // Simulate the cash drawer opening by invoking the browser's print dialog.
-    // (Replace with actual hardware integration if available.)
     window.print()
   })
 }
@@ -881,6 +902,9 @@ function formatDateTime(date) {
   align-self: flex-start;
 }
 .start-menu {
+  text-align: center;
+}
+.loading-screen {
   text-align: center;
 }
 @media print {
