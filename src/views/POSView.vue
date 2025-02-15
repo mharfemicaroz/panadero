@@ -1,12 +1,15 @@
 <!-- src/views/POSPage.vue -->
 <template>
   <div class="pos-page bg-[#f8f8f8] min-h-screen flex flex-col">
-    <!-- Loading Overlay -->
-    <div v-if="isLoading" class="loading-screen flex flex-col items-center justify-center h-screen">
+    <!-- Loading Overlay for Initial Load or Async Operations -->
+    <div
+      v-if="isInitialLoad || isLoading"
+      class="loading-screen flex flex-col items-center justify-center h-screen"
+    >
       <h1 class="text-3xl font-bold">Loading...</h1>
     </div>
 
-    <!-- Main Content -->
+    <!-- Main Content: Shown only when not loading -->
     <div v-else>
       <!-- Start Menu: shown if no active shift -->
       <div
@@ -241,6 +244,8 @@ customerStore.fetchItems()
 
 // ----- Loading State -----
 const isLoading = ref(false)
+// New: Track initial page load
+const isInitialLoad = ref(true)
 
 // ----- Shift Management -----
 const activeShift = ref(null)
@@ -470,6 +475,9 @@ onMounted(async () => {
     }
   } catch (err) {
     console.error('Error checking existing shift:', err)
+  } finally {
+    // End initial loading once shift data is fetched
+    isInitialLoad.value = false
   }
 })
 
