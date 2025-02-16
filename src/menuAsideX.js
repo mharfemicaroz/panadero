@@ -28,60 +28,60 @@ export default [
     label: 'POS',
     isPOS: true
   },
-  {
-    label: 'Reports',
-    icon: mdiTable,
-    menu: [
-      {
-        label: 'Sales',
-        to: '/sales'
-      },
-      {
-        label: 'Shifts',
-        to: '/shifts'
-      },
-      {
-        label: 'Sales Inventory',
-        to: '/sales-inventory'
-      },
-      {
-        label: 'Breakdown Payment Reports',
-        to: '/breakdown-payment-reports'
-      },
-      {
-        label: 'Order Option Fee Reports',
-        to: '/order-option-fee-reports'
-      },
-      {
-        label: 'Reference Number Report',
-        to: '/reference-number-report'
-      },
-      {
-        label: 'Expiration Date Reports',
-        to: '/expiration-date-reports'
-      },
-      {
-        label: 'Discount Report',
-        to: '/discount-report'
-      },
-      {
-        label: 'Pull Out Report',
-        to: '/pull-out-report'
-      },
-      {
-        label: 'Refund',
-        to: '/refund'
-      }
-      // {
-      //   label: 'Taxes for Philippines',
-      //   to: '/taxes-for-philippines'
-      // },
-      // {
-      //   label: 'Royalty Statement',
-      //   to: '/royalty-statement'
-      // }
-    ]
-  },
+  // {
+  //   label: 'Reports',
+  //   icon: mdiTable,
+  //   menu: [
+  //     {
+  //       label: 'Sales',
+  //       to: '/sales'
+  //     },
+  //     {
+  //       label: 'Shifts',
+  //       to: '/shifts'
+  //     },
+  //     {
+  //       label: 'Sales Inventory',
+  //       to: '/sales-inventory'
+  //     },
+  //     {
+  //       label: 'Breakdown Payment Reports',
+  //       to: '/breakdown-payment-reports'
+  //     },
+  //     {
+  //       label: 'Order Option Fee Reports',
+  //       to: '/order-option-fee-reports'
+  //     },
+  //     {
+  //       label: 'Reference Number Report',
+  //       to: '/reference-number-report'
+  //     },
+  //     {
+  //       label: 'Expiration Date Reports',
+  //       to: '/expiration-date-reports'
+  //     },
+  //     {
+  //       label: 'Discount Report',
+  //       to: '/discount-report'
+  //     },
+  //     {
+  //       label: 'Pull Out Report',
+  //       to: '/pull-out-report'
+  //     },
+  //     {
+  //       label: 'Refund',
+  //       to: '/refund'
+  //     }
+  //     // {
+  //     //   label: 'Taxes for Philippines',
+  //     //   to: '/taxes-for-philippines'
+  //     // },
+  //     // {
+  //     //   label: 'Royalty Statement',
+  //     //   to: '/royalty-statement'
+  //     // }
+  //   ]
+  // },
   {
     to: '/user-management',
     label: 'User Management',
@@ -89,7 +89,7 @@ export default [
   },
   {
     to: '/user',
-    label: 'User',
+    label: 'Cashiers',
     icon: mdiAccountCard
   },
   {

@@ -3,15 +3,9 @@ import { useAuthStore } from '../stores/auth'
 
 // 🔹 Define API and Frontend origins
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-const ALLOWED_ORIGINS = new Set(import.meta.env.VITE_ALLOWED_ORIGINS?.split(','))
-const FRONTEND_ORIGIN = ALLOWED_ORIGINS.has(window.location.origin)
-  ? window.location.origin
-  : import.meta.env.VITE_FALLBACK_ORIGIN || ''
-
 // 🔹 Create Axios instance
 const axiosInstance = axios.create({
-  baseURL: API_BASE_URL,
-  headers: { Origin: FRONTEND_ORIGIN }
+  baseURL: API_BASE_URL
 })
 
 // 🔹 Request Interceptor: Attach Bearer Token

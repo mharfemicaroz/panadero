@@ -52,8 +52,7 @@ const customerColumns = [
   { key: 'first_name', label: 'First Name', sortable: true, filterable: true },
   { key: 'last_name', label: 'Last Name', sortable: true, filterable: true },
   { key: 'email', label: 'Email', sortable: true, filterable: true },
-  { key: 'phone', label: 'Phone', sortable: true, filterable: true },
-  { key: 'address', label: 'Actions', sortable: false, filterable: false }
+  { key: 'phone', label: 'Phone', sortable: true, filterable: true }
 ]
 
 // --- TABLE EVENTS ---
