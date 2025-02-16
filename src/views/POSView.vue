@@ -45,6 +45,9 @@
             <p class="text-sm text-gray-600">
               Started at: {{ formatDateTime(activeShift.start_time) }}
             </p>
+            <p class="text-sm text-gray-600">
+              User: {{ authStore.user.first_name }} {{ authStore.user.last_name }}
+            </p>
           </div>
           <div class="mb-4 flex flex-wrap gap-2">
             <button
@@ -231,12 +234,14 @@ import { useCustomerStore } from '@/stores/customer'
 import { useProductSaleStore } from '@/stores/product/sale'
 import { useShiftStore } from '@/stores/product/shift'
 import { useCashRegisterStore } from '@/stores/product/cashRegister'
+import { useAuthStore } from '@/stores/auth'
 
 const productCategoryStore = useProductCategoryStore()
 const customerStore = useCustomerStore()
 const productSaleStore = useProductSaleStore()
 const shiftStore = useShiftStore()
 const cashRegisterStore = useCashRegisterStore()
+const authStore = useAuthStore()
 
 // Fetch initial data for categories and customers
 productCategoryStore.showAllItems()

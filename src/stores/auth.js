@@ -4,7 +4,7 @@ import axios from '@/plugins/axiosConfig'
 import router from '@/router'
 
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref(null)
+  const user = ref(JSON.parse(localStorage.getItem('userData')) || null)
   const token = ref(localStorage.getItem('authToken') || null)
   const refreshToken = ref(localStorage.getItem('refreshToken') || null)
   const requires2FA = ref(false)
@@ -34,8 +34,11 @@ export const useAuthStore = defineStore('auth', () => {
         id: response.data.userdata.id,
         email: response.data.userdata.email,
         role: response.data.userdata.role,
-        twoFAEnabled: response.data.userdata.twoFAEnabled
+        twoFAEnabled: response.data.userdata.twoFAEnabled,
+        first_name: response.data.userdata.first_name,
+        last_name: response.data.userdata.last_name
       }
+      localStorage.setItem('userData', JSON.stringify(user.value))
       router.push('/dashboard')
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Login failed'
@@ -63,8 +66,12 @@ export const useAuthStore = defineStore('auth', () => {
         id: response.data.userdata.id,
         email: response.data.userdata.email,
         role: response.data.userdata.role,
-        twoFAEnabled: response.data.userdata.twoFAEnabled
+        twoFAEnabled: response.data.userdata.twoFAEnabled,
+        first_name: response.data.userdata.first_name,
+        last_name: response.data.userdata.last_name
       }
+
+      localStorage.setItem('userData', JSON.stringify(user.value))
 
       requires2FA.value = false
       tempToken.value = null
@@ -112,6 +119,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     localStorage.removeItem('authToken')
     localStorage.removeItem('refreshToken')
+    localStorage.removeItem('userData')
     localStorage.setItem('logout', Date.now()) // Notify other tabs
 
     router.push({ name: 'login' })
