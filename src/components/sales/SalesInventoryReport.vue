@@ -12,61 +12,63 @@ const inventoryPageSize = ref(10)
 
 const salesInventoryGroups = computed(() => {
   const groups = {}
-  props.saleStore.items.data.forEach((sale) => {
-    const saleDate = sale.sale_date
-      ? sale.sale_date.substring(0, 10)
-      : sale.created_at.substring(0, 10)
-    if (sale.saleItems && Array.isArray(sale.saleItems)) {
-      sale.saleItems.forEach((saleItem) => {
-        const itemName = saleItem.item ? saleItem.item.name : 'Unknown'
-        const warehouse = sale.warehouse
-          ? sale.warehouse.name
-          : saleItem.item && saleItem.item.warehouse
-          ? saleItem.item.warehouse.name
-          : 'Unknown'
-        const category =
-          saleItem.item && saleItem.item.category ? saleItem.item.category.name : 'Unknown'
-        const subcategory =
-          saleItem.item && saleItem.item.subcategory ? saleItem.item.subcategory.name : ''
-        const groupKey =
-          saleDate + '|' + itemName + '|' + warehouse + '|' + category + '|' + subcategory
-        if (!groups[groupKey]) {
-          groups[groupKey] = {
-            date: saleDate,
-            item_name: itemName,
-            warehouse: warehouse,
-            category: category,
-            subcategory: subcategory,
-            total_qty_sold: 0,
-            total_amount_sold: 0,
-            total_amount_cost: 0,
-            total_discount: 0,
-            total_qty_current: 0,
-            total_amount_current: 0
+  props.saleStore.items.data
+    .filter((sale) => sale.status.toLowerCase().includes('completed'))
+    .forEach((sale) => {
+      const saleDate = sale.sale_date
+        ? sale.sale_date.substring(0, 10)
+        : sale.created_at.substring(0, 10)
+      if (sale.saleItems && Array.isArray(sale.saleItems)) {
+        sale.saleItems.forEach((saleItem) => {
+          const itemName = saleItem.item ? saleItem.item.name : 'Unknown'
+          const warehouse = sale.warehouse
+            ? sale.warehouse.name
+            : saleItem.item && saleItem.item.warehouse
+            ? saleItem.item.warehouse.name
+            : 'Unknown'
+          const category =
+            saleItem.item && saleItem.item.category ? saleItem.item.category.name : 'Unknown'
+          const subcategory =
+            saleItem.item && saleItem.item.subcategory ? saleItem.item.subcategory.name : ''
+          const groupKey =
+            saleDate + '|' + itemName + '|' + warehouse + '|' + category + '|' + subcategory
+          if (!groups[groupKey]) {
+            groups[groupKey] = {
+              date: saleDate,
+              item_name: itemName,
+              warehouse: warehouse,
+              category: category,
+              subcategory: subcategory,
+              total_qty_sold: 0,
+              total_amount_sold: 0,
+              total_amount_cost: 0,
+              total_discount: 0,
+              total_qty_current: 0,
+              total_amount_current: 0
+            }
           }
-        }
-        groups[groupKey].total_qty_sold += Number(saleItem.quantity) || 0
-        groups[groupKey].total_amount_sold += Number(saleItem.total) || 0
-        groups[groupKey].total_amount_cost +=
-          Number(saleItem.quantity) *
-            (saleItem.item && saleItem.item.cost ? Number(saleItem.item.cost) : 0) || 0
-        groups[groupKey].total_discount += Number(saleItem.discount) || 0
-        let currentQty = 0
-        if (
-          saleItem.item &&
-          saleItem.item.inventories &&
-          Array.isArray(saleItem.item.inventories)
-        ) {
-          saleItem.item.inventories.forEach((inv) => {
-            currentQty += Number(inv.current_quantity) || 0
-          })
-        }
-        groups[groupKey].total_qty_current += currentQty
-        groups[groupKey].total_amount_current +=
-          currentQty * (saleItem.item && saleItem.item.cost ? Number(saleItem.item.cost) : 0)
-      })
-    }
-  })
+          groups[groupKey].total_qty_sold += Number(saleItem.quantity) || 0
+          groups[groupKey].total_amount_sold += Number(saleItem.total) || 0
+          groups[groupKey].total_amount_cost +=
+            Number(saleItem.quantity) *
+              (saleItem.item && saleItem.item.cost ? Number(saleItem.item.cost) : 0) || 0
+          groups[groupKey].total_discount += Number(saleItem.discount) || 0
+          let currentQty = 0
+          if (
+            saleItem.item &&
+            saleItem.item.inventories &&
+            Array.isArray(saleItem.item.inventories)
+          ) {
+            saleItem.item.inventories.forEach((inv) => {
+              currentQty += Number(inv.current_quantity) || 0
+            })
+          }
+          groups[groupKey].total_qty_current += currentQty
+          groups[groupKey].total_amount_current +=
+            currentQty * (saleItem.item && saleItem.item.cost ? Number(saleItem.item.cost) : 0)
+        })
+      }
+    })
   const result = []
   for (const key in groups) {
     result.push(groups[key])

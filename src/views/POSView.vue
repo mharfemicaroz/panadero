@@ -19,6 +19,9 @@
         <div class="mb-8 text-center">
           <h1 class="text-4xl font-bold">Welcome to the POS System</h1>
           <p class="text-xl mt-2">{{ currentDateTime }}</p>
+          <p class="text-xl mt-2 text-blue-500">
+            {{ authStore.user.first_name }} {{ authStore.user.last_name }}
+          </p>
         </div>
         <div class="flex space-x-4">
           <button
@@ -79,6 +82,28 @@
             >
               Open Cash Drawer
             </button>
+
+            <button
+              @click="openSalesModal"
+              class="py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold"
+            >
+              Sales
+            </button>
+            <button
+              v-if="cart.length > 0"
+              @click="suspendSale"
+              class="py-2 px-4 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 font-bold"
+            >
+              Suspend
+            </button>
+            <button
+              v-if="cart.length > 0"
+              @click="cancelSale"
+              class="py-2 px-4 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-bold"
+            >
+              Cancel
+            </button>
+
             <!-- End Transaction Button -->
             <button
               @click="endTransaction"
@@ -540,8 +565,14 @@ const cardAuthCode = ref('')
 const bankReference = ref('')
 
 // Receipt Modal Data
+const isItemDiscountModalOpen = ref(false)
+const isItemPriceModalOpen = ref(false)
 const isReceiptModalOpen = ref(false)
 const transactionId = ref('')
+const selectedCartItemIndex = ref(-1)
+const itemDiscountModalValue = ref(0)
+const itemPriceModalValue = ref(0)
+
 const receiptData = reactive({
   id: '',
   date: '',
@@ -691,6 +722,14 @@ document.addEventListener('fullscreenchange', () => {
 })
 
 // ----- Cart Operations -----
+function cancelSale() {
+  clearPos()
+}
+
+function suspendSale() {
+  checkout('suspend')
+}
+
 function isInCart(product) {
   return cart.value.some((i) => i.id === product.id)
 }
@@ -707,7 +746,8 @@ function removeFromCart(index) {
 }
 
 // ----- Checkout (with Loader) -----
-async function checkout() {
+async function checkout(action = 'complete') {
+  // Only validate payment type if completing the sale
   if (!selectedPaymentType.value) {
     Swal.fire({
       title: 'Error',
@@ -717,12 +757,14 @@ async function checkout() {
     })
     return
   }
+
   const loaderInstance = $loading.show({
     isFullPage: true,
     canCancel: false,
     color: '#3b82f6',
     opacity: 0.8
   })
+
   const saleId = Date.now().toString()
   const newSale = {
     user_id: 1,
@@ -731,17 +773,18 @@ async function checkout() {
     shift_id: activeShift.value.id,
     customer_id: customerId.value || null,
     customer_name: customerName.value,
-    status: 'completed',
+    status: action === 'complete' ? 'completed' : 'suspended',
     sale_date: new Date().toISOString(),
     total_amount: totalCartAmount.value,
     discount_total: discountEntireSale.value || 0.0,
-    remarks: 'Sale transaction',
+    remarks: action === 'complete' ? 'Sale transaction' : 'Suspended sale',
+    // Only include payment details if completing the sale
     payment_type: selectedPaymentType.value,
-    checkNumber: checkNumber.value || null,
-    bankName: bankName.value || null,
-    walletReference: walletReference.value || null,
-    cardAuthCode: cardAuthCode.value || null,
-    bankReference: bankReference.value || null,
+    checkNumber: action === 'complete' ? checkNumber.value || null : null,
+    bankName: action === 'complete' ? bankName.value || null : null,
+    walletReference: action === 'complete' ? walletReference.value || null : null,
+    cardAuthCode: action === 'complete' ? cardAuthCode.value || null : null,
+    bankReference: action === 'complete' ? bankReference.value || null : null,
     items: cart.value.map((item) => ({
       item_id: item.id,
       price: item.price,
@@ -750,24 +793,40 @@ async function checkout() {
       total: (item.price - item.discount) * item.quantity
     }))
   }
+
   try {
     const result = await productSaleStore.createItem(newSale)
     if (!result || result.error) throw new Error(result?.error || 'Unknown error occurred')
     loaderInstance.hide()
-    Swal.fire({
-      title: 'Checkout successful!',
-      html: `
+
+    const successTitle = action === 'complete' ? 'Checkout successful!' : 'Sale suspended!'
+    const successMessage =
+      action === 'complete'
+        ? `
         <div style="text-align: left">
           <p><strong>Payment:</strong> ${selectedPaymentType.value}</p>
           <p><strong>Due:</strong> ₱${amountDue.value.toFixed(2)}</p>
           <p><strong>Cart:</strong> ₱${totalCartAmount.value.toFixed(2)}</p>
         </div>
-      `,
+      `
+        : `
+        <div style="text-align: left">
+          <p><strong>Cart Total:</strong> ₱${totalCartAmount.value.toFixed(2)}</p>
+          <p>This sale has been suspended and can be resumed later.</p>
+        </div>
+      `
+
+    Swal.fire({
+      title: successTitle,
+      html: successMessage,
       icon: 'success',
       confirmButtonColor: '#b51919'
     }).then(() => {
-      transactionId.value = saleId
-      openReceiptModal(result)
+      if (action === 'complete') {
+        transactionId.value = saleId
+        openReceiptModal(result)
+      }
+      clearPos()
     })
   } catch (error) {
     loaderInstance.hide()
@@ -782,6 +841,42 @@ async function checkout() {
 }
 
 // ----- Receipt Modal Functions -----
+function openItemDiscountModal(index) {
+  selectedCartItemIndex.value = index
+  itemDiscountModalValue.value = cart.value[index].discount || 0
+  isItemDiscountModalOpen.value = true
+}
+
+function closeItemDiscountModal() {
+  isItemDiscountModalOpen.value = false
+  selectedCartItemIndex.value = -1
+}
+
+function saveItemDiscount(newDiscount) {
+  if (selectedCartItemIndex.value >= 0) {
+    cart.value[selectedCartItemIndex.value].discount = newDiscount
+  }
+  closeItemDiscountModal()
+}
+
+function openItemPriceModal(index) {
+  selectedCartItemIndex.value = index
+  itemPriceModalValue.value = cart.value[index].price || 0
+  isItemPriceModalOpen.value = true
+}
+
+function closeItemPriceModal() {
+  isItemPriceModalOpen.value = false
+  selectedCartItemIndex.value = -1
+}
+
+function saveItemPrice(newPrice) {
+  if (selectedCartItemIndex.value >= 0) {
+    cart.value[selectedCartItemIndex.value].price = newPrice
+  }
+  closeItemPriceModal()
+}
+
 async function openReceiptModal(sale) {
   receiptData.id = sale.id
   receiptData.date = sale.sale_date
@@ -862,17 +957,26 @@ function closeSalesModal() {
 }
 function unsuspendSale(sale) {
   clearPos()
-  cart.value = sale.items.map((item) => ({ ...item }))
+  console.log(sale.saleItems)
+  cart.value = sale.saleItems.map((item) => ({
+    ...item,
+    id: item.item_id,
+    name: item.item.name,
+    price: Number(item.price) || 0,
+    discount: Number(item.discount) || 0
+  }))
+
   customerName.value = sale.customerName
   discountAllItemsPercent.value = sale.discountAllItemsPercent
   discountEntireSale.value = sale.discountEntireSale
-  selectedPaymentType.value = sale.paymentType
+  selectedPaymentType.value = sale.payment_type
   checkNumber.value = sale.checkNumber
   bankName.value = sale.bankName
   walletReference.value = sale.walletReference
   cardAuthCode.value = sale.cardAuthCode
   bankReference.value = sale.bankReference
   sale.status = 'Re-Opened'
+  productSaleStore.updateItem(sale.id, { status: sale.status })
   Swal.fire({
     title: 'Sale Unsuspended',
     text: `Loaded sale #${sale.id} back into the cart.`,
@@ -882,7 +986,8 @@ function unsuspendSale(sale) {
   closeSalesModal()
 }
 function voidSale(sale) {
-  sale.status = 'Voided'
+  sale.status = 'voided'
+  productSaleStore.updateItem(sale.id, { status: sale.status })
   Swal.fire({
     title: 'Sale Voided',
     text: `Sale #${sale.id} is now voided.`,

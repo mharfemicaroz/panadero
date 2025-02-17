@@ -51,7 +51,9 @@ const shiftSummaryGroups = computed(() => {
       const branchName = branch ? branch.name : 'Unknown'
 
       // Filter sales from saleStore that have the same shift id
-      const salesForShift = props.saleStore.items.data.filter((sale) => sale.shift_id === shift.id)
+      const salesForShift = props.saleStore.items.data.filter(
+        (sale) => sale.status.toLowerCase().includes('completed') && sale.shift_id === shift.id
+      )
 
       // Expected Cash: Sum (price × quantity) from each saleItem across all sales for this shift
       const expectedCash =

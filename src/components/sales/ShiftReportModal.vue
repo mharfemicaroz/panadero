@@ -31,7 +31,7 @@ const shiftReportDetails = computed(() => {
   if (!props.shift) return null
 
   const salesForShift = props.saleStore.items.data.filter(
-    (sale) => sale.shift_id === props.shift.id
+    (sale) => sale.status.toLowerCase().includes('completed') && sale.shift_id === props.shift.id
   )
   const totalTransactions = salesForShift.length
   const totalTendered = salesForShift.reduce((sum, sale) => sum + Number(sale.total_amount), 0)

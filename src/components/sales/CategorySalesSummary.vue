@@ -12,31 +12,33 @@ const categorySummaryPageSize = ref(10)
 
 const categorySummaryGroups = computed(() => {
   const groups = {}
-  props.saleStore.items.data.forEach((sale) => {
-    const createdAt = sale.created_at.substring(0, 10)
-    if (sale.saleItems && Array.isArray(sale.saleItems)) {
-      sale.saleItems.forEach((saleItem) => {
-        const categoryName =
-          saleItem.item && saleItem.item.category ? saleItem.item.category.name : 'Unknown'
-        const subCategoryName =
-          saleItem.item && saleItem.item.subcategory ? saleItem.item.subcategory.name : ''
-        const key = createdAt + '|' + categoryName + '|' + subCategoryName
-        if (!groups[key]) {
-          groups[key] = {
-            createdAt,
-            category: categoryName,
-            subcategory: subCategoryName,
-            sales_quantity: 0,
-            gross_sales: 0,
-            item_discounts: 0
+  props.saleStore.items.data
+    .filter((sale) => sale.status.toLowerCase().includes('completed'))
+    .forEach((sale) => {
+      const createdAt = sale.created_at.substring(0, 10)
+      if (sale.saleItems && Array.isArray(sale.saleItems)) {
+        sale.saleItems.forEach((saleItem) => {
+          const categoryName =
+            saleItem.item && saleItem.item.category ? saleItem.item.category.name : 'Unknown'
+          const subCategoryName =
+            saleItem.item && saleItem.item.subcategory ? saleItem.item.subcategory.name : ''
+          const key = createdAt + '|' + categoryName + '|' + subCategoryName
+          if (!groups[key]) {
+            groups[key] = {
+              createdAt,
+              category: categoryName,
+              subcategory: subCategoryName,
+              sales_quantity: 0,
+              gross_sales: 0,
+              item_discounts: 0
+            }
           }
-        }
-        groups[key].sales_quantity += Number(saleItem.quantity) || 0
-        groups[key].gross_sales += Number(saleItem.total) || 0
-        groups[key].item_discounts += Number(saleItem.discount) || 0
-      })
-    }
-  })
+          groups[key].sales_quantity += Number(saleItem.quantity) || 0
+          groups[key].gross_sales += Number(saleItem.total) || 0
+          groups[key].item_discounts += Number(saleItem.discount) || 0
+        })
+      }
+    })
   const summaryArray = []
   for (const key in groups) {
     const group = groups[key]

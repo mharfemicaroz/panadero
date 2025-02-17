@@ -13,27 +13,29 @@ const summaryPageSize = ref(10)
 
 const summaryGroups = computed(() => {
   const groups = {}
-  props.saleStore.items.data.forEach((sale) => {
-    let groupKey = ''
-    if (props.selectedPeriod === 'all_day') {
-      const hr = new Date(sale.created_at).getHours()
-      groupKey = (hr < 10 ? '0' + hr : hr) + ':00'
-    } else {
-      groupKey = sale.created_at.substring(0, 10)
-    }
-    if (!groups[groupKey]) {
-      groups[groupKey] = { gross_sales: 0, discounts: 0, item_cost: 0 }
-    }
-    groups[groupKey].gross_sales += parseFloat(sale.total_amount) || 0
-    groups[groupKey].discounts += parseFloat(sale.discount_total) || 0
-    if (sale.saleItems && Array.isArray(sale.saleItems)) {
-      sale.saleItems.forEach((saleItem) => {
-        const quantity = saleItem.quantity || 0
-        const cost = saleItem.item && saleItem.item.cost ? parseFloat(saleItem.item.cost) : 0
-        groups[groupKey].item_cost += quantity * cost
-      })
-    }
-  })
+  props.saleStore.items.data
+    .filter((sale) => sale.status.toLowerCase().includes('completed'))
+    .forEach((sale) => {
+      let groupKey = ''
+      if (props.selectedPeriod === 'all_day') {
+        const hr = new Date(sale.created_at).getHours()
+        groupKey = (hr < 10 ? '0' + hr : hr) + ':00'
+      } else {
+        groupKey = sale.created_at.substring(0, 10)
+      }
+      if (!groups[groupKey]) {
+        groups[groupKey] = { gross_sales: 0, discounts: 0, item_cost: 0 }
+      }
+      groups[groupKey].gross_sales += parseFloat(sale.total_amount) || 0
+      groups[groupKey].discounts += parseFloat(sale.discount_total) || 0
+      if (sale.saleItems && Array.isArray(sale.saleItems)) {
+        sale.saleItems.forEach((saleItem) => {
+          const quantity = saleItem.quantity || 0
+          const cost = saleItem.item && saleItem.item.cost ? parseFloat(saleItem.item.cost) : 0
+          groups[groupKey].item_cost += quantity * cost
+        })
+      }
+    })
   const summaryArray = []
   for (const key in groups) {
     const gross_sales = groups[key].gross_sales

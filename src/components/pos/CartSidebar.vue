@@ -1,30 +1,6 @@
 <!-- src/components/CartSidebar.vue -->
 <template>
   <div class="cart-sidebar bg-white shadow-lg p-4 border-l md:w-2/5 w-full md:sticky md:top-0">
-    <!-- Buttons Row -->
-    <div class="mb-4 flex flex-wrap gap-2">
-      <button
-        @click="$emit('openSalesModal')"
-        class="py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold"
-      >
-        Sales
-      </button>
-      <button
-        v-if="cart.length > 0"
-        @click="$emit('suspendSale')"
-        class="py-2 px-4 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 font-bold"
-      >
-        Suspend
-      </button>
-      <button
-        v-if="cart.length > 0"
-        @click="$emit('cancelSale')"
-        class="py-2 px-4 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-bold"
-      >
-        Cancel
-      </button>
-    </div>
-
     <!-- Customer Section -->
     <div class="mb-4">
       <h2 class="text-xl font-bold mb-2">Customer</h2>
@@ -89,7 +65,14 @@
                   >
                     –
                   </button>
-                  <div class="w-8 text-center text-lg font-bold">{{ item.quantity }}</div>
+                  <input
+                    type="number"
+                    v-model.number="item.quantity"
+                    @input="validateQuantity(index, $event)"
+                    class="w-16 text-center text-lg font-bold border rounded-lg p-1"
+                    min="1"
+                    step="1"
+                  />
                   <button
                     @click="incrementQuantity(index)"
                     class="bg-green-500 text-white w-8 h-8 rounded-lg flex items-center justify-center text-lg"
@@ -130,12 +113,12 @@
                 ₱{{ ((item.price - item.discount) * item.quantity).toFixed(2) }}
               </td>
               <td class="py-2 text-center">
-                <button
+                <BaseIcon
                   @click="$emit('removeFromCart', index)"
-                  class="py-2 px-3 bg-[#b51919] text-white rounded-lg text-lg"
-                >
-                  ✘
-                </button>
+                  class="hover:bg-red-700 bg-red-600 text-white rounded-lg cursor-pointer"
+                  :path="mdiTrashCan"
+                  size="18"
+                />
               </td>
             </tr>
           </tbody>
@@ -274,7 +257,7 @@
 <script setup>
 import { computed, defineProps, defineEmits, ref, watch, nextTick } from 'vue'
 import BaseIcon from '@/components/BaseIcon.vue'
-import { mdiAccountPlus } from '@mdi/js'
+import { mdiAccountPlus, mdiDelete, mdiExitToApp, mdiTrashCan } from '@mdi/js'
 
 const props = defineProps({
   cart: Array,
@@ -385,6 +368,19 @@ function decrementQuantity(index) {
   const item = props.cart[index]
   if (item.quantity > 1) {
     item.quantity = Number(item.quantity) - 1
+  }
+}
+
+function validateQuantity(index, event) {
+  const item = props.cart[index]
+  let value = Number(event.target.value)
+
+  // Ensure the value is a positive integer
+  if (value < 1) {
+    item.quantity = 1
+  } else {
+    // Round to nearest integer
+    item.quantity = Math.round(value)
   }
 }
 </script>

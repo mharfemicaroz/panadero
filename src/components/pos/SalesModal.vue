@@ -57,7 +57,7 @@
               Unsuspend
             </button>
             <button
-              v-if="row.status === 'suspended' || row.status === 'completed'"
+              v-if="row.status !== 'voided'"
               @click="voidSale(row)"
               class="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700"
             >

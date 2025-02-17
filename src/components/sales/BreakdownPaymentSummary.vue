@@ -12,31 +12,33 @@ const breakdownPaymentPageSize = ref(10)
 
 const breakdownPaymentSummaryGroups = computed(() => {
   const groups = {}
-  props.saleStore.items.data.forEach((sale) => {
-    const saleDate = sale.sale_date
-      ? sale.sale_date.substring(0, 10)
-      : sale.created_at.substring(0, 10)
-    const paymentType = sale.payment_type || 'Unknown'
-    const branch = sale.branch ? sale.branch.name : 'Unknown'
-    const key = saleDate + '|' + paymentType + '|' + branch
-    if (!groups[key]) {
-      groups[key] = {
-        date: saleDate,
-        payment_type: paymentType,
-        branch: branch,
-        quantity: 0,
-        total_sales: 0
+  props.saleStore.items.data
+    .filter((sale) => sale.status.toLowerCase().includes('completed'))
+    .forEach((sale) => {
+      const saleDate = sale.sale_date
+        ? sale.sale_date.substring(0, 10)
+        : sale.created_at.substring(0, 10)
+      const paymentType = sale.payment_type || 'Unknown'
+      const branch = sale.branch ? sale.branch.name : 'Unknown'
+      const key = saleDate + '|' + paymentType + '|' + branch
+      if (!groups[key]) {
+        groups[key] = {
+          date: saleDate,
+          payment_type: paymentType,
+          branch: branch,
+          quantity: 0,
+          total_sales: 0
+        }
       }
-    }
-    let saleQuantity = 0
-    if (sale.saleItems && Array.isArray(sale.saleItems)) {
-      sale.saleItems.forEach((saleItem) => {
-        saleQuantity += Number(saleItem.quantity) || 0
-      })
-    }
-    groups[key].quantity += saleQuantity
-    groups[key].total_sales += Number(sale.total_amount) || 0
-  })
+      let saleQuantity = 0
+      if (sale.saleItems && Array.isArray(sale.saleItems)) {
+        sale.saleItems.forEach((saleItem) => {
+          saleQuantity += Number(saleItem.quantity) || 0
+        })
+      }
+      groups[key].quantity += saleQuantity
+      groups[key].total_sales += Number(sale.total_amount) || 0
+    })
   const summaryArray = Object.values(groups)
   summaryArray.sort((a, b) => a.date.localeCompare(b.date))
   return summaryArray

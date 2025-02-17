@@ -13,11 +13,13 @@ const chartData = ref(null)
 const doughnutData = ref(null)
 
 const fillChartData = () => {
+  const completedSales = props.saleStore.items.data.filter((sale) => sale.status === 'completed')
+
   if (props.selectedPeriod === 'all_day') {
     const labels = Array.from({ length: 24 }, (_, i) => (i < 10 ? '0' + i : i) + ':00')
     const dataValues = new Array(24).fill(0)
-    if (props.saleStore.items.data.length > 0) {
-      props.saleStore.items.data.forEach((sale) => {
+    if (completedSales.length > 0) {
+      completedSales.forEach((sale) => {
         const saleDate = new Date(sale.created_at)
         const hour = saleDate.getHours()
         dataValues[hour] += parseFloat(sale.total_amount)
@@ -37,7 +39,7 @@ const fillChartData = () => {
       ]
     }
   } else {
-    if (props.saleStore.items.data.length === 0) {
+    if (completedSales.length === 0) {
       chartData.value = {
         labels: [],
         datasets: [
@@ -52,7 +54,7 @@ const fillChartData = () => {
         ]
       }
     } else {
-      const sortedSales = [...props.saleStore.items.data].sort(
+      const sortedSales = [...completedSales].sort(
         (a, b) => new Date(a.created_at) - new Date(b.created_at)
       )
       const labels = sortedSales.map((sale) => sale.created_at.substring(0, 10))
@@ -75,8 +77,9 @@ const fillChartData = () => {
 }
 
 const fillDoughnutData = () => {
+  const completedSales = props.saleStore.items.data.filter((sale) => sale.status === 'completed')
   const paymentSummary = {}
-  props.saleStore.items.data.forEach((sale) => {
+  completedSales.forEach((sale) => {
     const type = sale.payment_type || 'Unknown'
     const amount = parseFloat(sale.total_amount) || 0
     if (!paymentSummary[type]) {
