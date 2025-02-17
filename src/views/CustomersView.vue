@@ -32,7 +32,6 @@ const selectedCustomers = ref([])
 // --- FETCH DATA ---
 async function fetchCustomers(queryParams = {}, forceRefresh = false) {
   await customerStore.fetchItems(queryParams, forceRefresh)
-  console.log(customerStore.items)
 }
 
 // Initial fetch
@@ -120,8 +119,8 @@ async function deleteSelectedCustomers() {
   })
 
   if (confirmDelete.isConfirmed) {
-    for (const customer of selectedCustomers.value) {
-      await customerStore.deleteItem(customer.id)
+    for (const customerId of selectedCustomers.value) {
+      await customerStore.deleteItem(customerId)
       if (customerStore.error) break
     }
 

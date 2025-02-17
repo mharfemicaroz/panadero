@@ -39,46 +39,50 @@
       <!-- Main POS UI: shown once an active shift is present -->
       <div v-else class="pos-ui flex flex-col">
         <!-- Header with active shift details and control buttons -->
-        <header class="bg-white shadow p-4 flex items-center justify-between">
+        <header class="bg-white shadow-md p-6 flex items-center justify-between">
           <div>
-            <h2 class="text-xl font-bold">Transaction In Progress</h2>
-            <p class="text-sm text-gray-600">
+            <h2 class="text-2xl font-semibold text-gray-800">Transaction In Progress</h2>
+            <p class="text-sm text-gray-500">
               Started at: {{ formatDateTime(activeShift.start_time) }}
             </p>
-            <p class="text-sm text-gray-600">
+            <p class="text-sm text-gray-500">
               User: {{ authStore.user.first_name }} {{ authStore.user.last_name }}
             </p>
           </div>
-          <div class="mb-4 flex flex-wrap gap-2">
+          <div class="flex items-center space-x-3">
+            <!-- Fullscreen Toggle Button -->
             <button
               @click="toggleFullscreen"
-              class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg"
+              class="flex items-center justify-center w-10 h-10 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-md transition duration-150"
             >
               <BaseIcon v-if="!isFullscreen" :path="mdiFullscreen" size="18" />
               <BaseIcon v-else :path="mdiFullscreenExit" size="18" />
             </button>
+            <!-- Add Cash Button -->
             <button
               @click="addCash"
-              class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+              class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md transition duration-150"
             >
               Add Cash
             </button>
+            <!-- Remove Cash Button -->
             <button
               @click="removeCash"
-              class="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700"
+              class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md transition duration-150"
             >
               Remove Cash
             </button>
-            <!-- New Open Cash Drawer Button -->
+            <!-- Open Cash Drawer Button -->
             <button
               @click="openCashDrawer"
-              class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+              class="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-md transition duration-150"
             >
               Open Cash Drawer
             </button>
+            <!-- End Transaction Button -->
             <button
               @click="endTransaction"
-              class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded"
+              class="flex items-center justify-center w-10 h-10 bg-red-500 hover:bg-red-600 text-white rounded-md transition duration-150"
             >
               <BaseIcon :path="mdiLogout" size="18" />
             </button>
