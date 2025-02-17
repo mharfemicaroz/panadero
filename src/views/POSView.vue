@@ -56,7 +56,7 @@
             <!-- Fullscreen Toggle Button -->
             <button
               @click="toggleFullscreen"
-              class="flex items-center justify-center w-10 h-10 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-md transition duration-150"
+              class="flex items-center justify-center w-10 h-10 bg-gray-500 hover:bg-gray-600 text-white rounded-md transition duration-150"
             >
               <BaseIcon v-if="!isFullscreen" :path="mdiFullscreen" size="18" />
               <BaseIcon v-else :path="mdiFullscreenExit" size="18" />
@@ -64,42 +64,42 @@
             <!-- Add Cash Button -->
             <button
               @click="addCash"
-              class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md transition duration-150"
+              class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition duration-150 font-semibold"
             >
               Add Cash
             </button>
             <!-- Remove Cash Button -->
             <button
               @click="removeCash"
-              class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md transition duration-150"
+              class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition duration-150 font-semibold"
             >
               Remove Cash
             </button>
             <!-- Open Cash Drawer Button -->
             <button
               @click="openCashDrawer"
-              class="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-md transition duration-150"
+              class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition duration-150 font-semibold"
             >
               Open Cash Drawer
             </button>
 
             <button
               @click="openSalesModal"
-              class="py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold"
+              class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition duration-150 font-semibold"
             >
               Sales
             </button>
             <button
               v-if="cart.length > 0"
               @click="suspendSale"
-              class="py-2 px-4 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 font-bold"
+              class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-md transition duration-150 font-semibold"
             >
               Suspend
             </button>
             <button
               v-if="cart.length > 0"
               @click="cancelSale"
-              class="py-2 px-4 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-bold"
+              class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md transition duration-150 font-semibold"
             >
               Cancel
             </button>

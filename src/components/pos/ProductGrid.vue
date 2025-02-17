@@ -1,63 +1,88 @@
 <!-- src/components/ProductGrid.vue -->
 <template>
   <div>
-    <!-- Sticky Header for toggles and letter filter -->
+    <!-- Sticky Header for toggles -->
     <div class="sticky top-0 z-50 bg-white shadow p-2">
-      <!-- Toggle to choose view mode -->
-      <div class="mb-2 text-center">
-        <button
-          @click="setOpenBy('category')"
-          :class="{
-            'bg-blue-500 text-white': openBy === 'category',
-            'bg-gray-300 text-black': openBy !== 'category'
-          }"
-          class="px-4 py-2 rounded-lg text-lg mr-2"
-        >
-          Open by Category
-        </button>
-        <button
-          @click="setOpenBy('product')"
-          :class="{
-            'bg-blue-500 text-white': openBy === 'product',
-            'bg-gray-300 text-black': openBy !== 'product'
-          }"
-          class="px-4 py-2 rounded-lg text-lg"
-        >
-          Open by Product
-        </button>
-      </div>
-
       <!-- Toggle Button for Product Grid Visibility -->
       <div class="mb-2 text-center">
         <button
           @click="toggleGrid"
           class="px-4 py-2 bg-blue-500 text-white rounded-lg text-lg focus:outline-none"
         >
-          {{ showGrid ? 'Hide Products' : 'Show Products' }}
+          {{ showGrid ? 'Show Products' : 'Hide Products' }}
         </button>
       </div>
 
-      <!-- Letter Filter Row for Product View (only if grid is shown and openBy is product) -->
-      <template v-if="openBy === 'product' && showGrid && !itemStore.isLoading">
-        <div class="mb-2 text-center overflow-x-auto whitespace-nowrap">
+      <!-- View mode buttons and letter filter - only show when showGrid is false -->
+      <template v-if="!showGrid">
+        <div class="mb-2 text-center">
           <button
-            v-for="letter in availableLetters"
-            :key="letter"
-            @click="selectedLetter = letter"
+            @click="setOpenBy('category')"
             :class="{
-              'bg-blue-500 text-white': selectedLetter === letter,
-              'bg-gray-300 text-black': selectedLetter !== letter
+              'bg-blue-500 text-white': openBy === 'category',
+              'bg-gray-300 text-black': openBy !== 'category'
             }"
-            class="px-4 py-2 rounded-lg text-lg mx-1 inline-block"
+            class="px-4 py-2 rounded-lg text-lg mr-2"
           >
-            {{ letter }}
+            Open by Category
+          </button>
+          <button
+            @click="setOpenBy('product')"
+            :class="{
+              'bg-blue-500 text-white': openBy === 'product',
+              'bg-gray-300 text-black': openBy !== 'product'
+            }"
+            class="px-4 py-2 rounded-lg text-lg"
+          >
+            Open by Product
           </button>
         </div>
+
+        <!-- Letter Filter -->
+        <template v-if="openBy === 'product' && !itemStore.isLoading">
+          <div class="mb-2 text-center overflow-x-auto whitespace-nowrap">
+            <button
+              v-for="letter in availableLetters"
+              :key="letter"
+              @click="selectedLetter = letter"
+              :class="{
+                'bg-blue-500 text-white': selectedLetter === letter,
+                'bg-gray-300 text-black': selectedLetter !== letter
+              }"
+              class="px-4 py-2 rounded-lg text-lg mx-1 inline-block"
+            >
+              {{ letter }}
+            </button>
+          </div>
+        </template>
       </template>
     </div>
 
-    <!-- If grid is visible, show the usual grid -->
-    <div v-if="showGrid">
+    <!-- Show only barcode input when showGrid is true -->
+    <div v-if="showGrid" class="relative p-4">
+      <input
+        type="text"
+        v-model="barcodeInput"
+        placeholder="Enter item name, sku code or scan barcode..."
+        class="w-full p-2 border rounded"
+      />
+      <div
+        v-if="barcodeSuggestions.length"
+        class="absolute bg-white border rounded mt-1 w-full z-10"
+      >
+        <div
+          v-for="product in barcodeSuggestions"
+          :key="product.id"
+          class="p-2 hover:bg-gray-100 cursor-pointer"
+          @click="handleBarcodeSuggestion(product)"
+        >
+          {{ product.name }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Show full grid view when showGrid is false -->
+    <div v-else>
       <!-- Category View -->
       <template v-if="openBy === 'category'">
         <div v-if="singleGlobalSingleMatch" class="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -184,29 +209,6 @@
         </div>
       </template>
     </div>
-
-    <!-- When grid is hidden, show the barcode/item entry field -->
-    <div v-else class="relative p-4">
-      <input
-        type="text"
-        v-model="barcodeInput"
-        placeholder="Enter item name or scan barcode..."
-        class="w-full p-2 border rounded"
-      />
-      <div
-        v-if="barcodeSuggestions.length"
-        class="absolute bg-white border rounded mt-1 w-full z-10"
-      >
-        <div
-          v-for="product in barcodeSuggestions"
-          :key="product.id"
-          class="p-2 hover:bg-gray-100 cursor-pointer"
-          @click="handleBarcodeSuggestion(product)"
-        >
-          {{ product.name }}
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -282,7 +284,8 @@ const barcodeSuggestions = computed(() => {
   return productItems.value.filter((product) => {
     const nameMatch = product.name.toLowerCase().includes(input)
     const barcodeMatch = product.barcode ? product.barcode.toLowerCase().includes(input) : false
-    return nameMatch || barcodeMatch
+    const skuMatch = product.sku ? product.sku.toLowerCase().includes(input) : false
+    return nameMatch || barcodeMatch || skuMatch
   })
 })
 
