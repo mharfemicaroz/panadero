@@ -167,8 +167,18 @@
               :filteredProducts="filteredProducts"
               :visibleSubcategories="visibleSubcategories"
               :isInCart="isInCart"
+              :cart="cart"
+              :discountAllItemsPercent="discountAllItemsPercent"
+              :discountEntireSale="discountEntireSale"
+              :subTotalBeforeGlobalDiscount="subTotalBeforeGlobalDiscount"
+              :totalCartAmount="totalCartAmount"
               @selectCategory="selectCategory"
               @toggleProduct="toggleProductSelection"
+              @openItemPriceModal="openItemPriceModal"
+              @openItemDiscountModal="openItemDiscountModal"
+              @removeFromCart="removeFromCart"
+              @update:discountAllItemsPercent="(val) => (discountAllItemsPercent = val)"
+              @update:discountEntireSale="(val) => (discountEntireSale = val)"
             />
           </div>
 
@@ -189,6 +199,7 @@
             v-model:bankReference="bankReference"
             :subTotalBeforeGlobalDiscount="subTotalBeforeGlobalDiscount"
             :filteredCustomers="filteredCustomers"
+            :showCartTable="showGrid"
             @filterCustomers="filterCustomers"
             @selectCustomer="selectCustomer"
             @openCustomerModal="openCustomerModal"

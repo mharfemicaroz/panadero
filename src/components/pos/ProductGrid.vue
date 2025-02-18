@@ -1,10 +1,8 @@
-<!-- src/components/ProductGrid.vue -->
 <template>
   <div>
     <!-- Sticky Header for toggles -->
     <div v-if="!showGrid" class="sticky top-0 z-50 bg-white shadow p-2">
       <!-- View mode buttons and letter filter - only show when showGrid is false -->
-
       <div class="mb-2 text-center">
         <button
           @click="setOpenBy('category')"
@@ -47,8 +45,8 @@
       </template>
     </div>
 
-    <!-- Show only barcode input when showGrid is true -->
-    <div v-if="showGrid" class="relative p-4">
+    <!-- Show barcode input -->
+    <div class="relative px-4 mb-3">
       <input
         type="text"
         v-model="barcodeInput"
@@ -70,8 +68,26 @@
       </div>
     </div>
 
-    <!-- Show full grid view when showGrid is false -->
-    <div v-else>
+    <!-- Cart Table Section (shown when showGrid is false) -->
+    <div v-if="showGrid" class="mb-6 mx-4">
+      <div class="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+        <CartTable
+          :cart="cart"
+          :discountAllItemsPercent="discountAllItemsPercent"
+          :discountEntireSale="discountEntireSale"
+          :subTotalBeforeGlobalDiscount="subTotalBeforeGlobalDiscount"
+          :totalCartAmount="totalCartAmount"
+          @openItemPriceModal="$emit('openItemPriceModal', $event)"
+          @openItemDiscountModal="$emit('openItemDiscountModal', $event)"
+          @removeFromCart="$emit('removeFromCart', $event)"
+          @update:discountAllItemsPercent="$emit('update:discountAllItemsPercent', $event)"
+          @update:discountEntireSale="$emit('update:discountEntireSale', $event)"
+        />
+      </div>
+    </div>
+
+    <!-- Show full grid view -->
+    <div v-if="!showGrid">
       <!-- Category View -->
       <template v-if="openBy === 'category'">
         <div v-if="singleGlobalSingleMatch" class="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -204,6 +220,7 @@
 <script setup>
 import { ref, computed, onMounted, defineProps, watch, defineEmits } from 'vue'
 import { useItemStore } from '@/stores/product/item'
+import CartTable from '@/components/pos/CartTable.vue'
 
 const props = defineProps({
   searchQuery: String,
@@ -215,10 +232,23 @@ const props = defineProps({
   filteredProducts: Array,
   visibleSubcategories: Array,
   isInCart: Function,
-  showGrid: Boolean
+  showGrid: Boolean,
+  cart: Array,
+  discountAllItemsPercent: Number,
+  discountEntireSale: Number,
+  subTotalBeforeGlobalDiscount: Number,
+  totalCartAmount: Number
 })
 
-const emit = defineEmits(['selectCategory', 'toggleProduct'])
+const emit = defineEmits([
+  'selectCategory',
+  'toggleProduct',
+  'openItemPriceModal',
+  'openItemDiscountModal',
+  'removeFromCart',
+  'update:discountAllItemsPercent',
+  'update:discountEntireSale'
+])
 
 // For "open by product" mode
 const openBy = ref('category')
