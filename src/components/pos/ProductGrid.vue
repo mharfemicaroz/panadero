@@ -46,7 +46,7 @@
     </div>
 
     <!-- Show barcode input -->
-    <div class="relative px-4 mb-3">
+    <div v-if="showGrid" class="relative px-4 mb-3">
       <input
         type="text"
         v-model="barcodeInput"

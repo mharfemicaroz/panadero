@@ -1,7 +1,7 @@
 <template>
   <div
-    :class="`cart-sidebar bg-white shadow-lg p-4 border-l w-full md:sticky md:top-0 ${
-      showCartTable ? 'md:w-1/4' : 'md:w-2/5'
+    :class="`cart-sidebar bg-white shadow-lg p-4 border-l w-full md:sticky md:top-0 transition-all duration-300 ${
+      showCartTable ? 'md:w-1/5' : 'md:w-2/5'
     }`"
   >
     <!-- Customer Section -->
@@ -238,3 +238,8 @@ const localBankReference = computed({
   set: (val) => emit('update:bankReference', val)
 })
 </script>
+<style scoped>
+.cart-sidebar {
+  transition: width 0.3s ease-in-out;
+}
+</style>
