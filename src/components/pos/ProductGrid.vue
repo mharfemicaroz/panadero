@@ -2,59 +2,48 @@
 <template>
   <div>
     <!-- Sticky Header for toggles -->
-    <div class="sticky top-0 z-50 bg-white shadow p-2">
-      <!-- Toggle Button for Product Grid Visibility -->
+    <div v-if="!showGrid" class="sticky top-0 z-50 bg-white shadow p-2">
+      <!-- View mode buttons and letter filter - only show when showGrid is false -->
+
       <div class="mb-2 text-center">
         <button
-          @click="toggleGrid"
-          class="px-4 py-2 bg-blue-500 text-white rounded-lg text-lg focus:outline-none"
+          @click="setOpenBy('category')"
+          :class="{
+            'bg-blue-500 text-white': openBy === 'category',
+            'bg-gray-300 text-black': openBy !== 'category'
+          }"
+          class="px-4 py-2 rounded-lg text-lg mr-2"
         >
-          {{ showGrid ? 'Show Products' : 'Hide Products' }}
+          Open by Category
+        </button>
+        <button
+          @click="setOpenBy('product')"
+          :class="{
+            'bg-blue-500 text-white': openBy === 'product',
+            'bg-gray-300 text-black': openBy !== 'product'
+          }"
+          class="px-4 py-2 rounded-lg text-lg"
+        >
+          Open by Product
         </button>
       </div>
 
-      <!-- View mode buttons and letter filter - only show when showGrid is false -->
-      <template v-if="!showGrid">
-        <div class="mb-2 text-center">
+      <!-- Letter Filter -->
+      <template v-if="openBy === 'product' && !itemStore.isLoading">
+        <div class="mb-2 text-center overflow-x-auto whitespace-nowrap">
           <button
-            @click="setOpenBy('category')"
+            v-for="letter in availableLetters"
+            :key="letter"
+            @click="selectedLetter = letter"
             :class="{
-              'bg-blue-500 text-white': openBy === 'category',
-              'bg-gray-300 text-black': openBy !== 'category'
+              'bg-blue-500 text-white': selectedLetter === letter,
+              'bg-gray-300 text-black': selectedLetter !== letter
             }"
-            class="px-4 py-2 rounded-lg text-lg mr-2"
+            class="px-4 py-2 rounded-lg text-lg mx-1 inline-block"
           >
-            Open by Category
-          </button>
-          <button
-            @click="setOpenBy('product')"
-            :class="{
-              'bg-blue-500 text-white': openBy === 'product',
-              'bg-gray-300 text-black': openBy !== 'product'
-            }"
-            class="px-4 py-2 rounded-lg text-lg"
-          >
-            Open by Product
+            {{ letter }}
           </button>
         </div>
-
-        <!-- Letter Filter -->
-        <template v-if="openBy === 'product' && !itemStore.isLoading">
-          <div class="mb-2 text-center overflow-x-auto whitespace-nowrap">
-            <button
-              v-for="letter in availableLetters"
-              :key="letter"
-              @click="selectedLetter = letter"
-              :class="{
-                'bg-blue-500 text-white': selectedLetter === letter,
-                'bg-gray-300 text-black': selectedLetter !== letter
-              }"
-              class="px-4 py-2 rounded-lg text-lg mx-1 inline-block"
-            >
-              {{ letter }}
-            </button>
-          </div>
-        </template>
       </template>
     </div>
 
@@ -225,16 +214,11 @@ const props = defineProps({
   filteredCategories: Array,
   filteredProducts: Array,
   visibleSubcategories: Array,
-  isInCart: Function
+  isInCart: Function,
+  showGrid: Boolean
 })
 
 const emit = defineEmits(['selectCategory', 'toggleProduct'])
-
-// Toggle to show/hide the grid
-const showGrid = ref(true)
-function toggleGrid() {
-  showGrid.value = !showGrid.value
-}
 
 // For "open by product" mode
 const openBy = ref('category')

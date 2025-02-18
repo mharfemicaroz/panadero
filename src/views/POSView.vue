@@ -61,6 +61,13 @@
               <BaseIcon v-if="!isFullscreen" :path="mdiFullscreen" size="18" />
               <BaseIcon v-else :path="mdiFullscreenExit" size="18" />
             </button>
+
+            <button
+              @click="toggleGrid"
+              class="px-4 py-2 bg-blue-500 text-white rounded-lg text-lg focus:outline-none"
+            >
+              {{ showGrid ? 'Show Products' : 'Hide Products' }}
+            </button>
             <!-- Add Cash Button -->
             <button
               @click="addCash"
@@ -118,36 +125,39 @@
         <div class="w-full mx-auto py-8 flex-1 flex flex-col md:flex-row p-4 md:p-8">
           <!-- Left: Categories & Products -->
           <div class="flex-1">
-            <BreadcrumbNavigation
-              :breadcrumbs="breadcrumbs"
-              @reset="resetCategories"
-              @navigate="navigateToBreadcrumb"
-            />
-
-            <div v-if="currentCategory" class="mb-4">
-              <h2
-                class="text-lg font-bold text-[#b51919] cursor-pointer hover:underline flex items-center gap-2"
-                @click="goBack"
-              >
-                ← Back to Categories
-              </h2>
-            </div>
-
-            <h1 class="text-2xl font-bold mb-4">
-              {{ currentCategory ? currentCategory : 'All Categories' }}
-            </h1>
-
-            <div class="mb-6">
-              <input
-                v-model="searchQuery"
-                type="text"
-                placeholder="Search categories or products..."
-                class="w-full p-2 border rounded"
+            <div v-if="!showGrid">
+              <BreadcrumbNavigation
+                :breadcrumbs="breadcrumbs"
+                @reset="resetCategories"
+                @navigate="navigateToBreadcrumb"
               />
+
+              <div v-if="currentCategory" class="mb-4">
+                <h2
+                  class="text-lg font-bold text-[#b51919] cursor-pointer hover:underline flex items-center gap-2"
+                  @click="goBack"
+                >
+                  ← Back to Categories
+                </h2>
+              </div>
+
+              <h1 class="text-2xl font-bold mb-4">
+                {{ currentCategory ? currentCategory : 'All Categories' }}
+              </h1>
+
+              <div class="mb-6">
+                <input
+                  v-model="searchQuery"
+                  type="text"
+                  placeholder="Search categories or products..."
+                  class="w-full p-2 border rounded"
+                />
+              </div>
             </div>
 
             <!-- Product Grid Component -->
             <ProductGrid
+              :show-grid="showGrid"
               :searchQuery="searchQuery"
               :categories="categories"
               :currentCategory="currentCategory"
@@ -283,6 +293,8 @@ const isInitialLoad = ref(true)
 
 // ----- Shift Management -----
 const activeShift = ref(null)
+
+const ProductGridRef = ref(null)
 
 const startNewTransaction = async () => {
   isLoading.value = true
@@ -542,6 +554,12 @@ watch(
   },
   { immediate: true }
 )
+
+// Toggle to show/hide the grid
+const showGrid = ref(true)
+function toggleGrid() {
+  showGrid.value = !showGrid.value
+}
 
 // ----- Sales Modal State -----
 const isSalesModalOpen = ref(false)
