@@ -2,18 +2,10 @@ import { createWebHashHistory, createRouter } from 'vue-router'
 import { authGuard } from './routeGuard'
 
 const routes = [
-  // {
-  //   meta: {
-  //     title: 'Select style'
-  //   },
-  //   path: '/',
-  //   name: 'style',
-  //   component: Style
-  // },
   {
     path: '/',
     name: 'home',
-    redirect: { name: 'dashboard' } // No need to check auth here, let routeGuard handle it
+    redirect: { name: 'dashboard' }
   },
   {
     meta: {
@@ -21,7 +13,7 @@ const routes = [
     },
     path: '/login',
     name: 'login',
-    component: () => import('@/views/LoginView.vue')
+    component: () => import('../views/LoginView.vue')
   },
   {
     meta: {
@@ -29,7 +21,7 @@ const routes = [
     },
     path: '/otp',
     name: 'otp',
-    component: () => import('@/views/OtpView.vue')
+    component: () => import('../views/OtpView.vue')
   },
   {
     meta: {
@@ -37,7 +29,7 @@ const routes = [
     },
     path: '/security',
     name: 'security',
-    component: () => import('@/views/SecuritySettings.vue')
+    component: () => import('../views/SecuritySettings.vue')
   },
   {
     meta: {
@@ -45,7 +37,7 @@ const routes = [
     },
     path: '/dashboard',
     name: 'dashboard',
-    component: () => import('@/views/HomeViewX.vue')
+    component: () => import('../views/HomeViewX.vue')
   },
   {
     meta: {
@@ -53,7 +45,7 @@ const routes = [
     },
     path: '/tables',
     name: 'tables',
-    component: () => import('@/views/TablesView.vue')
+    component: () => import('../views/TablesView.vue')
   },
   {
     meta: {
@@ -61,7 +53,7 @@ const routes = [
     },
     path: '/shifts',
     name: 'shifts',
-    component: () => import('@/views/ShiftsView.vue')
+    component: () => import('../views/ShiftsView.vue')
   },
   {
     meta: {
@@ -69,7 +61,7 @@ const routes = [
     },
     path: '/sales-inventory',
     name: 'sales-inventory',
-    component: () => import('@/views/SalesInventoryView.vue')
+    component: () => import('../views/SalesInventoryView.vue')
   },
   {
     meta: {
@@ -77,7 +69,7 @@ const routes = [
     },
     path: '/pos',
     name: 'pos',
-    component: () => import('@/views/POSView.vue')
+    component: () => import('../views/POSView.vue')
   },
   {
     meta: {
@@ -85,7 +77,7 @@ const routes = [
     },
     path: '/breakdown-payment-reports',
     name: 'breakdown-payment-reports',
-    component: () => import('@/views/BreakdownPaymentReportsView.vue')
+    component: () => import('../views/BreakdownPaymentReportsView.vue')
   },
   {
     meta: {
@@ -93,7 +85,7 @@ const routes = [
     },
     path: '/order-option-fee-reports',
     name: 'order-option-fee-reports',
-    component: () => import('@/views/OrderOptionFeeReportsView.vue')
+    component: () => import('../views/OrderOptionFeeReportsView.vue')
   },
   {
     meta: {
@@ -101,7 +93,7 @@ const routes = [
     },
     path: '/reference-number-report',
     name: 'reference-number-report',
-    component: () => import('@/views/ReferenceNumberReportView.vue')
+    component: () => import('../views/ReferenceNumberReportView.vue')
   },
   {
     meta: {
@@ -109,7 +101,7 @@ const routes = [
     },
     path: '/expiration-date-reports',
     name: 'expiration-date-reports',
-    component: () => import('@/views/ExpirationDateReportsView.vue')
+    component: () => import('../views/ExpirationDateReportsView.vue')
   },
   {
     meta: {
@@ -117,7 +109,7 @@ const routes = [
     },
     path: '/discount-report',
     name: 'discount-report',
-    component: () => import('@/views/DiscountReportView.vue')
+    component: () => import('../views/DiscountReportView.vue')
   },
   {
     meta: {
@@ -125,7 +117,7 @@ const routes = [
     },
     path: '/pull-out-report',
     name: 'pull-out-report',
-    component: () => import('@/views/PullOutReportView.vue')
+    component: () => import('../views/PullOutReportView.vue')
   },
   {
     meta: {
@@ -133,7 +125,7 @@ const routes = [
     },
     path: '/refund',
     name: 'refund',
-    component: () => import('@/views/RefundView.vue')
+    component: () => import('../views/RefundView.vue')
   },
   {
     meta: {
@@ -141,7 +133,7 @@ const routes = [
     },
     path: '/user',
     name: 'user',
-    component: () => import('@/views/UserView.vue')
+    component: () => import('../views/UserView.vue')
   },
   {
     meta: {
@@ -149,7 +141,7 @@ const routes = [
     },
     path: '/items',
     name: 'items',
-    component: () => import('@/views/ItemsView.vue')
+    component: () => import('../views/ItemsView.vue')
   },
   {
     meta: {
@@ -157,7 +149,7 @@ const routes = [
     },
     path: '/item-ledger',
     name: 'item-ledger',
-    component: () => import('@/views/ItemsLedger.vue')
+    component: () => import('../views/ItemsLedger.vue')
   },
   {
     meta: {
@@ -165,7 +157,7 @@ const routes = [
     },
     path: '/warehouses',
     name: 'warehouses',
-    component: () => import('@/views/WarehousesView.vue')
+    component: () => import('../views/WarehousesView.vue')
   },
   {
     meta: {
@@ -173,7 +165,7 @@ const routes = [
     },
     path: '/suppliers',
     name: 'suppliers',
-    component: () => import('@/views/SuppliersView.vue')
+    component: () => import('../views/SuppliersView.vue')
   },
   {
     meta: {
@@ -181,7 +173,7 @@ const routes = [
     },
     path: '/procurement',
     name: 'procurement',
-    component: () => import('@/views/ProcurementView.vue')
+    component: () => import('../views/ProcurementView.vue')
   },
   {
     meta: {
@@ -189,7 +181,7 @@ const routes = [
     },
     path: '/subcategory',
     name: 'subcategory',
-    component: () => import('@/views/SubCategoryView.vue')
+    component: () => import('../views/SubCategoryView.vue')
   },
   {
     meta: {
@@ -197,7 +189,7 @@ const routes = [
     },
     path: '/items_modifier',
     name: 'items_modifier',
-    component: () => import('@/views/ItemsModifierView.vue')
+    component: () => import('../views/ItemsModifierView.vue')
   },
   {
     meta: {
@@ -205,32 +197,23 @@ const routes = [
     },
     path: '/category',
     name: 'category',
-    component: () => import('@/views/CategoryMainView.vue')
+    component: () => import('../views/CategoryMainView.vue')
   },
-  // {
-  //   meta: {
-  //     title: 'Category Group'
-  //   },
-  //   path: '/category_group',
-  //   name: 'category_group',
-  //   component: () => import('@/views/CategoryGroupView.vue')
-  // },
   {
     meta: {
       title: 'Discounts'
     },
     path: '/discounts',
     name: 'discounts',
-    component: () => import('@/views/DiscountsView.vue')
+    component: () => import('../views/DiscountsView.vue')
   },
-
   {
     meta: {
       title: 'Customers'
     },
     path: '/customers',
     name: 'customers',
-    component: () => import('@/views/CustomersView.vue')
+    component: () => import('../views/CustomersView.vue')
   },
   {
     meta: {
@@ -238,7 +221,7 @@ const routes = [
     },
     path: '/inventory',
     name: 'inventory',
-    component: () => import('@/views/InventoryView.vue')
+    component: () => import('../views/InventoryView.vue')
   },
   {
     meta: {
@@ -246,7 +229,7 @@ const routes = [
     },
     path: '/devices',
     name: 'devices',
-    component: () => import('@/views/DevicesView.vue')
+    component: () => import('../views/DevicesView.vue')
   },
   {
     meta: {
@@ -254,7 +237,7 @@ const routes = [
     },
     path: '/franchises',
     name: 'franchises',
-    component: () => import('@/views/FranchisesView.vue')
+    component: () => import('../views/FranchisesView.vue')
   },
   {
     meta: {
@@ -262,7 +245,7 @@ const routes = [
     },
     path: '/franchises_po',
     name: 'franchises_po',
-    component: () => import('@/views/FranchisesPOView.vue')
+    component: () => import('../views/FranchisesPOView.vue')
   },
   {
     meta: {
@@ -270,7 +253,7 @@ const routes = [
     },
     path: '/franchises_request',
     name: 'franchises_request',
-    component: () => import('@/views/FranchisesRequestView.vue')
+    component: () => import('../views/FranchisesRequestView.vue')
   },
   {
     meta: {
@@ -278,7 +261,7 @@ const routes = [
     },
     path: '/receipts',
     name: 'receipts',
-    component: () => import('@/views/ReceiptsView.vue')
+    component: () => import('../views/ReceiptsView.vue')
   },
   {
     meta: {
@@ -286,16 +269,15 @@ const routes = [
     },
     path: '/user-management',
     name: 'user management',
-    component: () => import('@/views/UserManagementView.vue')
+    component: () => import('../views/UserManagementView.vue')
   },
-
   {
     meta: {
       title: 'Forms'
     },
     path: '/forms',
     name: 'forms',
-    component: () => import('@/views/FormsView.vue')
+    component: () => import('../views/FormsView.vue')
   },
   {
     meta: {
@@ -303,7 +285,7 @@ const routes = [
     },
     path: '/profile',
     name: 'profile',
-    component: () => import('@/views/ProfileView.vue')
+    component: () => import('../views/ProfileView.vue')
   },
   {
     meta: {
@@ -311,7 +293,7 @@ const routes = [
     },
     path: '/ui',
     name: 'ui',
-    component: () => import('@/views/UiView.vue')
+    component: () => import('../views/UiView.vue')
   },
   {
     meta: {
@@ -319,7 +301,7 @@ const routes = [
     },
     path: '/responsive',
     name: 'responsive',
-    component: () => import('@/views/ResponsiveView.vue')
+    component: () => import('../views/ResponsiveView.vue')
   },
   {
     meta: {
@@ -327,16 +309,15 @@ const routes = [
     },
     path: '/error',
     name: 'error',
-    component: () => import('@/views/ErrorView.vue')
+    component: () => import('../views/ErrorView.vue')
   },
-  // Food Safety
   {
     meta: {
       title: 'Food Safety Summary'
     },
     path: '/food_safety_summary',
     name: 'food_safety_summary',
-    component: () => import('@/views/FoodSafetySummaryView.vue')
+    component: () => import('../views/FoodSafetySummaryView.vue')
   },
   {
     meta: {
@@ -344,7 +325,7 @@ const routes = [
     },
     path: '/templates',
     name: 'templates',
-    component: () => import('@/views/TemplatesView.vue')
+    component: () => import('../views/TemplatesView.vue')
   },
   {
     meta: {
@@ -352,7 +333,7 @@ const routes = [
     },
     path: '/inspections',
     name: 'inspections',
-    component: () => import('@/views/InspectionsView.vue')
+    component: () => import('../views/InspectionsView.vue')
   },
   {
     meta: {
@@ -360,16 +341,15 @@ const routes = [
     },
     path: '/schedule',
     name: 'schedule',
-    component: () => import('@/views/ScheduleView.vue')
+    component: () => import('../views/ScheduleView.vue')
   },
-  // Accounting
   {
     meta: {
       title: 'Account List'
     },
     path: '/account-list',
     name: 'account-list',
-    component: () => import('@/views/AccountListView.vue')
+    component: () => import('../views/AccountListView.vue')
   },
   {
     meta: {
@@ -377,7 +357,7 @@ const routes = [
     },
     path: '/money-transfer',
     name: 'money-transfer',
-    component: () => import('@/views/MoneyTransferView.vue')
+    component: () => import('../views/MoneyTransferView.vue')
   },
   {
     meta: {
@@ -385,7 +365,7 @@ const routes = [
     },
     path: '/balance-sheet',
     name: 'balance-sheet',
-    component: () => import('@/views/BalanceSheetView.vue')
+    component: () => import('../views/BalanceSheetView.vue')
   },
   {
     meta: {
@@ -393,16 +373,15 @@ const routes = [
     },
     path: '/account-statement',
     name: 'account-statement',
-    component: () => import('@/views/AccountStatementView.vue')
+    component: () => import('../views/AccountStatementView.vue')
   },
-  // HRM
   {
     meta: {
       title: 'Employee List'
     },
     path: '/employee-list',
     name: 'employee-list',
-    component: () => import('@/views/EmployeeListView.vue')
+    component: () => import('../views/EmployeeListView.vue')
   },
   {
     meta: {
@@ -410,7 +389,7 @@ const routes = [
     },
     path: '/total-hours-work',
     name: 'total-hours-work',
-    component: () => import('@/views/TotalHoursWorkView.vue')
+    component: () => import('../views/TotalHoursWorkView.vue')
   },
   {
     meta: {
@@ -418,7 +397,7 @@ const routes = [
     },
     path: '/time-cards',
     name: 'time-cards',
-    component: () => import('@/views/TimeCardsView.vue')
+    component: () => import('../views/TimeCardsView.vue')
   },
   {
     meta: {
@@ -426,7 +405,7 @@ const routes = [
     },
     path: '/branch',
     name: 'branch',
-    component: () => import('@/views/BranchView.vue')
+    component: () => import('../views/BranchView.vue')
   },
   {
     meta: {
@@ -434,7 +413,7 @@ const routes = [
     },
     path: '/attendance',
     name: 'attendance',
-    component: () => import('@/views/AttendanceView.vue')
+    component: () => import('../views/AttendanceView.vue')
   },
   {
     meta: {
@@ -442,7 +421,15 @@ const routes = [
     },
     path: '/holidays',
     name: 'holidays',
-    component: () => import('@/views/HolidaysView.vue')
+    component: () => import('../views/HolidaysView.vue')
+  },
+  {
+    meta: {
+      title: 'Receipts'
+    },
+    path: '/receipts',
+    name: 'receipts',
+    component: () => import('../views/SalesView.vue')
   }
 ]
 

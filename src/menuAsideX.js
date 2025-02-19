@@ -72,14 +72,6 @@ export default [
   //       label: 'Refund',
   //       to: '/refund'
   //     }
-  //     // {
-  //     //   label: 'Taxes for Philippines',
-  //     //   to: '/taxes-for-philippines'
-  //     // },
-  //     // {
-  //     //   label: 'Royalty Statement',
-  //     //   to: '/royalty-statement'
-  //     // }
   //   ]
   // },
   {
@@ -100,10 +92,6 @@ export default [
         label: 'Item',
         to: '/items'
       },
-      // {
-      //   label: 'Item Tags',
-      //   to: '/item-tags'
-      // },
       {
         label: 'Category',
         to: '/category'
