@@ -401,11 +401,11 @@ const routes = [
   },
   {
     meta: {
-      title: 'Branch'
+      title: 'Branches'
     },
-    path: '/branch',
-    name: 'branch',
-    component: () => import('../views/BranchView.vue')
+    path: '/branches',
+    name: 'branches',
+    component: () => import('../views/BranchesView.vue')
   },
   {
     meta: {

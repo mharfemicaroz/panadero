@@ -13,6 +13,7 @@ import {
   mdiMonitorDashboard,
   mdiOfficeBuilding,
   mdiReceipt,
+  mdiStore,
   mdiTable
 } from '@mdi/js'
 
@@ -116,15 +117,15 @@ export default [
     icon: mdiAccountMultiple
   },
   {
-    to: '/devices',
-    label: 'Devices',
-    icon: mdiDevices
+    to: '/branches',
+    label: 'Branches',
+    icon: mdiStore
   },
-  {
-    to: '/franchises',
-    label: 'Franchise',
-    icon: mdiOfficeBuilding
-  },
+  // {
+  //   to: '/franchises',
+  //   label: 'Franchise',
+  //   icon: mdiOfficeBuilding
+  // },
   {
     to: '/receipts',
     label: 'Receipts',
@@ -204,10 +205,10 @@ export default [
         label: 'Time Cards',
         to: '/time-cards'
       },
-      {
-        label: 'Branch',
-        to: '/branch'
-      },
+      // {
+      //   label: 'Branches',
+      //   to: '/branches'
+      // },
       {
         label: 'Attendance',
         to: '/attendance'

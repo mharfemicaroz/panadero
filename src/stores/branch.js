@@ -38,9 +38,9 @@ export const useBranchStore = defineStore('branch', () => {
   const updateById = async (id, data) => {
     try {
       const response = await branchService.updateById(id, data)
-      const index = branches.value.findIndex((b) => b.id === id)
+      const index = branches.value.data.findIndex((b) => b.id === id)
       if (index !== -1) {
-        branches.value[index] = response
+        branches.value.data[index] = response
       }
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to update branch')
@@ -50,7 +50,7 @@ export const useBranchStore = defineStore('branch', () => {
   const deleteById = async (id) => {
     try {
       await branchService.delete(id)
-      branches.value = branches.value.filter((b) => b.id !== id)
+      branches.value = branches.value.data.filter((b) => b.id !== id)
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to delete branch')
     }

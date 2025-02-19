@@ -318,7 +318,9 @@ const startNewTransaction = async () => {
       inputAttributes: { min: 0, step: '0.01' },
       showCancelButton: true,
       confirmButtonText: 'Start Transaction',
-      cancelButtonText: 'Cancel'
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33'
     })
     if (openingCash === undefined || openingCash === '') {
       isLoading.value = false
@@ -364,7 +366,9 @@ const endTransaction = async () => {
       inputAttributes: { min: 0, step: '0.01' },
       showCancelButton: true,
       confirmButtonText: 'End Transaction',
-      cancelButtonText: 'Cancel'
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33'
     })
     if (closingCash === undefined || closingCash === '') {
       isLoading.value = false
@@ -434,7 +438,9 @@ const addCash = async () => {
     inputAttributes: { min: 0, step: '0.01' },
     showCancelButton: true,
     confirmButtonText: 'Add',
-    cancelButtonText: 'Cancel'
+    cancelButtonText: 'Cancel',
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33'
   })
   if (cashAmount === undefined || cashAmount === '') return
   try {
@@ -478,7 +484,9 @@ const removeCash = async () => {
     inputAttributes: { min: 0, step: '0.01' },
     showCancelButton: true,
     confirmButtonText: 'Remove',
-    cancelButtonText: 'Cancel'
+    cancelButtonText: 'Cancel',
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33'
   })
   if (cashAmount === undefined || cashAmount === '') return
   try {
