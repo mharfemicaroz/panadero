@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, getCurrentInstance } from 'vue'
 import LayoutAuthenticated from '../layouts/LayoutAuthenticatedX.vue'
 import SectionMain from '../components/SectionMain.vue'
 import { useEmployeeStore } from '../stores/hr/employeeStore'
@@ -13,11 +13,14 @@ import BaseButton from '../components/BaseButton.vue'
 import Swal from 'sweetalert2'
 import { mdiPlus, mdiTableBorder, mdiDelete, mdiAlertCircle } from '@mdi/js'
 
+// Retrieve global API_URL from main.js
+const { appContext } = getCurrentInstance()
+const API_URL = appContext.config.globalProperties.API_URL || ''
+
 // --- STATE ---
 const showNewEmployeeModal = ref(false)
 const showEditEmployeeModal = ref(false)
 
-// Add a new property "picture" (to hold the Base64 string)
 const newEmployeeForm = ref({
   first_name: '',
   last_name: '',
@@ -39,6 +42,15 @@ const editEmployeeForm = ref({
   job_title_id: null,
   status: 'active',
   picture: ''
+})
+
+// --- COMPUTED PREVIEW SOURCE FOR EDIT MODAL ---
+const editPictureSrc = computed(() => {
+  if (!editEmployeeForm.value.picture) return ''
+  // If the picture is a Base64 string, use it directly; otherwise, prefix with API_URL.
+  return editEmployeeForm.value.picture.startsWith('data:')
+    ? editEmployeeForm.value.picture
+    : `${API_URL}${editEmployeeForm.value.picture}`
 })
 
 // --- STORES ---
@@ -98,7 +110,7 @@ const handleEditEmployee = async (row) => {
     department_id: row.department_id,
     job_title_id: row.job_title_id,
     status: row.status,
-    picture: row.picture || '' // existing picture if any
+    picture: row.picture || ''
   }
 
   showEditEmployeeModal.value = true
@@ -195,7 +207,7 @@ function handleEditPictureUpload(event) {
 
   const reader = new FileReader()
   reader.onload = (e) => {
-    editEmployeeForm.value.picture = e.target.result // Base64 string
+    editEmployeeForm.value.picture = e.target.result
   }
   reader.readAsDataURL(file)
 }
@@ -402,10 +414,10 @@ const closeEditEmployeeModal = () => {
               @change="handleEditPictureUpload"
               class="w-full border p-2 rounded"
             />
-            <!-- Preview if available -->
+            <!-- Preview: if a new image is uploaded (Base64) it will show that, otherwise if the employee already has a picture loaded, it will be prefixed with API_URL -->
             <img
               v-if="editEmployeeForm.picture"
-              :src="`${API_URL}${editEmployeeForm.picture}`"
+              :src="editPictureSrc"
               alt="Picture Preview"
               class="mt-2 w-32 h-32 object-contain"
             />
