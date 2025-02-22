@@ -6,20 +6,6 @@
       <div class="text-sm">{{ dateString }}</div>
     </div>
 
-    <!-- Matched Employee Notification (auto-hidden after 10 seconds) -->
-    <div class="p-4" v-if="matchedEmployee">
-      <div
-        class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4"
-      >
-        <strong class="font-bold">Match Found!</strong>
-        <span class="block">
-          Employee: {{ matchedEmployee.first_name }} {{ matchedEmployee.last_name }} (ID:
-          {{ matchedEmployee.id }})
-        </span>
-        <span class="block">Distance: {{ matchedDistance.toFixed(2) }}</span>
-      </div>
-    </div>
-
     <div class="flex-1 flex flex-col md:flex-row">
       <!-- Left Side: Timelog Table -->
       <div class="w-full md:w-2/3 p-4">
@@ -55,11 +41,12 @@
         </div>
       </div>
 
-      <!-- Right Side: Camera & Time In/Out Panel -->
+      <!-- Right Side: Camera & Live Liveness Check Panel -->
       <div class="w-full md:w-1/3 p-4">
-        <div class="bg-white rounded shadow p-4 h-full flex flex-col">
+        <!-- Wrap camera container with a ref for fullscreen -->
+        <div ref="cameraContainerRef" class="bg-white rounded shadow p-4 h-full flex flex-col">
           <!-- Responsive Webcam / Face Capture Container -->
-          <div class="relative w-full mb-4" style="padding-top: 56.25%">
+          <div class="relative w-full mb-4" style="padding-top: 75%">
             <!-- Video element -->
             <video
               ref="videoRef"
@@ -71,33 +58,30 @@
             <canvas ref="canvasRef" class="absolute inset-0 w-full h-full"></canvas>
           </div>
 
-          <div class="mt-2">
+          <!-- Verification Button -->
+          <div class="flex justify-center mt-2">
             <button
-              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-              @click="startCamera"
+              class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+              @click="verifyAttendance"
             >
-              Start Camera
-            </button>
-          </div>
-
-          <!-- Time In/Out Button Panel -->
-          <div class="flex flex-col items-center md:items-start mt-4">
-            <div class="text-xl font-semibold mb-2">
-              {{ modeLabel }}: {{ formatTime(new Date()) }}
-            </div>
-            <button
-              :class="[
-                mode === 'time_in'
-                  ? 'bg-green-600 hover:bg-green-700'
-                  : 'bg-red-600 hover:bg-red-700',
-                'text-white px-4 py-2 rounded font-semibold'
-              ]"
-              @click="recordTime"
-            >
-              {{ modeLabel }}
+              Verify My Attendance
             </button>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Matched Employee Notification (auto-hidden after 10 seconds) -->
+    <div class="p-4" v-if="matchedEmployee">
+      <div
+        class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4"
+      >
+        <strong class="font-bold">Match Found!</strong>
+        <span class="block">
+          Employee: {{ matchedEmployee.first_name }} {{ matchedEmployee.last_name }} (ID:
+          {{ matchedEmployee.id }})
+        </span>
+        <span class="block">Distance: {{ matchedDistance.toFixed(2) }}</span>
       </div>
     </div>
   </div>
@@ -123,11 +107,39 @@ const matchedEmployee = ref(null)
 const matchedDistance = ref(0)
 const selectedTimelogs = ref([])
 
-// Face detection references
+// Reactive variables for a stable liveness check (state-machine)
+const livenessState = ref('idle') // 'idle', 'challenge', 'passed', 'failed', 'complete'
+const currentChallengeIndex = ref(0)
+const challengeStartTime = ref(0)
+const baselineAngle = ref(null) // store baseline when liveness check starts
+
+// Liveness challenges using relative conditions based on baselineAngle
+const livenessChallenges = [
+  {
+    instruction: 'Please turn your head to the left',
+    condition: (angle, baseline) => baseline && angle && angle.yaw < baseline.yaw - 60
+  },
+  {
+    instruction: 'Please turn your head to the right',
+    condition: (angle, baseline) => baseline && angle && angle.yaw > baseline.yaw + 60
+  },
+  {
+    instruction: 'Please nod your head',
+    condition: (angle, baseline) => baseline && angle && angle.pitch > baseline.pitch + 10
+  }
+]
+
+// Face detection and camera/canvas references
 const videoRef = ref(null)
 const canvasRef = ref(null)
+const cameraContainerRef = ref(null)
 
-// Table columns
+// Reactive variables for auto-attendance and cooldown
+const isProcessing = ref(false)
+const attendanceMessage = ref('')
+const autoAttendanceCooldown = ref(false)
+
+// Table columns for timelogs
 const tableColumns = [
   {
     key: 'employee_id',
@@ -167,13 +179,14 @@ onMounted(async () => {
   await faceapi.nets.faceRecognitionNet.loadFromUri('/models/face_recognition')
   console.log('face-api.js models loaded (client-side).')
 
-  // Update canvas dimensions on initial load
+  // Auto-start camera on page load
+  startCamera()
+
   videoRef.value.onloadedmetadata = () => {
     updateCanvasDimensions()
     detectFacesLoop()
   }
 
-  // Update canvas dimensions on window resize
   window.addEventListener('resize', updateCanvasDimensions)
 })
 
@@ -214,7 +227,6 @@ async function fetchDailyLogs() {
 function setDefaultMode() {
   const now = new Date()
   const totalMinutes = now.getHours() * 60 + now.getMinutes()
-
   if (totalMinutes === 0) {
     mode.value = 'time_in'
   } else if (totalMinutes >= 1 && totalMinutes <= 30) {
@@ -251,7 +263,7 @@ function updateDateTime() {
   })
 }
 
-// Updates the canvas's internal dimensions to match its parent container
+// Update the canvas dimensions to match the video container
 function updateCanvasDimensions() {
   if (!videoRef.value || !canvasRef.value) return
   const container = videoRef.value.parentElement
@@ -281,6 +293,19 @@ function startCamera() {
     })
 }
 
+// Renamed verifyAttendance replaces the previous fullscreen method.
+function verifyAttendance() {
+  if (cameraContainerRef.value) {
+    if (cameraContainerRef.value.requestFullscreen) {
+      cameraContainerRef.value.requestFullscreen()
+    } else if (cameraContainerRef.value.webkitRequestFullscreen) {
+      cameraContainerRef.value.webkitRequestFullscreen()
+    } else if (cameraContainerRef.value.msRequestFullscreen) {
+      cameraContainerRef.value.msRequestFullscreen()
+    }
+  }
+}
+
 async function detectFacesLoop() {
   if (!videoRef.value || videoRef.value.paused || videoRef.value.ended) return
 
@@ -290,16 +315,14 @@ async function detectFacesLoop() {
     .withFaceExpressions()
     .withAgeAndGender()
 
-  // Ensure the canvas is sized correctly on each iteration
   updateCanvasDimensions()
-
   const canvas = canvasRef.value
   const ctx = canvas.getContext('2d')
   ctx.clearRect(0, 0, canvas.width, canvas.height)
 
+  // Draw face overlays (bounding boxes, texts, landmark points)
   const displaySize = { width: canvas.width, height: canvas.height }
   const resizedDetections = faceapi.resizeResults(detections, displaySize)
-
   for (const person of resizedDetections) {
     const box = person.detection.box
     ctx.lineWidth = 3
@@ -316,30 +339,158 @@ async function detectFacesLoop() {
     const genderLine = `Gender: ${Math.round(person.genderProbability * 100)}% ${person.gender}`
     const expressionLine = `Expression: ${Math.round(topExpr[1] * 100)}% ${topExpr[0]}`
     const ageLine = `Age: ${Math.round(person.age)} years`
+    const angleLine = `roll: ${person.angle.roll}° pitch: ${person.angle.pitch}° yaw: ${person.angle.yaw}°`
 
-    // Shadow text
     ctx.fillStyle = 'black'
     ctx.font = '16px "Segoe UI"'
     ctx.fillText(genderLine, box.x, box.y - 59)
     ctx.fillText(expressionLine, box.x, box.y - 41)
     ctx.fillText(ageLine, box.x, box.y - 23)
-
-    // Main text
     ctx.fillStyle = 'lightblue'
     ctx.fillText(genderLine, box.x, box.y - 60)
     ctx.fillText(expressionLine, box.x, box.y - 42)
     ctx.fillText(ageLine, box.x, box.y - 24)
 
-    // Draw landmark points
+    ctx.fillStyle = 'black'
+    ctx.fillText(angleLine, box.x, box.y + box.height + 20)
+    ctx.fillStyle = 'lightblue'
+    ctx.fillText(angleLine, box.x, box.y + box.height + 19)
+
     ctx.globalAlpha = 0.8
     ctx.fillStyle = 'lightblue'
-    const pointSize = 2
     person.landmarks.positions.forEach(({ x, y }) => {
       ctx.beginPath()
-      ctx.arc(x, y, pointSize, 0, 2 * Math.PI)
+      ctx.arc(x, y, 2, 0, 2 * Math.PI)
       ctx.fill()
     })
   }
+
+  // ----- Liveness Check and Auto-Attendance -----
+  const isFullscreen = document.fullscreenElement === cameraContainerRef.value
+  if (isFullscreen && !isProcessing.value && !autoAttendanceCooldown.value) {
+    if (detections.length > 0) {
+      const face = detections[0]
+      // Start liveness check if idle and store baseline angle
+      if (livenessState.value === 'idle') {
+        livenessState.value = 'challenge'
+        currentChallengeIndex.value = 0
+        challengeStartTime.value = Date.now()
+        baselineAngle.value = face.angle
+      }
+      if (livenessState.value === 'challenge') {
+        const currentChallenge = livenessChallenges[currentChallengeIndex.value]
+        const elapsed = (Date.now() - challengeStartTime.value) / 1000
+        const challengeDuration = 5 // seconds per challenge
+        const remaining = Math.max(0, Math.ceil(challengeDuration - elapsed))
+        // Show instruction and countdown
+        ctx.fillStyle = 'rgba(0,0,0,0.5)'
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+        ctx.fillStyle = 'white'
+        ctx.font = '24px Arial'
+        ctx.textAlign = 'center'
+        ctx.fillText(currentChallenge.instruction, canvas.width / 2, canvas.height / 2 - 20)
+        ctx.font = '48px Arial'
+        ctx.fillText(remaining.toString(), canvas.width / 2, canvas.height / 2 + 30)
+        // Check condition relative to baselineAngle
+        if (currentChallenge.condition(face.angle, baselineAngle.value)) {
+          // Transition to passed state and wait 1.5 seconds before next challenge
+          livenessState.value = 'passed'
+          ctx.fillStyle = 'rgba(0,128,0,0.5)'
+          ctx.fillRect(0, 0, canvas.width, canvas.height)
+          ctx.fillStyle = 'white'
+          ctx.font = '32px Arial'
+          ctx.textAlign = 'center'
+          ctx.fillText('Challenge Passed!', canvas.width / 2, canvas.height / 2)
+          setTimeout(() => {
+            currentChallengeIndex.value++
+            if (currentChallengeIndex.value >= livenessChallenges.length) {
+              livenessState.value = 'complete'
+            } else {
+              livenessState.value = 'challenge'
+              challengeStartTime.value = Date.now()
+              // Update baseline for next challenge based on current angle
+              baselineAngle.value = face.angle
+            }
+          }, 1500)
+        } else if (elapsed >= challengeDuration) {
+          // Challenge failed
+          livenessState.value = 'failed'
+          ctx.fillStyle = 'rgba(128,0,0,0.5)'
+          ctx.fillRect(0, 0, canvas.width, canvas.height)
+          ctx.fillStyle = 'white'
+          ctx.font = '32px Arial'
+          ctx.textAlign = 'center'
+          ctx.fillText('Challenge Failed', canvas.width / 2, canvas.height / 2)
+          setTimeout(() => {
+            livenessState.value = 'idle'
+            currentChallengeIndex.value = 0
+            challengeStartTime.value = 0
+            baselineAngle.value = null
+            autoAttendanceCooldown.value = true
+            setTimeout(() => {
+              autoAttendanceCooldown.value = false
+            }, 10000)
+          }, 1500)
+        }
+      } else if (livenessState.value === 'complete') {
+        // All challenges passed: auto-process attendance
+        isProcessing.value = true
+        recordTime().then(() => {
+          attendanceMessage.value = 'Attendance successfully recorded!'
+          isProcessing.value = false
+          // Reset liveness state and enable cooldown
+          livenessState.value = 'idle'
+          currentChallengeIndex.value = 0
+          challengeStartTime.value = 0
+          baselineAngle.value = null
+          autoAttendanceCooldown.value = true
+          // Auto-exit fullscreen after processing attendance
+          if (document.fullscreenElement) {
+            document.exitFullscreen()
+          }
+          setTimeout(() => {
+            attendanceMessage.value = ''
+          }, 3000)
+          setTimeout(() => {
+            autoAttendanceCooldown.value = false
+          }, 10000)
+        })
+      }
+    } else {
+      // No face detected: reset liveness state
+      livenessState.value = 'idle'
+      currentChallengeIndex.value = 0
+      challengeStartTime.value = 0
+      baselineAngle.value = null
+    }
+  } else {
+    // Not in fullscreen or in processing/cooldown: reset liveness state
+    livenessState.value = 'idle'
+    currentChallengeIndex.value = 0
+    challengeStartTime.value = 0
+    baselineAngle.value = null
+  }
+
+  // If attendance is processing, show loader overlay
+  if (isProcessing.value) {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    ctx.fillStyle = 'white'
+    ctx.font = '32px Arial'
+    ctx.textAlign = 'center'
+    ctx.fillText('Processing attendance...', canvas.width / 2, canvas.height / 2)
+  }
+
+  // Display final attendance message, if any
+  if (attendanceMessage.value) {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    ctx.fillStyle = 'white'
+    ctx.font = '32px Arial'
+    ctx.textAlign = 'center'
+    ctx.fillText(attendanceMessage.value, canvas.width / 2, canvas.height / 2)
+  }
+
   requestAnimationFrame(detectFacesLoop)
 }
 
@@ -373,7 +524,6 @@ async function recordTime() {
 </script>
 
 <style scoped>
-/* Utility classes for overlay positioning are already provided by Tailwind */
 .relative {
   position: relative;
 }
