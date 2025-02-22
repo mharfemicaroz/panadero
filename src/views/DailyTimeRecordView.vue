@@ -89,7 +89,8 @@
 
 <script setup>
 import { ref, onMounted, computed, watch, onUnmounted } from 'vue'
-import * as faceapi from 'face-api.js'
+// import * as faceapi from 'face-api.js'
+import * as faceapi from '@vladmandic/face-api'
 import { useTimeLogStore } from '@/stores/hr/timeLogStore'
 import BaseTable from '@/components/BaseTable.vue'
 import NotificationBar from '@/components/NotificationBar.vue'

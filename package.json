@@ -10,11 +10,11 @@
   },
   "dependencies": {
     "@mdi/js": "^7.0.96",
+    "@vladmandic/face-api": "^1.7.15",
     "@vuepic/vue-datepicker": "^10.0.0",
     "axios": "^1.7.9",
     "chart.js": "^4.4.0",
     "dotenv": "^16.4.7",
-    "face-api.js": "^0.22.2",
     "jsbarcode": "^3.11.6",
     "jwt-decode": "^4.0.0",
     "numeral": "^2.0.6",
