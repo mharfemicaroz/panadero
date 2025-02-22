@@ -33,11 +33,12 @@ const menuClick = (event, item) => {
   if (item.isToggleLightDark) darkModeStore.set()
   if (item.isLogout) logout()
   if (item.issettings) settings()
-  if (item.isPOS) openNewTab()
+  if (item.isPOS) openNewTab('/pos')
+  if (item.isDTR) openNewTab('/dtr')
 }
 
-const openNewTab = () => {
-  const routeUrl = router.resolve('/pos')
+const openNewTab = (route) => {
+  const routeUrl = router.resolve(route)
   window.open(routeUrl.href, '_blank')
 }
 

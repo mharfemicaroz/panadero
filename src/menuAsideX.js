@@ -31,9 +31,10 @@ export default [
     isPOS: true
   },
   {
-    to: '/dtr',
+    to: '',
     icon: mdiClock,
-    label: 'DTR'
+    label: 'DTR',
+    isDTR: true
   },
   // {
   //   label: 'Reports',

@@ -37,4 +37,4 @@ coverage
 .vercel
 
 # # Environment Variables
-# .env
+.env
