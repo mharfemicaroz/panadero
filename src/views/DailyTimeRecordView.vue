@@ -47,6 +47,7 @@
               :data="timelogsData"
               :loading="timeLogStore.isLoading"
               checkable
+              :show-action="false"
               @query-change="handleQueryChange"
               @selected="handleSelected"
               @edit="handleEditTimelog"
