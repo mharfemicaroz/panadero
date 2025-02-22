@@ -1,9 +1,19 @@
 <template>
   <div class="bg-[#f8f8f8] min-h-screen flex flex-col">
-    <!-- Header with Current Time and Date -->
-    <div class="bg-red-500 text-white text-center py-4">
-      <div class="text-3xl font-bold">{{ timeString }}</div>
-      <div class="text-sm">{{ dateString }}</div>
+    <!-- Header with Logo and Current Time/Date -->
+    <div class="bg-red-500 text-white py-4">
+      <div class="container mx-auto flex items-center justify-between px-4">
+        <!-- Logo and Brand -->
+        <div class="flex items-center">
+          <img src="../../public/logo.png" alt="Panadero Logo" class="mx-2" width="45" />
+          <b class="font-black text-2xl">Panadero</b>
+        </div>
+        <!-- Current Time and Date -->
+        <div class="text-right">
+          <div class="text-3xl font-bold">{{ timeString }}</div>
+          <div class="text-sm">{{ dateString }}</div>
+        </div>
+      </div>
     </div>
 
     <div class="flex-1 flex flex-col md:flex-row">
@@ -112,11 +122,12 @@ const matchedEmployee = ref(null)
 const matchedDistance = ref(0)
 const selectedTimelogs = ref([])
 
-// Reactive variables for a stable liveness check (state-machine)
-const livenessState = ref('idle') // 'idle', 'challenge', 'passed', 'failed', 'complete'
+// Liveness check state-machine variables
+const livenessState = ref('idle') // states: idle, challenge, neutral, failed, complete
 const currentChallengeIndex = ref(0)
 const challengeStartTime = ref(0)
-const baselineAngle = ref(null) // store baseline when liveness check starts
+const baselineAngle = ref(null) // baseline angle recorded at start
+const neutralStartTime = ref(0) // time when neutral condition first met
 
 // Liveness challenges using relative conditions based on baselineAngle
 const livenessChallenges = [
@@ -134,12 +145,23 @@ const livenessChallenges = [
   }
 ]
 
-// Face detection and camera/canvas references
+// Neutral condition: face should be within tolerances relative to baseline.
+function isNeutral(angle, baseline) {
+  if (!baseline || !angle) return false
+  const yawTolerance = 10
+  const pitchTolerance = 5
+  return (
+    Math.abs(angle.yaw - baseline.yaw) < yawTolerance &&
+    Math.abs(angle.pitch - baseline.pitch) < pitchTolerance
+  )
+}
+
+// Face detection and camera/canvas refs
 const videoRef = ref(null)
 const canvasRef = ref(null)
 const cameraContainerRef = ref(null)
 
-// Reactive variables for auto-attendance and cooldown
+// Auto-attendance and cooldown variables
 const isProcessing = ref(false)
 const attendanceMessage = ref('')
 const autoAttendanceCooldown = ref(false)
@@ -209,7 +231,7 @@ watch(matchedEmployee, (newVal) => {
 })
 
 const handleQueryChange = async (query) => {
-  await timeLogStore.getDailyLogs(employeeId.value, query, true)
+  await timeLogStore.getDailyLogs(employeeId.value, { ...query, date: new Date() }, true)
 }
 
 const handleSelected = (selectedItems) => {
@@ -226,7 +248,7 @@ async function deleteSelectedTimelogs() {
 }
 
 async function fetchDailyLogs() {
-  await timeLogStore.getDailyLogs(employeeId.value, { page: 1, limit: 5 }, true)
+  await timeLogStore.getDailyLogs(employeeId.value, { page: 1, limit: 5, date: new Date() }, true)
 }
 
 function setDefaultMode() {
@@ -268,7 +290,6 @@ function updateDateTime() {
   })
 }
 
-// Update the canvas dimensions to match the video container
 function updateCanvasDimensions() {
   if (!videoRef.value || !canvasRef.value) return
   const container = videoRef.value.parentElement
@@ -298,7 +319,7 @@ function startCamera() {
     })
 }
 
-// Renamed verifyAttendance replaces the previous fullscreen method.
+// Renamed verifyAttendance: triggers fullscreen and starts liveness check.
 function verifyAttendance() {
   if (cameraContainerRef.value) {
     if (cameraContainerRef.value.requestFullscreen) {
@@ -375,7 +396,7 @@ async function detectFacesLoop() {
   if (isFullscreen && !isProcessing.value && !autoAttendanceCooldown.value) {
     if (detections.length > 0) {
       const face = detections[0]
-      // Start liveness check if idle and store baseline angle
+      // Start liveness check if idle and store baseline as neutral
       if (livenessState.value === 'idle') {
         livenessState.value = 'challenge'
         currentChallengeIndex.value = 0
@@ -387,7 +408,7 @@ async function detectFacesLoop() {
         const elapsed = (Date.now() - challengeStartTime.value) / 1000
         const challengeDuration = 5 // seconds per challenge
         const remaining = Math.max(0, Math.ceil(challengeDuration - elapsed))
-        // Show instruction and countdown
+        // Show instruction and countdown for current challenge
         ctx.fillStyle = 'rgba(0,0,0,0.5)'
         ctx.fillRect(0, 0, canvas.width, canvas.height)
         ctx.fillStyle = 'white'
@@ -396,27 +417,21 @@ async function detectFacesLoop() {
         ctx.fillText(currentChallenge.instruction, canvas.width / 2, canvas.height / 2 - 20)
         ctx.font = '48px Arial'
         ctx.fillText(remaining.toString(), canvas.width / 2, canvas.height / 2 + 30)
-        // Check condition relative to baselineAngle
+        // Check challenge condition relative to baseline
         if (currentChallenge.condition(face.angle, baselineAngle.value)) {
-          // Transition to passed state and wait 1.5 seconds before next challenge
-          livenessState.value = 'passed'
+          // Transition to "neutral" state: ask user to return to neutral
+          livenessState.value = 'neutral'
+          neutralStartTime.value = Date.now()
           ctx.fillStyle = 'rgba(0,128,0,0.5)'
           ctx.fillRect(0, 0, canvas.width, canvas.height)
           ctx.fillStyle = 'white'
-          ctx.font = '32px Arial'
+          ctx.font = '28px Arial'
           ctx.textAlign = 'center'
-          ctx.fillText('Challenge Passed!', canvas.width / 2, canvas.height / 2)
-          setTimeout(() => {
-            currentChallengeIndex.value++
-            if (currentChallengeIndex.value >= livenessChallenges.length) {
-              livenessState.value = 'complete'
-            } else {
-              livenessState.value = 'challenge'
-              challengeStartTime.value = Date.now()
-              // Update baseline for next challenge based on current angle
-              baselineAngle.value = face.angle
-            }
-          }, 1500)
+          ctx.fillText(
+            'Challenge Passed! Please return to neutral',
+            canvas.width / 2,
+            canvas.height / 2
+          )
         } else if (elapsed >= challengeDuration) {
           // Challenge failed
           livenessState.value = 'failed'
@@ -437,13 +452,51 @@ async function detectFacesLoop() {
             }, 10000)
           }, 1500)
         }
+      } else if (livenessState.value === 'neutral') {
+        // Wait for user to return to neutral position for at least 1 second
+        if (isNeutral(face.angle, baselineAngle.value)) {
+          if (neutralStartTime.value === 0) {
+            neutralStartTime.value = Date.now()
+          }
+          const neutralElapsed = (Date.now() - neutralStartTime.value) / 1000
+          ctx.fillStyle = 'rgba(0,0,0,0.5)'
+          ctx.fillRect(0, 0, canvas.width, canvas.height)
+          ctx.fillStyle = 'white'
+          ctx.font = '28px Arial'
+          ctx.textAlign = 'center'
+          ctx.fillText('Neutral Position Achieved', canvas.width / 2, canvas.height / 2 - 10)
+          ctx.font = '24px Arial'
+          ctx.fillText(
+            `Hold for ${Math.ceil(1 - neutralElapsed)}s`,
+            canvas.width / 2,
+            canvas.height / 2 + 30
+          )
+          if (neutralElapsed >= 1) {
+            currentChallengeIndex.value++
+            if (currentChallengeIndex.value >= livenessChallenges.length) {
+              livenessState.value = 'complete'
+            } else {
+              livenessState.value = 'challenge'
+              challengeStartTime.value = Date.now()
+              baselineAngle.value = face.angle
+              neutralStartTime.value = 0
+            }
+          }
+        } else {
+          neutralStartTime.value = 0
+          ctx.fillStyle = 'rgba(0,0,0,0.5)'
+          ctx.fillRect(0, 0, canvas.width, canvas.height)
+          ctx.fillStyle = 'white'
+          ctx.font = '28px Arial'
+          ctx.textAlign = 'center'
+          ctx.fillText('Please return to neutral position', canvas.width / 2, canvas.height / 2)
+        }
       } else if (livenessState.value === 'complete') {
         // All challenges passed: auto-process attendance
         isProcessing.value = true
         recordTime().then(() => {
           attendanceMessage.value = 'Attendance successfully recorded!'
           isProcessing.value = false
-          // Reset liveness state and enable cooldown
           livenessState.value = 'idle'
           currentChallengeIndex.value = 0
           challengeStartTime.value = 0
@@ -462,21 +515,18 @@ async function detectFacesLoop() {
         })
       }
     } else {
-      // No face detected: reset liveness state
       livenessState.value = 'idle'
       currentChallengeIndex.value = 0
       challengeStartTime.value = 0
       baselineAngle.value = null
     }
   } else {
-    // Not in fullscreen or in processing/cooldown: reset liveness state
     livenessState.value = 'idle'
     currentChallengeIndex.value = 0
     challengeStartTime.value = 0
     baselineAngle.value = null
   }
 
-  // If attendance is processing, show loader overlay
   if (isProcessing.value) {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
@@ -486,7 +536,6 @@ async function detectFacesLoop() {
     ctx.fillText('Processing attendance...', canvas.width / 2, canvas.height / 2)
   }
 
-  // Display final attendance message, if any
   if (attendanceMessage.value) {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
