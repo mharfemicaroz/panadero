@@ -58,6 +58,11 @@
             <canvas ref="canvasRef" class="absolute inset-0 w-full h-full"></canvas>
           </div>
 
+          <!-- Display the current mode (Time In / Time Out) -->
+          <div class="flex justify-center mt-2">
+            <div class="text-xl font-semibold">{{ modeLabel }}</div>
+          </div>
+
           <!-- Verification Button -->
           <div class="flex justify-center mt-2">
             <button
@@ -89,7 +94,6 @@
 
 <script setup>
 import { ref, onMounted, computed, watch, onUnmounted } from 'vue'
-// import * as faceapi from 'face-api.js'
 import * as faceapi from '@vladmandic/face-api'
 import { useTimeLogStore } from '@/stores/hr/timeLogStore'
 import BaseTable from '@/components/BaseTable.vue'
