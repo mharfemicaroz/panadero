@@ -30,7 +30,6 @@
 
           <SectionTitleLineWithButton :icon="mdiTableBorder" title="Timelogs" main>
             <div class="flex items-center gap-2">
-              <!-- Delete selected timelogs button (if needed) -->
               <BaseButton
                 v-if="selectedTimelogs.length"
                 :icon="mdiDelete"
@@ -68,7 +67,7 @@
               autoplay
               playsinline
             ></video>
-            <!-- Canvas overlay (for face landmarks, bounding box, and info) -->
+            <!-- Canvas overlay -->
             <canvas ref="canvasRef" class="absolute inset-0 w-full h-full"></canvas>
           </div>
 
@@ -105,26 +104,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, onUnmounted } from 'vue'
 import * as faceapi from 'face-api.js'
-
-// Import your Pinia store for timelogs
 import { useTimeLogStore } from '@/stores/hr/timeLogStore'
-
-// Import components used in the template
 import BaseTable from '@/components/BaseTable.vue'
 import NotificationBar from '@/components/NotificationBar.vue'
 import SectionTitleLineWithButton from '@/components/SectionTitleLineWithButton.vue'
 import CardBox from '@/components/CardBox.vue'
 import BaseButton from '@/components/BaseButton.vue'
-
-// Import icons from @mdi/js
 import { mdiAlertCircle, mdiTableBorder, mdiDelete } from '@mdi/js'
 
 const employeeId = ref(1)
 const timeLogStore = useTimeLogStore()
-
-// Reactive states
 const timeString = ref('')
 const dateString = ref('')
 const mode = ref('time_in')
@@ -136,7 +127,7 @@ const selectedTimelogs = ref([])
 const videoRef = ref(null)
 const canvasRef = ref(null)
 
-// Table columns for timelogs
+// Table columns
 const tableColumns = [
   {
     key: 'employee_id',
@@ -154,7 +145,6 @@ const tableColumns = [
   }
 ]
 
-// Computed: timelogs data from store
 const timelogsData = computed(() => ({
   total: timeLogStore.items?.total || 0,
   totalPages: timeLogStore.items?.totalPages || 1,
@@ -176,6 +166,19 @@ onMounted(async () => {
   await faceapi.nets.ageGenderNet.loadFromUri('/models/age_gender_model')
   await faceapi.nets.faceRecognitionNet.loadFromUri('/models/face_recognition')
   console.log('face-api.js models loaded (client-side).')
+
+  // Update canvas dimensions on initial load
+  videoRef.value.onloadedmetadata = () => {
+    updateCanvasDimensions()
+    detectFacesLoop()
+  }
+
+  // Update canvas dimensions on window resize
+  window.addEventListener('resize', updateCanvasDimensions)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateCanvasDimensions)
 })
 
 watch(matchedEmployee, (newVal) => {
@@ -248,9 +251,21 @@ function updateDateTime() {
   })
 }
 
+// Updates the canvas's internal dimensions to match its parent container
+function updateCanvasDimensions() {
+  if (!videoRef.value || !canvasRef.value) return
+  const container = videoRef.value.parentElement
+  if (container) {
+    const newWidth = container.clientWidth
+    const newHeight = container.clientHeight
+    canvasRef.value.width = newWidth
+    canvasRef.value.height = newHeight
+  }
+}
+
 const modeLabel = computed(() => (mode.value === 'time_in' ? 'Time In' : 'Time Out'))
 
-// Face detection & Camera Methods
+// Face Detection & Camera Methods
 function startCamera() {
   if (videoRef.value) {
     videoRef.value.setAttribute('crossOrigin', 'anonymous')
@@ -260,13 +275,6 @@ function startCamera() {
     .then((stream) => {
       videoRef.value.srcObject = stream
       videoRef.value.play()
-      videoRef.value.onloadedmetadata = () => {
-        const { videoWidth, videoHeight } = videoRef.value
-        const canvas = canvasRef.value
-        canvas.width = videoWidth
-        canvas.height = videoHeight
-        detectFacesLoop()
-      }
     })
     .catch((err) => {
       console.error('Error accessing camera:', err)
@@ -281,6 +289,9 @@ async function detectFacesLoop() {
     .withFaceLandmarks()
     .withFaceExpressions()
     .withAgeAndGender()
+
+  // Ensure the canvas is sized correctly on each iteration
+  updateCanvasDimensions()
 
   const canvas = canvasRef.value
   const ctx = canvas.getContext('2d')
@@ -306,26 +317,28 @@ async function detectFacesLoop() {
     const expressionLine = `Expression: ${Math.round(topExpr[1] * 100)}% ${topExpr[0]}`
     const ageLine = `Age: ${Math.round(person.age)} years`
 
+    // Shadow text
     ctx.fillStyle = 'black'
     ctx.font = '16px "Segoe UI"'
     ctx.fillText(genderLine, box.x, box.y - 59)
     ctx.fillText(expressionLine, box.x, box.y - 41)
     ctx.fillText(ageLine, box.x, box.y - 23)
 
+    // Main text
     ctx.fillStyle = 'lightblue'
     ctx.fillText(genderLine, box.x, box.y - 60)
     ctx.fillText(expressionLine, box.x, box.y - 42)
     ctx.fillText(ageLine, box.x, box.y - 24)
 
+    // Draw landmark points
     ctx.globalAlpha = 0.8
     ctx.fillStyle = 'lightblue'
     const pointSize = 2
-    for (let i = 0; i < person.landmarks.positions.length; i++) {
-      const { x, y } = person.landmarks.positions[i]
+    person.landmarks.positions.forEach(({ x, y }) => {
       ctx.beginPath()
       ctx.arc(x, y, pointSize, 0, 2 * Math.PI)
       ctx.fill()
-    }
+    })
   }
   requestAnimationFrame(detectFacesLoop)
 }
@@ -360,7 +373,7 @@ async function recordTime() {
 </script>
 
 <style scoped>
-/* Utility classes to ensure proper overlay positioning */
+/* Utility classes for overlay positioning are already provided by Tailwind */
 .relative {
   position: relative;
 }
