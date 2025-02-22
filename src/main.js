@@ -25,6 +25,8 @@ app.config.globalProperties.$axios = axiosInstance
 
 app.config.globalProperties.$swal = Swal
 
+app.config.globalProperties.API_URL = import.meta.env.VITE_API_ROOT_URL
+
 // Create Vue app
 app.use(router).use(pinia).use(LoadingPlugin).use(print).mount('#app')
 

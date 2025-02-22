@@ -377,6 +377,62 @@ const routes = [
   },
   {
     meta: {
+      title: 'Daily Time Record'
+    },
+    path: '/dtr',
+    name: 'dtr',
+    component: () => import('../views/DailyTimeRecordView.vue')
+  },
+  {
+    meta: {
+      title: 'Employees'
+    },
+    path: '/employees',
+    name: 'employees',
+    component: () => import('../views/EmployeesView.vue')
+  },
+  {
+    meta: {
+      title: 'Departments'
+    },
+    path: '/departments',
+    name: 'departments',
+    component: () => import('../views/DepartmentsView.vue')
+  },
+  {
+    meta: {
+      title: 'Job Titles'
+    },
+    path: '/jobtitles',
+    name: 'jobtitles',
+    component: () => import('../views/JobTitlesView.vue')
+  },
+  {
+    meta: {
+      title: 'Leave Types'
+    },
+    path: '/leavetypes',
+    name: 'leavetypes',
+    component: () => import('../views/LeaveTypesView.vue')
+  },
+  {
+    meta: {
+      title: 'Leave Balances'
+    },
+    path: '/leavebalances',
+    name: 'leavebalances',
+    component: () => import('../views/LeaveBalancesView.vue')
+  },
+  {
+    meta: {
+      title: 'Leave Requests'
+    },
+    path: '/leaverequests',
+    name: 'leaverequests',
+    component: () => import('../views/LeaveRequestView.vue')
+  },
+  {
+    meta: {
       title: 'Employee List'
     },
     path: '/employee-list',

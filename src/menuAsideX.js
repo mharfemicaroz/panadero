@@ -5,6 +5,7 @@ import {
   mdiAccountMultiple,
   mdiApplicationSettings,
   mdiCalculator,
+  mdiClock,
   mdiDevices,
   mdiFileCabinet,
   mdiFood,
@@ -28,6 +29,11 @@ export default [
     icon: mdiCalculator,
     label: 'POS',
     isPOS: true
+  },
+  {
+    to: '/dtr',
+    icon: mdiClock,
+    label: 'DTR'
   },
   // {
   //   label: 'Reports',
@@ -190,12 +196,32 @@ export default [
     ]
   },
   {
-    label: 'HRM',
+    label: 'HRM & Payroll',
     icon: mdiGroup,
     menu: [
       {
-        label: 'Employee List',
-        to: '/employee-list'
+        label: 'Employees',
+        to: '/employees'
+      },
+      {
+        label: 'Departments',
+        to: '/departments'
+      },
+      {
+        label: 'Job Titles',
+        to: '/jobtitles'
+      },
+      {
+        label: 'Leave Types',
+        to: '/leavetypes'
+      },
+      {
+        label: 'Leave Balances',
+        to: '/leavebalances'
+      },
+      {
+        label: 'Leave Requests',
+        to: '/leaverequests'
       },
       {
         label: 'Total hours worked',
