@@ -243,6 +243,22 @@ export default [
       {
         label: 'Holidays',
         to: '/holidays'
+      },
+      {
+        label: 'Salaries',
+        to: '/salary'
+      },
+      {
+        label: 'Allowances',
+        to: '/allowances'
+      },
+      {
+        label: 'Deductions',
+        to: '/deductions'
+      },
+      {
+        label: 'Payrolls',
+        to: '/payroll'
       }
     ]
   },

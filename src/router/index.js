@@ -433,6 +433,38 @@ const routes = [
   },
   {
     meta: {
+      title: 'Allowances'
+    },
+    path: '/allowances',
+    name: 'allowances',
+    component: () => import('../views/AllowancesView.vue')
+  },
+  {
+    meta: {
+      title: 'Deductions'
+    },
+    path: '/deductions',
+    name: 'deductions',
+    component: () => import('../views/DeductionsView.vue')
+  },
+  {
+    meta: {
+      title: 'Salary'
+    },
+    path: '/salary',
+    name: 'salary',
+    component: () => import('../views/SalaryView.vue')
+  },
+  {
+    meta: {
+      title: 'Payroll'
+    },
+    path: '/payroll',
+    name: 'payroll',
+    component: () => import('../views/PayrollsView.vue')
+  },
+  {
+    meta: {
       title: 'Employee List'
     },
     path: '/employee-list',

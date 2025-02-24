@@ -131,11 +131,11 @@ export const usePayrollStore = defineStore('payroll', () => {
     }
   }
 
-  const markAsPaid = async (id) => {
+  const markAsPaid = async (id, data) => {
     error.value = null
     try {
       isLoading.value = true
-      const response = await payrollService.markAsPaid(id)
+      const response = await payrollService.markAsPaid(id, data)
       const index = items.value.data.findIndex((g) => g.id === id)
       if (index !== -1) {
         items.value.data[index] = response
