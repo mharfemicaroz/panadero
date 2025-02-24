@@ -118,15 +118,20 @@ async function updateInventory() {
       ? quantityChange
       : form.current_quantity - storeCurrent
 
+    // Determine the note based on the effective quantity change:
+    // If positive, set note to "manual add"; if negative, set note to "manual deduct"
+    const note =
+      effectiveQtyChange > 0 ? 'manual add' : effectiveQtyChange < 0 ? 'manual deduct' : ''
+
     // Adjust the inventory by the effective quantity change.
-    await inventoryStore.adjustItemQuantity(id, effectiveQtyChange)
+    await inventoryStore.adjustItemQuantity(id, effectiveQtyChange, note)
 
     // If there was an error during adjustment, throw to jump to the catch block.
     if (inventoryStore.error) {
       throw new Error(inventoryStore.error)
     }
 
-    // Update the additional inventory details.
+    // Update the additional inventory details with the note.
     await inventoryStore.updateItem(id, {
       minimum_quantity: form.minimum_quantity,
       maximum_quantity: form.maximum_quantity,

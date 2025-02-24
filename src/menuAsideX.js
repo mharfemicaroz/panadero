@@ -144,19 +144,11 @@ export default [
     menu: [
       {
         label: 'Summary Report by Period',
-        to: '/summary-report-by-period'
+        to: '/inventoryreport'
       },
       {
         label: 'Movement Report',
         to: '/movement-report'
-      },
-      {
-        label: 'Movement Report Period',
-        to: '/movement-report-period'
-      },
-      {
-        label: 'Item Bundle Report',
-        to: '/item-bundle-report'
       },
       {
         label: 'Warehouses',
@@ -175,10 +167,6 @@ export default [
         to: '/item-ledger'
       },
       {
-        label: 'Item Bundle',
-        to: '/item-bundle'
-      },
-      {
         label: 'Suppliers',
         to: '/suppliers'
       },
@@ -189,10 +177,6 @@ export default [
       {
         label: 'Purchase Order',
         to: '/purchase-order'
-      },
-      {
-        label: 'Disassembly',
-        to: '/disassembly'
       }
     ]
   },

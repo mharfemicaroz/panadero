@@ -65,6 +65,22 @@ const routes = [
   },
   {
     meta: {
+      title: 'Inventory Summary Report'
+    },
+    path: '/inventoryreport',
+    name: 'inventoryreport',
+    component: () => import('../views/InventorySummaryReport.vue')
+  },
+  {
+    meta: {
+      title: 'Movement Summary Report'
+    },
+    path: '/movement-report',
+    name: 'movement-report',
+    component: () => import('../views/MovementReport.vue')
+  },
+  {
+    meta: {
       title: 'POS'
     },
     path: '/pos',

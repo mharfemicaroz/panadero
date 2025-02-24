@@ -131,12 +131,12 @@ export const useInventoryStore = defineStore('inventory', () => {
   /**
    * Adjust inventory quantity: expects `quantityChange` (positive for stock IN, negative for stock OUT).
    */
-  const adjustItemQuantity = async (itemId, quantityChange) => {
+  const adjustItemQuantity = async (itemId, quantityChange, note) => {
     error.value = null
 
     try {
       isLoading.value = true
-      const response = await inventoryService.adjustQuantity(itemId, quantityChange)
+      const response = await inventoryService.adjustQuantity(itemId, quantityChange, note)
 
       const index = items.value.data.findIndex((inv) => inv.id === itemId)
       if (index !== -1) {
