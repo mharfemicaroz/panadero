@@ -62,6 +62,26 @@ const timeLogData = computed(() => ({
   }))
 }))
 
+const editLogTime = computed({
+  get() {
+    if (!editTimeLogForm.value.log_time) return ''
+    const date = new Date(editTimeLogForm.value.log_time)
+    const pad = (num) => num.toString().padStart(2, '0')
+    const year = date.getFullYear()
+    const month = pad(date.getMonth() + 1)
+    const day = pad(date.getDate())
+    const hours = pad(date.getHours())
+    const minutes = pad(date.getMinutes())
+    const seconds = pad(date.getSeconds())
+    // Return a string like "2025-02-23T23:02:24"
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`
+  },
+  set(val) {
+    // Convert the local input value back to a full ISO string
+    const d = new Date(val)
+    editTimeLogForm.value.log_time = d.toISOString() // e.g., "2025-02-23T23:02:24.000Z"
+  }
+})
 // --- TABLE COLUMNS ---
 const timeLogColumns = [
   { key: 'employee_name', label: 'Employee', sortable: false, filterable: false },
@@ -81,7 +101,7 @@ const handleSelected = (selectedList) => {
 
 const handleEditTimeLog = async (row) => {
   timeLogStore.isLoading = true
-
+  await employeeStore.fetchItems({ page: 1, limit: 100 }, true)
   editTimeLogForm.value = {
     id: row.id,
     employee_id: row.employee_id,
@@ -274,11 +294,7 @@ async function deleteSelectedTimeLogs() {
           </div>
           <div>
             <label class="block mb-1">Log Time</label>
-            <input
-              v-model="editTimeLogForm.log_time"
-              type="datetime-local"
-              class="w-full border p-2 rounded"
-            />
+            <input v-model="editLogTime" type="datetime-local" class="w-full border p-2 rounded" />
           </div>
           <div class="col-span-2">
             <label class="block mb-1">Remarks</label>
