@@ -57,7 +57,7 @@ const computedMovementData = computed(() => {
   return inventoryStore.items.data
     .map((record) => {
       const addedQty = (record.stock_movements || []).reduce((acc, movement) => {
-        if (movement.type === 'IN' && movement.note !== 'manual deduct') {
+        if (movement.type === 'IN') {
           return acc + movement.quantity_change
         }
         return acc
@@ -240,3 +240,9 @@ const handleQueryChange = async (query) => {
     </div>
   </LayoutAuthenticated>
 </template>
+<style>
+.dp__input {
+  margin-top: 4px;
+  height: 2.6em !important;
+}
+</style>

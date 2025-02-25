@@ -2,6 +2,7 @@ import { axiosInstance, API_URL } from './index'
 
 export default {
   async create(data) {
+    // data must include an `items` array (e.g., { supplier_id, warehouse_id, procurement_date, status, items: [...] })
     const response = await axiosInstance.post(`${API_URL}/procurements`, data)
     return response.data
   },

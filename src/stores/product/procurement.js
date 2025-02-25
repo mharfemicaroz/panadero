@@ -26,14 +26,8 @@ export const useProcurementStore = defineStore('procurement', () => {
    * Fetch a list of procurements
    */
   const fetchItems = async (queryParams = {}, forceRefresh = false) => {
-    // Clear any previous error
     error.value = null
-
-    // Skip API call if data is already loaded and refresh is not forced
-    if (!forceRefresh && isLoaded.value) {
-      return
-    }
-
+    if (!forceRefresh && isLoaded.value) return
     try {
       isLoading.value = true
       const response = await procurementService.list(queryParams)
@@ -70,6 +64,8 @@ export const useProcurementStore = defineStore('procurement', () => {
 
   /**
    * Create a new procurement
+   * Note: Ensure the payload includes an `items` array with each object containing:
+   * { id, quantity, purchase_cost }
    */
   const createItem = async (data) => {
     error.value = null
@@ -123,6 +119,7 @@ export const useProcurementStore = defineStore('procurement', () => {
 
   /**
    * Mark a procurement as complete
+   * This will trigger the backend to adjust the inventory for each procurement item.
    */
   const completeItem = async (id) => {
     error.value = null

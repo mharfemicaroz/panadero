@@ -107,15 +107,15 @@ export default [
       {
         label: 'Discounts',
         to: '/discounts'
-      },
-      {
-        label: 'Taxes',
-        to: ''
-      },
-      {
-        label: 'Payment Types',
-        to: ''
       }
+      // {
+      //   label: 'Taxes',
+      //   to: ''
+      // },
+      // {
+      //   label: 'Payment Types',
+      //   to: ''
+      // }
     ]
   },
   {
