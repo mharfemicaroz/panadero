@@ -37,17 +37,17 @@
         >
           <template #cell-actions="{ row }">
             <div class="flex gap-2">
-              <BaseButton :icon="mdiEye" color="info" @click="viewProcurementDetails(row)" />
+              <BaseButton :icon="mdiEye" color="primary" @click="viewProcurementDetails(row)" />
               <BaseButton
                 v-if="row.status !== 'received'"
                 :icon="mdiPencil"
-                color="gray"
+                color="primary"
                 @click="handleEditProcurement(row)"
               />
               <BaseButton
                 v-if="row.status !== 'received'"
                 :icon="mdiCheck"
-                color="success"
+                color="primary"
                 @click="approveProcurement(row)"
               />
             </div>
@@ -82,25 +82,6 @@
               {{ wh.name }}
             </option>
           </select>
-        </div>
-        <!-- Procurement Date -->
-        <div class="mb-4">
-          <label class="block mb-1">Procurement Date</label>
-          <input
-            v-model="newProcurementForm.procurement_date"
-            type="date"
-            class="w-full border p-2 rounded"
-          />
-        </div>
-        <!-- Status -->
-        <div class="mb-4">
-          <label class="block mb-1">Status</label>
-          <input
-            v-model="newProcurementForm.status"
-            type="text"
-            placeholder="e.g. pending, received..."
-            class="w-full border p-2 rounded"
-          />
         </div>
         <!-- Items Section -->
         <div class="mb-4 relative">
@@ -226,17 +207,7 @@
           <label class="block mb-1">Procurement Date</label>
           <input
             v-model="editProcurementForm.procurement_date"
-            type="date"
-            class="w-full border p-2 rounded"
-          />
-        </div>
-        <!-- Status -->
-        <div class="mb-4">
-          <label class="block mb-1">Status</label>
-          <input
-            v-model="editProcurementForm.status"
-            type="text"
-            placeholder="e.g. pending, received..."
+            type="datetime-local"
             class="w-full border p-2 rounded"
           />
         </div>
@@ -420,8 +391,8 @@ const newProcurementForm = ref({
   supplier_id: '',
   items: [],
   warehouse_id: '',
-  procurement_date: '',
-  status: ''
+  procurement_date: new Date().toISOString().slice(0, 10),
+  status: 'pending'
 })
 const newItemSearchQuery = ref('')
 
@@ -501,7 +472,16 @@ const procurementColumns = [
     label: 'Warehouse',
     formatter: (value, row) => (row.warehouse ? row.warehouse.name : '')
   },
-  { key: 'procurement_date', label: 'Date', sortable: true, filterable: true },
+  {
+    key: 'procurement_date',
+    label: 'Date',
+    sortable: true,
+    filterable: true,
+    formatter: (value, row) => {
+      return row.procurement_date ? new Date(row.procurement_date).toLocaleString() : ''
+    }
+  },
+
   { key: 'status', label: 'Status', sortable: true, filterable: true }
 ]
 
@@ -520,7 +500,9 @@ const handleEditProcurement = (row) => {
     id: row.id,
     supplier_id: row.supplier_id,
     warehouse_id: row.warehouse_id,
-    procurement_date: row.procurement_date,
+    procurement_date: row.procurement_date
+      ? new Date(row.procurement_date).toISOString().slice(0, 16)
+      : '',
     status: row.status,
     items: row.items ? row.items : []
   }
@@ -545,15 +527,14 @@ const handleShowNewProcurementModal = () => {
     supplier_id: '',
     items: [],
     warehouse_id: '',
-    procurement_date: '',
-    status: ''
+    procurement_date: new Date().toISOString().slice(0, 10),
+    status: 'pending'
   }
   newItemSearchQuery.value = ''
   showNewProcurementModal.value = true
 }
 
 async function saveNewProcurement() {
-  console.log('Saving procurement with payload:', JSON.stringify(newProcurementForm.value, null, 2))
   newProcurementForm.value.items.forEach((itm, idx) => {
     if (!itm.item_id) {
       console.error(`Item at index ${idx} is missing item_id:`, itm)
@@ -626,7 +607,7 @@ async function deleteSelectedProcurements() {
   })
   if (confirmDelete.isConfirmed) {
     for (const procurement of selectedProcurements.value) {
-      await procurementStore.deleteItem(procurement.id)
+      await procurementStore.deleteItem(procurement)
       if (procurementStore.error) break
     }
     if (!procurementStore.error) {

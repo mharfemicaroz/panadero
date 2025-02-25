@@ -201,7 +201,7 @@ const closeReceiptModal = () => {
         {{ saleStore.error }}
       </NotificationBar>
 
-      <SectionTitleLineWithButton :icon="mdiTableBorder" title="Sales" main />
+      <SectionTitleLineWithButton :icon="mdiTableBorder" title="Receipts" main />
 
       <SalesFilters
         :user-store="userStore"

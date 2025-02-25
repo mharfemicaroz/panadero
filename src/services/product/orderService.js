@@ -7,6 +7,8 @@ export default {
   },
 
   async create(data) {
+    // data must include an `items` array (e.g., { user_id, customer_id, order_date, status, total_amount, items: [...] })
+    // Note: When an order is completed, the inventory will be adjusted (order items quantities are deducted)
     const response = await axiosInstance.post(`${API_URL}/orders`, data)
     return response.data
   },
