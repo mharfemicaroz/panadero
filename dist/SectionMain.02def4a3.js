@@ -1,0 +1,1 @@
+import{d as e}from"./FooterBar.d9b5343e.js";import{b as s,l as n,y as o,n as r,h as t}from"./index.51562f92.js";const p={__name:"SectionMain",setup(c){return(a,l)=>(s(),n("section",{class:r(["container mx-auto p-4 sm:p-6",t(e)])},[o(a.$slots,"default")],2))}};export{p as _};
