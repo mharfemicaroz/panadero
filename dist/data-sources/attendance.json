@@ -1,0 +1,36 @@
+{
+    "data":[
+      {
+        "employee": "Rey Cruz",
+        "from": "8:00 AM",
+        "to": "5:00 PM"
+      },
+      {
+        "employee": "Rosa Cruz",
+        "from": "8:30 AM",
+        "to": "5:00 PM"
+      },
+      {
+        "employee": "Jhon Dave Reyes",
+        "from": "8:00 AM",
+        "to": "5:00 PM"
+      },
+      {
+        "employee": "David Smith",
+        "from": "7:20 AM",
+        "to": "5:00 PM"
+      },
+      {
+        "employee": "Rosa Cruz",
+        "from": "8:00 AM",
+        "to": "5:00 PM"
+      },
+      {
+        "employee": "Jhon Dave Reyes",
+        "from": "8:30 AM",
+        "to": "5:00 PM"
+      }
+    ]
+    
+      
+}

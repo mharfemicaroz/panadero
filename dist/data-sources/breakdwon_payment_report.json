@@ -1,0 +1,36 @@
+{
+    "data": [
+        {
+            "date": "Jan 13, 2025",
+            "payment_type": "Cash",
+            "payment_type_name": "Cash",
+            "pos_name": "Panadero Matina Aplaya2 Branch",
+            "quantity": 61,
+            "total_sales": 4796
+        },
+        {
+            "date": "Jan 13, 2025",
+            "payment_type": "Mobile Wallet",
+            "payment_type_name": "FoodPanda",
+            "pos_name": "Panadero Matina Aplaya2 Branch",
+            "quantity": 3,
+            "total_sales": 985
+        },
+        {
+            "date": "Jan 13, 2025",
+            "payment_type": "Mobile Wallet",
+            "payment_type_name": "GRAB",
+            "pos_name": "Panadero Matina Aplaya2 Branch",
+            "quantity": 9,
+            "total_sales": 1435
+        },
+        {
+            "date": "Jan 13, 2025",
+            "payment_type": "Mobile Wallet",
+            "payment_type_name": "GCASH",
+            "pos_name": "Panadero Matina Aplaya2 Branch",
+            "quantity": 1,
+            "total_sales": 102
+        }
+    ]
+}

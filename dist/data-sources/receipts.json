@@ -1,0 +1,164 @@
+{
+  "data": [
+    {
+      "transaction_number": 41753,
+      "date": "January 7, 2025",
+      "time": "11:19 AM",
+      "sales_invoice": 0,
+      "cashier": "Lealyn Guineta",
+      "amount": 90.00
+    },
+    {
+      "transaction_number": 41752,
+      "date": "January 7, 2025",
+      "time": "10:25 AM",
+      "sales_invoice": 0,
+      "cashier": "Lealyn Guineta",
+      "amount": 199.00
+    },
+    {
+      "transaction_number": 41751,
+      "date": "January 7, 2025",
+      "time": "10:24 AM",
+      "sales_invoice": 0,
+      "cashier": "Lealyn Guineta",
+      "amount": 80.00
+    },
+    {
+      "transaction_number": 41750,
+      "date": "January 7, 2025",
+      "time": "10:24 AM",
+      "sales_invoice": 0,
+      "cashier": "Lealyn Guineta",
+      "amount": 195.00
+    },
+    {
+      "transaction_number": 41749,
+      "date": "January 7, 2025",
+      "time": "10:23 AM",
+      "sales_invoice": 0,
+      "cashier": "Lealyn Guineta",
+      "amount": 50.00
+    },
+    {
+      "transaction_number": 41748,
+      "date": "January 7, 2025",
+      "time": "9:54 AM",
+      "sales_invoice": 0,
+      "cashier": "Lealyn Guineta",
+      "amount": 100.00
+    },
+    {
+      "transaction_number": 41747,
+      "date": "January 7, 2025",
+      "time": "9:54 AM",
+      "sales_invoice": 0,
+      "cashier": "Lealyn Guineta",
+      "amount": 20.00
+    },
+    {
+      "transaction_number": 41746,
+      "date": "January 7, 2025",
+      "time": "9:54 AM",
+      "sales_invoice": 0,
+      "cashier": "Lealyn Guineta",
+      "amount": 50.00
+    },
+    {
+      "transaction_number": 41745,
+      "date": "January 7, 2025",
+      "time": "9:53 AM",
+      "sales_invoice": 0,
+      "cashier": "Lealyn Guineta",
+      "amount": 20.00
+    },
+    {
+      "transaction_number": 41744,
+      "date": "January 7, 2025",
+      "time": "9:53 AM",
+      "sales_invoice": 0,
+      "cashier": "Lealyn Guineta",
+      "amount": 20.00
+    },
+    {
+      "transaction_number": 41743,
+      "date": "January 7, 2025",
+      "time": "9:53 AM",
+      "sales_invoice": 0,
+      "cashier": "Lealyn Guineta",
+      "amount": 20.00
+    },
+    {
+      "transaction_number": 41742,
+      "date": "January 7, 2025",
+      "time": "9:53 AM",
+      "sales_invoice": 0,
+      "cashier": "Lealyn Guineta",
+      "amount": 20.00
+    },
+    {
+      "transaction_number": 41741,
+      "date": "January 7, 2025",
+      "time": "9:53 AM",
+      "sales_invoice": 0,
+      "cashier": "Lealyn Guineta",
+      "amount": 20.00
+    },
+    {
+      "transaction_number": 41740,
+      "date": "January 7, 2025",
+      "time": "9:53 AM",
+      "sales_invoice": 0,
+      "cashier": "Lealyn Guineta",
+      "amount": 20.00
+    },
+    {
+      "transaction_number": 41739,
+      "date": "January 7, 2025",
+      "time": "9:53 AM",
+      "sales_invoice": 0,
+      "cashier": "Lealyn Guineta",
+      "amount": 20.00
+    },
+    {
+      "transaction_number": 41738,
+      "date": "January 7, 2025",
+      "time": "9:52 AM",
+      "sales_invoice": 0,
+      "cashier": "Lealyn Guineta",
+      "amount": 20.00
+    },
+    {
+      "transaction_number": 41737,
+      "date": "January 7, 2025",
+      "time": "9:52 AM",
+      "sales_invoice": 0,
+      "cashier": "Lealyn Guineta",
+      "amount": 30.00
+    },
+    {
+      "transaction_number": 41736,
+      "date": "January 7, 2025",
+      "time": "9:52 AM",
+      "sales_invoice": 0,
+      "cashier": "Lealyn Guineta",
+      "amount": 50.00
+    },
+    {
+      "transaction_number": 41735,
+      "date": "January 7, 2025",
+      "time": "9:52 AM",
+      "sales_invoice": 0,
+      "cashier": "Lealyn Guineta",
+      "amount": 50.00
+    },
+    {
+      "transaction_number": 41734,
+      "date": "January 7, 2025",
+      "time": "9:52 AM",
+      "sales_invoice": 0,
+      "cashier": "Lealyn Guineta",
+      "amount": 50.00
+    }
+  ]
+}

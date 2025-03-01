@@ -1,0 +1,40 @@
+{
+    "data": [
+        {
+            "inspection": "Inspection",
+            "date": "4 Dec 2024",
+            "report": "End of the Day Report",
+            "doc_number": null,
+            "score": "0%",
+            "conducted": "4 Dec 2024",
+            "completed": "Continue"
+        },
+        {
+            "inspection": "End of the Day Report",
+            "date": "4 Dec 2024",
+            "report": "End of the Day Report",
+            "doc_number": null,
+            "score": "68%",
+            "conducted": "4 Dec 2024",
+            "completed": "View Report"
+        },
+        {
+            "inspection": "End of the Day Report",
+            "date": "4 Dec 2024",
+            "report": "End of the Day Report",
+            "doc_number": null,
+            "score": "0%",
+            "conducted": "4 Dec 2024",
+            "completed": "Continue"
+        },
+        {
+            "inspection": "End of the Day Report",
+            "date": "4 Dec 2024",
+            "report": "End of the Day Report",
+            "doc_number": null,
+            "score": "0%",
+            "conducted": "4 Dec 2024",
+            "completed": "Continue"
+        }
+    ]
+}

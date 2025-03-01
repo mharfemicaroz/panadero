@@ -1,0 +1,32 @@
+{
+  "data": [
+    {
+      "account_no": 10001,
+      "name": "Sales Account",
+      "initial_balance": 0.00,
+      "default": true,
+      "note": "this is first account"
+    },
+    {
+      "account_no": 10002,
+      "name": "Payroll",
+      "initial_balance": 0.00,
+      "default": false,
+      "note": "this is sample note"
+    },
+    {
+      "account_no": 10001,
+      "name": "Sales Account",
+      "initial_balance": 0.00,
+      "default": true,
+      "note": "this is an example of text that is in the Note Column"
+    },
+    {
+      "account_no": 10002,
+      "name": "Payroll",
+      "initial_balance": 0.00,
+      "default": false,
+      "note": ""
+    }
+  ]
+}

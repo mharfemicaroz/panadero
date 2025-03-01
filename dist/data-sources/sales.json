@@ -1,0 +1,118 @@
+{
+    "sales": [
+        {
+            "id": "1672531199000",
+            "date": "2023-08-01T10:15:30.000Z",
+            "customerName": "John Doe",
+            "items": [
+                {
+                    "id": 1,
+                    "name": "Premium Coffee Beans",
+                    "price": 350.0,
+                    "discount": 0,
+                    "quantity": 2
+                },
+                {
+                    "id": 2,
+                    "name": "Coffee Filter",
+                    "price": 50.0,
+                    "discount": 5.0,
+                    "quantity": 1
+                }
+            ],
+            "subTotal": 745.0,
+            "discountAllItemsPercent": 0,
+            "discountEntireSale": 0,
+            "total": 745.0,
+            "paymentType": "Cash",
+            "checkNumber": "",
+            "bankName": "",
+            "walletReference": "",
+            "cardAuthCode": "",
+            "bankReference": "",
+            "status": "Complete"
+        },
+        {
+            "id": "1672531300000",
+            "date": "2023-08-02T14:20:00.000Z",
+            "customerName": "Jane Smith",
+            "items": [
+                {
+                    "id": 5,
+                    "name": "Dark Roast Beans",
+                    "price": 300.0,
+                    "discount": 0,
+                    "quantity": 1
+                },
+                {
+                    "id": 6,
+                    "name": "Espresso Cup",
+                    "price": 120.0,
+                    "discount": 20.0,
+                    "quantity": 2
+                }
+            ],
+            "subTotal": 520.0,
+            "discountAllItemsPercent": 10,
+            "discountEntireSale": 50.0,
+            "total": 418.0,
+            "paymentType": "Debit Card",
+            "checkNumber": "",
+            "bankName": "",
+            "walletReference": "",
+            "cardAuthCode": "AUTH456789",
+            "bankReference": "",
+            "status": "Complete"
+        },
+        {
+            "id": "1672531400000",
+            "date": "2023-08-03T09:45:00.000Z",
+            "customerName": "Sam Wilson",
+            "items": [
+                {
+                    "id": 7,
+                    "name": "Paper Cups",
+                    "price": 30.0,
+                    "discount": 0,
+                    "quantity": 10
+                }
+            ],
+            "subTotal": 300.0,
+            "discountAllItemsPercent": 0,
+            "discountEntireSale": 0,
+            "total": 300.0,
+            "paymentType": "N/A",
+            "checkNumber": "",
+            "bankName": "",
+            "walletReference": "",
+            "cardAuthCode": "",
+            "bankReference": "",
+            "status": "Suspended"
+        },
+        {
+            "id": "1672531500000",
+            "date": "2023-08-04T16:10:00.000Z",
+            "customerName": "Michael Jordan",
+            "items": [
+                {
+                    "id": 8,
+                    "name": "Coffee Syrup - Vanilla",
+                    "price": 200.0,
+                    "discount": 20.0,
+                    "quantity": 1
+                }
+            ],
+            "subTotal": 180.0,
+            "discountAllItemsPercent": 0,
+            "discountEntireSale": 0,
+            "total": 180.0,
+            "paymentType": "Credit Card",
+            "checkNumber": "",
+            "bankName": "",
+            "walletReference": "",
+            "cardAuthCode": "AUTH123456",
+            "bankReference": "",
+            "status": "Voided"
+        }
+    ]
+}
