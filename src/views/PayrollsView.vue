@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, getCurrentInstance, onMounted, watch } from 'vue'
+import { ref, computed, getCurrentInstance, onMounted } from 'vue'
 import LayoutAuthenticated from '../layouts/LayoutAuthenticatedX.vue'
 import NotificationBar from '../components/NotificationBar.vue'
 import BaseTable from '../components/BaseTable.vue'
@@ -17,7 +17,8 @@ import {
   mdiPencil,
   mdiEye,
   mdiReceiptTextCheck,
-  mdiClipboardCheck
+  mdiClipboardCheck,
+  mdiPrinter
 } from '@mdi/js'
 import { usePayrollStore } from '../stores/hr/payrollStore'
 import { useEmployeeStore } from '../stores/hr/employeeStore'
@@ -94,6 +95,17 @@ const markAsPaidForm = ref({
 const showPayrollDetailsModal = ref(false)
 const payrollDetails = ref({})
 
+// --- PRINT MODAL STATE ---
+const showPrintModal = ref(false)
+const printTitle = computed(() => {
+  if (selectedDateRange.value && selectedDateRange.value.length === 2) {
+    return `Payroll for ${formatDate(selectedDateRange.value[0])} to ${formatDate(
+      selectedDateRange.value[1]
+    )}`
+  }
+  return 'Payroll'
+})
+
 // --- FETCH DATA ---
 async function fetchPayrolls(queryParams = {}, forceRefresh = false) {
   await payrollStore.fetchItems(queryParams, forceRefresh)
@@ -116,7 +128,6 @@ async function fetchFilteredPayrolls() {
 
 // Helper functions for filtering (with time parts)
 function formatDateTimeStart(date) {
-  // For filtering, we want start of day with time
   const d = new Date(date)
   const year = d.getFullYear()
   const month = (d.getMonth() + 1).toString().padStart(2, '0')
@@ -178,7 +189,6 @@ const handleEditPayroll = async (row) => {
     end_date: row.end_date,
     is_active: row.is_active
   }
-  // Pre-populate the edit range using the current values
   editPayrollRange.value = [new Date(row.start_date), new Date(row.end_date)]
   showEditPayrollModal.value = true
   payrollStore.isLoading = false
@@ -192,7 +202,6 @@ const handleShowNewPayrollModal = async () => {
     end_date: '',
     is_active: true
   }
-  // Set default new range to today for both start and end
   newPayrollRange.value = [
     new Date(now.getFullYear(), now.getMonth(), 1),
     new Date(now.getFullYear(), now.getMonth() + 1, 0)
@@ -205,11 +214,10 @@ const handleShowNewPayrollModal = async () => {
 async function saveNewPayroll() {
   newPayrollForm.value.start_date = formatDate(newPayrollRange.value[0])
   newPayrollForm.value.end_date = formatDate(newPayrollRange.value[1])
-  // Set payroll_date automatically to today
   const payroll_date = formatDate(new Date())
   const payload = { ...newPayrollForm.value, payroll_date }
-  const response = await payrollStore.generatePayroll(payload)
-  if (!payrollStore.error && response) {
+  await payrollStore.generatePayroll(payload)
+  if (!payrollStore.error) {
     showNewPayrollModal.value = false
     await fetchFilteredPayrolls()
   }
@@ -255,8 +263,8 @@ async function deleteSelectedPayrolls() {
 // --- ROW ACTIONS ---
 // Approve row action
 async function approvePayroll(row) {
-  const response = await payrollStore.approvePayroll(row.id)
-  if (!payrollStore.error && response) {
+  await payrollStore.approvePayroll(row.id)
+  if (!payrollStore.error) {
     await fetchFilteredPayrolls()
     Swal.fire('Approved!', 'The payroll has been approved.', 'success')
   }
@@ -266,7 +274,7 @@ async function approvePayroll(row) {
 function handleMarkAsPaid(row) {
   markAsPaidForm.value = {
     payroll_id: row.id,
-    payment_method: 'bank_transfer',
+    payment_method: 'cash',
     remarks: ''
   }
   showMarkAsPaidModal.value = true
@@ -274,11 +282,8 @@ function handleMarkAsPaid(row) {
 
 // Confirm Mark as Paid action using the modal data
 async function confirmMarkAsPaid() {
-  const response = await payrollStore.markAsPaid(
-    markAsPaidForm.value.payroll_id,
-    markAsPaidForm.value
-  )
-  if (!payrollStore.error && response) {
+  await payrollStore.markAsPaid(markAsPaidForm.value.payroll_id, markAsPaidForm.value)
+  if (!payrollStore.error) {
     showMarkAsPaidModal.value = false
     await fetchFilteredPayrolls()
     Swal.fire('Paid!', 'The payroll has been marked as paid.', 'success')
@@ -289,6 +294,24 @@ async function confirmMarkAsPaid() {
 function viewPayrollDetails(row) {
   payrollDetails.value = row
   showPayrollDetailsModal.value = true
+}
+
+// --- PRINT ACTIONS ---
+const handleShowPrintModal = () => {
+  showPrintModal.value = true
+}
+
+const closePrintModal = () => {
+  showPrintModal.value = false
+}
+
+const printPayrollList = () => {
+  window.print()
+}
+
+// --- FILTER APPLY ---
+const applyFilters = async () => {
+  await fetchFilteredPayrolls()
 }
 </script>
 
@@ -312,6 +335,12 @@ function viewPayrollDetails(row) {
           color="danger"
           label="Delete"
           @click="deleteSelectedPayrolls"
+        />
+        <BaseButton
+          :icon="mdiPrinter"
+          color="info"
+          label="Print Payroll List"
+          @click="handleShowPrintModal"
         />
       </div>
     </SectionTitleLineWithButton>
@@ -348,8 +377,6 @@ function viewPayrollDetails(row) {
         <!-- Custom Row Actions Slot -->
         <template #cell-actions="{ row }">
           <div class="flex gap-2">
-            <!-- Approve if status is 'draft' -->
-
             <BaseButton
               v-if="row.status === 'draft'"
               :icon="mdiPencil"
@@ -357,15 +384,12 @@ function viewPayrollDetails(row) {
               size="small"
               @click="handleEditPayroll(row)"
             />
-
-            <!-- View Details -->
             <BaseButton
               :icon="mdiEye"
               color="light"
               size="small"
               @click="viewPayrollDetails(row)"
             />
-
             <BaseButton
               v-if="row.status === 'draft'"
               :icon="mdiClipboardCheck"
@@ -373,8 +397,6 @@ function viewPayrollDetails(row) {
               size="small"
               @click="approvePayroll(row)"
             />
-
-            <!-- Mark as Paid if status is 'approved' -->
             <BaseButton
               v-if="row.status === 'approved'"
               :icon="mdiReceiptTextCheck"
@@ -395,7 +417,6 @@ function viewPayrollDetails(row) {
       <div class="bg-white p-6 rounded shadow-lg w-[600px]">
         <h2 class="text-xl mb-4">Generate Payroll</h2>
         <div class="grid grid-cols-2 gap-4">
-          <!-- Employee Selection -->
           <div class="col-span-2">
             <label class="block mb-1">Employee</label>
             <select v-model.number="newPayrollForm.employee_id" class="w-full border p-2 rounded">
@@ -409,7 +430,6 @@ function viewPayrollDetails(row) {
               </option>
             </select>
           </div>
-          <!-- Use Datepicker to select Start and End Dates -->
           <div class="col-span-2">
             <label class="block mb-1">Select Date Range</label>
             <Datepicker
@@ -440,7 +460,6 @@ function viewPayrollDetails(row) {
       <div class="bg-white p-6 rounded shadow-lg w-[600px]">
         <h2 class="text-xl mb-4">Edit Payroll</h2>
         <div class="grid grid-cols-2 gap-4">
-          <!-- Employee Selection -->
           <div class="col-span-2">
             <label class="block mb-1">Employee</label>
             <select v-model.number="editPayrollForm.employee_id" class="w-full border p-2 rounded">
@@ -454,7 +473,6 @@ function viewPayrollDetails(row) {
               </option>
             </select>
           </div>
-          <!-- Use Datepicker to select Start and End Dates -->
           <div class="col-span-2">
             <label class="block mb-1">Select Date Range</label>
             <Datepicker
@@ -488,8 +506,8 @@ function viewPayrollDetails(row) {
           <div>
             <label class="block mb-1">Payment Method</label>
             <select v-model="markAsPaidForm.payment_method" class="w-full border p-2 rounded">
-              <option value="bank_transfer">Bank Transfer</option>
               <option value="cash">Cash</option>
+              <option value="bank_transfer">Bank Transfer</option>
               <option value="check">Check</option>
             </select>
           </div>
@@ -516,7 +534,6 @@ function viewPayrollDetails(row) {
     >
       <div class="bg-white p-6 rounded shadow-lg w-[600px] max-h-full overflow-auto">
         <h2 class="text-xl font-semibold mb-4">Payroll Details</h2>
-        <!-- Header Section -->
         <div class="grid grid-cols-2 gap-4 border-b pb-4">
           <div class="flex justify-between">
             <span class="font-medium">Employee:</span>
@@ -543,7 +560,6 @@ function viewPayrollDetails(row) {
             <span>{{ payrollDetails.is_active ? 'Yes' : 'No' }}</span>
           </div>
         </div>
-        <!-- Salary Details Section -->
         <div class="mt-4 grid grid-cols-2 gap-4">
           <div class="flex flex-col gap-2">
             <div class="flex justify-between">
@@ -570,7 +586,6 @@ function viewPayrollDetails(row) {
             </div>
           </div>
         </div>
-        <!-- Work & Pay Metrics Section -->
         <div class="mt-4">
           <h3 class="text-lg font-medium mb-2">Work & Pay Metrics</h3>
           <div class="grid grid-cols-2 gap-4">
@@ -612,7 +627,6 @@ function viewPayrollDetails(row) {
             </div>
           </div>
         </div>
-        <!-- Allowances & Deductions Section -->
         <div class="mt-4 grid grid-cols-2 gap-4">
           <div class="flex justify-between">
             <span class="font-medium">Allowances:</span>
@@ -634,5 +648,111 @@ function viewPayrollDetails(row) {
         </div>
       </div>
     </div>
+
+    <!-- Print Payroll List Modal -->
+    <div
+      v-if="showPrintModal"
+      class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 overflow-auto print-only"
+    >
+      <div class="bg-white p-6 rounded shadow-lg w-[90%] max-w-6xl overflow-auto">
+        <h2 class="text-xl font-bold mb-4">{{ printTitle }}</h2>
+        <div class="overflow-auto">
+          <table class="min-w-full text-sm">
+            <thead>
+              <tr>
+                <th class="border px-2 py-1">Employee / Basic Salary</th>
+                <th class="border px-2 py-1">Total Days / Hours Worked</th>
+                <th class="border px-2 py-1">Overtime Hours / Overtime Pay</th>
+                <th class="border px-2 py-1">Night Diff Hours / Night Diff Pay</th>
+                <th class="border px-2 py-1">Holiday Hours / Holiday Pay</th>
+                <th class="border px-2 py-1">Allowances</th>
+                <th class="border px-2 py-1">Deductions</th>
+                <th class="border px-2 py-1">Tax</th>
+                <th class="border px-2 py-1">Gross Salary</th>
+                <th class="border px-2 py-1">Net Salary</th>
+                <th class="border px-2 py-1">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in payrollData.data" :key="item.id">
+                <td class="border px-2 py-1">
+                  <div>{{ item.employee }}</div>
+                  <div>{{ item.basic_salary }}</div>
+                </td>
+                <td class="border px-2 py-1">
+                  <div>{{ item.total_days_worked || '-' }}</div>
+                  <div>{{ item.total_hours_worked || '-' }}</div>
+                </td>
+                <td class="border px-2 py-1">
+                  <div>{{ item.overtime_hours || '-' }}</div>
+                  <div>{{ item.overtime_pay || '-' }}</div>
+                </td>
+                <td class="border px-2 py-1">
+                  <div>{{ item.night_differential_hours || '-' }}</div>
+                  <div>{{ item.night_differential_pay || '-' }}</div>
+                </td>
+                <td class="border px-2 py-1">
+                  <div>{{ item.holiday_hours || '-' }}</div>
+                  <div>{{ item.holiday_pay || '-' }}</div>
+                </td>
+                <td class="border px-2 py-1">
+                  <div v-if="item.payroll_allowances && item.payroll_allowances.length">
+                    <div v-for="(allowance, index) in item.payroll_allowances" :key="index">
+                      {{ allowance.allowance.name }}: {{ allowance.allowance.amount }}
+                    </div>
+                  </div>
+                  <div v-else>
+                    {{ item.allowances || '-' }}
+                  </div>
+                </td>
+                <td class="border px-2 py-1">
+                  <div v-if="item.payroll_deductions && item.payroll_deductions.length">
+                    <div v-for="(deduction, index) in item.payroll_deductions" :key="index">
+                      {{ deduction.deduction.name }}: {{ deduction.deduction.amount }}
+                    </div>
+                  </div>
+                  <div v-else>
+                    {{ item.deductions || '-' }}
+                  </div>
+                </td>
+                <td class="border px-2 py-1">{{ item.tax || '-' }}</td>
+                <td class="border px-2 py-1">{{ item.gross_salary || '-' }}</td>
+                <td class="border px-2 py-1">{{ item.net_salary || '-' }}</td>
+                <td class="border px-2 py-1">{{ item.status }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="flex justify-end mt-4 space-x-2 no-print">
+          <button class="px-4 py-2 bg-gray-200 rounded" @click="closePrintModal">Close</button>
+          <button class="px-4 py-2 bg-blue-600 text-white rounded" @click="printPayrollList">
+            Print
+          </button>
+        </div>
+      </div>
+    </div>
   </LayoutAuthenticated>
 </template>
+<style scoped>
+@media print {
+  /* Hide all elements by default */
+  body * {
+    visibility: hidden;
+  }
+  /* Make only the print modal visible */
+  .print-only,
+  .print-only * {
+    visibility: visible;
+  }
+  /* Position the print modal properly */
+  .print-only {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+  /* Hide the footer section with no-print class */
+  .no-print {
+    display: none !important;
+  }
+}
+</style>

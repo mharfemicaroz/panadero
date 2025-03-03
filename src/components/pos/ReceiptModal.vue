@@ -58,3 +58,10 @@ const props = defineProps({
   printOptions: Object
 })
 </script>
+<style scoped>
+@media print {
+  :deep(.no-print) {
+    display: none !important;
+  }
+}
+</style>
