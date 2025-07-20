@@ -1,1 +1,0 @@
-import{K as r,a as s}from"./index.c3b8df4f.js";const t=r("darkMode",()=>{const e=s(!1);function o(a=null){e.value=a!==null?a:!e.value,typeof document<"u"&&(document.body.classList[e.value?"add":"remove"]("dark-scrollbars"),document.documentElement.classList[e.value?"add":"remove"]("dark","dark-scrollbars-compat"))}return{isEnabled:e,set:o}});export{t as u};
