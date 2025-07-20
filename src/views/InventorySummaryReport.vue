@@ -61,7 +61,7 @@ const computedInventoryData = computed(() => {
     const { totalIn, addedQty } = (record.stock_movements || []).reduce(
       (acc, { type, note, quantity_change }) => {
         if (type === 'IN') {
-          if (note === 'manual deduct') {
+          if (note === 'purchased') {
             acc.totalIn += quantity_change
           } else {
             acc.addedQty += quantity_change

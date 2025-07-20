@@ -1,1 +1,0 @@
-import{V as n}from"./main.be0db63c.js";import{a as r,b as o,c as t,h as u}from"./index.a2c9f28c.js";const _={__name:"DateRangePicker",setup(s){const e=r([null,null]);return(m,a)=>(o(),t(u(n),{modelValue:e.value,"onUpdate:modelValue":a[0]||(a[0]=l=>e.value=l),range:"","multi-calendars":""},null,8,["modelValue"]))}};export{_};

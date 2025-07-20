@@ -345,32 +345,19 @@ onMounted(async () => {
     <!-- Top Section: Title and Export Button -->
     <SectionTitleLineWithButton :icon="mdiTableBorder" title="Sales Summary" main>
       <div class="flex items-center gap-2">
-        <BaseButton
-          :icon="mdiExport"
-          color="warning"
-          label="Export Summary"
-          @click="exportSummary"
-        />
+        <BaseButton :icon="mdiExport" color="warning" label="Export Summary" @click="exportSummary" />
       </div>
     </SectionTitleLineWithButton>
 
     <!-- Filters -->
-    <SalesFilters
-      :user-store="userStore"
-      :branch-store="branchStore"
-      :warehouse-store="warehouseStore"
-      @filter="handleFilter"
-    />
+    <SalesFilters :user-store="userStore" :branch-store="branchStore" :warehouse-store="warehouseStore"
+      @filter="handleFilter" />
 
     <!-- Charts -->
     <SalesCharts ref="salesChartsRef" :sale-store="saleStore" :selected-period="selectedPeriod" />
 
     <!-- Sales Report Summary -->
-    <SalesReportSummary
-      ref="salesReportRef"
-      :sale-store="saleStore"
-      :selected-period="selectedPeriod"
-    />
+    <SalesReportSummary ref="salesReportRef" :sale-store="saleStore" :selected-period="selectedPeriod" />
 
     <!-- Category Sales Summary -->
     <CategorySalesSummary ref="categorySalesRef" :sale-store="saleStore" />
@@ -382,14 +369,8 @@ onMounted(async () => {
     <BreakdownPaymentSummary ref="breakdownPaymentRef" :sale-store="saleStore" />
 
     <!-- Shifts Summary -->
-    <ShiftsSummary
-      ref="shiftsRef"
-      :sale-store="saleStore"
-      :shift-store="shiftStore"
-      :user-store="userStore"
-      :branch-store="branchStore"
-      :cash-register-store="cashRegisterStore"
-    />
+    <ShiftsSummary ref="shiftsRef" :sale-store="saleStore" :shift-store="shiftStore" :user-store="userStore"
+      :branch-store="branchStore" :cash-register-store="cashRegisterStore" />
   </LayoutAuthenticated>
 </template>
 

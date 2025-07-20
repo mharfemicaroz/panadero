@@ -381,6 +381,7 @@ import { useProcurementStore } from '@/stores/product/procurement'
 import { useSupplierStore } from '@/stores/product/supplier'
 import { useWarehouseStore } from '@/stores/warehouse'
 import { useItemStore } from '@/stores/product/item'
+import { useAuthStore } from '@/stores/auth'
 
 // --- STATE ---
 const showNewProcurementModal = ref(false)
@@ -417,6 +418,7 @@ const procurementStore = useProcurementStore()
 const supplierStore = useSupplierStore()
 const warehouseStore = useWarehouseStore()
 const itemStore = useItemStore()
+const authStore = useAuthStore()
 
 // --- FETCH DATA ---
 async function fetchProcurements(queryParams = {}, forceRefresh = false) {
@@ -540,7 +542,11 @@ async function saveNewProcurement() {
       console.error(`Item at index ${idx} is missing item_id:`, itm)
     }
   })
-  await procurementStore.createItem(newProcurementForm.value)
+  const procurementData = {
+    ...newProcurementForm.value,
+    user_id: authStore.user ? authStore.user.id : null
+  }
+  await procurementStore.createItem(procurementData)
   if (!procurementStore.error) {
     showNewProcurementModal.value = false
     await fetchProcurements({ page: 1, limit: 10 }, true)

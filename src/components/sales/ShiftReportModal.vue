@@ -87,29 +87,13 @@ const shiftReportDetails = computed(() => {
     <div class="absolute inset-0 bg-black opacity-50" @click="emit('close')"></div>
     <!-- Modal Content -->
     <div
-      class="relative bg-white w-full max-w-md h-full sm:h-auto sm:rounded-l-none sm:rounded-r-lg overflow-y-auto p-6 shadow-2xl"
-    >
+      class="relative bg-white w-full max-w-md h-full sm:h-auto sm:rounded-l-none sm:rounded-r-lg overflow-y-auto p-6 shadow-2xl">
       <!-- Modal Header -->
       <div class="flex items-center justify-between">
         <h2 class="text-2xl font-bold text-gray-800">Shift Report</h2>
-        <button
-          @click="emit('close')"
-          class="text-gray-600 hover:text-gray-800 focus:outline-none"
-          title="Close"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
+        <button @click="emit('close')" class="text-gray-600 hover:text-gray-800 focus:outline-none" title="Close">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
@@ -185,11 +169,8 @@ const shiftReportDetails = computed(() => {
         <!-- Sales Summary -->
         <div class="border-b pb-4">
           <h3 class="text-lg font-semibold text-gray-800 mb-2">Sales Summary</h3>
-          <div
-            v-for="(amount, paymentType) in shiftReportDetails.paymentBreakdown"
-            :key="paymentType"
-            class="text-gray-700"
-          >
+          <div v-for="(amount, paymentType) in shiftReportDetails.paymentBreakdown" :key="paymentType"
+            class="text-gray-700">
             <p>
               <span class="font-semibold">{{ paymentType }}:</span>
               {{ amount.toFixed(2) }}
